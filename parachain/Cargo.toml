@@ -6,15 +6,16 @@ members = [
     'node',
     'pallets/permissions',
     'pallets/assets',
+    'pallets/dex-manager',
     'runtime',
     'common',
 ]
 
 # Uncomment or change rev of other packages then orml will update.
-#[patch.'https://github.com/open-web3-stack/open-runtime-module-library']
-#orml-currencies = { git = "https://github.com/open-web3-stack/open-runtime-module-library", rev = "575518d6ce9408eadf8358e28e724461591a1556" }
-#orml-tokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library", rev = "575518d6ce9408eadf8358e28e724461591a1556" }
-#orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library", rev = "575518d6ce9408eadf8358e28e724461591a1556" }
+[patch.'https://github.com/open-web3-stack/open-runtime-module-library']
+orml-currencies = { git = "https://github.com/open-web3-stack//open-runtime-module-library", rev = "b9d5087d042fb3848a255852cc3ed18e9b733b89" }
+orml-tokens = { git = "https://github.com/open-web3-stack//open-runtime-module-library", rev = "b9d5087d042fb3848a255852cc3ed18e9b733b89" }
+orml-traits = { git = "https://github.com/open-web3-stack//open-runtime-module-library", rev = "b9d5087d042fb3848a255852cc3ed18e9b733b89" }
 
 [patch.'https://github.com/paritytech/substrate']
 frame-benchmarking = { git = "https://github.com/paritytech//substrate", rev = "816ed3d4e77a2463c86e69ec5a26fc307ef452b9" }

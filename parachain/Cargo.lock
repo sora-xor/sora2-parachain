@@ -1577,6 +1577,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "dex-manager"
+version = "0.1.0"
+dependencies = [
+ "assets",
+ "common",
+ "frame-support",
+ "frame-system",
+ "hex-literal 0.3.1",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parity-scale-codec",
+ "permissions",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "digest"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4499,11 +4522,10 @@ dependencies = [
 [[package]]
 name = "orml-currencies"
 version = "0.4.1-dev"
-source = "git+https://github.com/open-web3-stack/open-runtime-module-library.git#575518d6ce9408eadf8358e28e724461591a1556"
+source = "git+https://github.com/open-web3-stack//open-runtime-module-library?rev=b9d5087d042fb3848a255852cc3ed18e9b733b89#b9d5087d042fb3848a255852cc3ed18e9b733b89"
 dependencies = [
  "frame-support",
  "frame-system",
- "funty",
  "orml-traits",
  "orml-utilities",
  "parity-scale-codec",
@@ -4516,11 +4538,10 @@ dependencies = [
 [[package]]
 name = "orml-tokens"
 version = "0.4.1-dev"
-source = "git+https://github.com/open-web3-stack/open-runtime-module-library.git#575518d6ce9408eadf8358e28e724461591a1556"
+source = "git+https://github.com/open-web3-stack//open-runtime-module-library?rev=b9d5087d042fb3848a255852cc3ed18e9b733b89#b9d5087d042fb3848a255852cc3ed18e9b733b89"
 dependencies = [
  "frame-support",
  "frame-system",
- "funty",
  "orml-traits",
  "parity-scale-codec",
  "serde",
@@ -4531,10 +4552,9 @@ dependencies = [
 [[package]]
 name = "orml-traits"
 version = "0.4.1-dev"
-source = "git+https://github.com/open-web3-stack/open-runtime-module-library.git#575518d6ce9408eadf8358e28e724461591a1556"
+source = "git+https://github.com/open-web3-stack//open-runtime-module-library?rev=b9d5087d042fb3848a255852cc3ed18e9b733b89#b9d5087d042fb3848a255852cc3ed18e9b733b89"
 dependencies = [
  "frame-support",
- "funty",
  "impl-trait-for-tuples",
  "num-traits",
  "orml-utilities",
@@ -4549,10 +4569,9 @@ dependencies = [
 [[package]]
 name = "orml-utilities"
 version = "0.4.1-dev"
-source = "git+https://github.com/open-web3-stack/open-runtime-module-library.git#575518d6ce9408eadf8358e28e724461591a1556"
+source = "git+https://github.com/open-web3-stack//open-runtime-module-library?rev=b9d5087d042fb3848a255852cc3ed18e9b733b89#b9d5087d042fb3848a255852cc3ed18e9b733b89"
 dependencies = [
  "frame-support",
- "funty",
  "parity-scale-codec",
  "serde",
  "sp-io",
@@ -5093,7 +5112,7 @@ dependencies = [
 [[package]]
 name = "pallet-tips"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=rococo-v1#68cfc326fa0e3d96d0d92509e4db1a104b9da9bb"
+source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#68cfc326fa0e3d96d0d92509e4db1a104b9da9bb"
 dependencies = [
  "frame-support",
  "frame-system",
