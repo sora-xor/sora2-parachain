@@ -123,6 +123,7 @@ fn testnet_genesis(
 				.to_vec(),
 			changes_trie_config: Default::default(),
 		},
+
 		pallet_balances: parachain_runtime::BalancesConfig {
 			balances: endowed_accounts
 				.iter()
@@ -130,6 +131,15 @@ fn testnet_genesis(
 				.map(|k| (k, 1 << 60))
 				.collect(),
 		},
+
+		pallet_balances_Instance2: parachain_runtime::XORConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, 1 << 60))
+				.collect(),
+		},
+
 		pallet_sudo: parachain_runtime::SudoConfig { key: root_key },
 		parachain_info: parachain_runtime::ParachainInfoConfig { parachain_id: id },
 	}
