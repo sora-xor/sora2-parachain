@@ -29,6 +29,7 @@ use frame_system::{
 
 // Polkadot imports
 use polkadot_parachain::primitives::Sibling;
+/*
 use xcm::v0::{Junction, MultiLocation, NetworkId};
 use xcm_builder::{
     AccountId32Aliases, CurrencyAdapter, LocationInverter, ParentIsDefault, RelayChainAsNative,
@@ -39,6 +40,7 @@ use xcm_executor::{
     traits::{IsConcrete, NativeAsset},
     Config, XcmExecutor,
 };
+*/
 
 // A few exports that help ease life for downstream crates.
 use codec::{Decode, Encode};
@@ -232,6 +234,7 @@ impl frame_system::Config for Runtime {
     type SystemWeightInfo = ();
     /// This is used as an identifier of the chain. 42 is the generic substrate prefix.
     type SS58Prefix = SS58Prefix;
+    type OnSetCode = ();
 }
 
 parameter_types! {
@@ -298,7 +301,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type OnValidationData = ();
 	type SelfParaId = parachain_info::Pallet<Runtime>;
 	type DownwardMessageHandlers = ();
-	type HrmpMessageHandlers = ();
+	type XcmpMessageHandlers = ();
 	//type DownwardMessageHandlers = XcmHandler;
 	//type HrmpMessageHandlers = XcmHandler;
 }
@@ -306,12 +309,12 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 impl parachain_info::Config for Runtime {}
 
 parameter_types! {
-    pub const RococoLocation: MultiLocation = MultiLocation::X1(Junction::Parent);
-    pub const RococoNetwork: NetworkId = NetworkId::Polkadot;
+    //pub const RococoLocation: MultiLocation = MultiLocation::X1(Junction::Parent);
+    //pub const RococoNetwork: NetworkId = NetworkId::Polkadot;
     //pub RelayChainOrigin: Origin = cumulus_pallet_xcm_handler::Origin::Relay.into();
-    pub Ancestry: MultiLocation = Junction::Parachain {
-        id: ParachainInfo::parachain_id().into()
-    }.into();
+    //pub Ancestry: MultiLocation = Junction::Parachain {
+    //    id: ParachainInfo::parachain_id().into()
+    //}.into();
 }
 
 /*
@@ -381,7 +384,7 @@ construct_runtime!(
 		ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event},
 		TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
 		ParachainInfo: parachain_info::{Pallet, Storage, Config},
-		XcmHandler: cumulus_pallet_xcm_handler::{Pallet, Event<T>, Origin},
+		//XcmHandler: cumulus_pallet_xcm_handler::{Pallet, Event<T>, Origin},
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
         TemplatePallet: template::{Pallet, Call, Storage, Event<T>},
 	}
