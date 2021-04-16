@@ -297,8 +297,10 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type Event = Event;
 	type OnValidationData = ();
 	type SelfParaId = parachain_info::Pallet<Runtime>;
-	type DownwardMessageHandlers = XcmHandler;
-	type HrmpMessageHandlers = XcmHandler;
+	type DownwardMessageHandlers = ();
+	type HrmpMessageHandlers = ();
+	//type DownwardMessageHandlers = XcmHandler;
+	//type HrmpMessageHandlers = XcmHandler;
 }
 
 impl parachain_info::Config for Runtime {}
@@ -306,12 +308,13 @@ impl parachain_info::Config for Runtime {}
 parameter_types! {
     pub const RococoLocation: MultiLocation = MultiLocation::X1(Junction::Parent);
     pub const RococoNetwork: NetworkId = NetworkId::Polkadot;
-    pub RelayChainOrigin: Origin = cumulus_pallet_xcm_handler::Origin::Relay.into();
+    //pub RelayChainOrigin: Origin = cumulus_pallet_xcm_handler::Origin::Relay.into();
     pub Ancestry: MultiLocation = Junction::Parachain {
         id: ParachainInfo::parachain_id().into()
     }.into();
 }
 
+/*
 type LocationConverter = (
     ParentIsDefault<AccountId>,
     SiblingParachainConvertsVia<Sibling, AccountId>,
@@ -356,6 +359,7 @@ impl cumulus_pallet_xcm_handler::Config for Runtime {
     type SendXcmOrigin = EnsureRoot<AccountId>;
     type AccountIdConverter = LocationConverter;
 }
+*/
 
 /// Configure the pallet template in pallets/template.
 impl template::Config for Runtime {
