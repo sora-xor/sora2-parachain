@@ -7,6 +7,7 @@ members = [
     'pallets/permissions',
     'pallets/assets',
     'pallets/dex-manager',
+    'pallets/trading-pair',
     'runtime',
     'common',
 ]

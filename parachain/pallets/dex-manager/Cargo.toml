@@ -1,0 +1,55 @@
+[package]
+description = 'Pallet for creation of DEXes, managing their specific parameters and ownership.'
+version = '0.1.0'
+name = 'dex-manager'
+edition = '2018'
+authors = ['Polka Biome Ltd. <jihoon@tutanota.de>']
+license = "BSD-4-Clause"
+homepage = 'https://sora.org'
+repository = 'https://github.com/sora-xor/sora2-network'
+
+[package.metadata.docs.rs]
+targets = ['x86_64-unknown-linux-gnu']
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
+serde = { version = "1.0.101", optional = true, features = ["derive"], default-features = false }
+frame-support = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+frame-system = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+pallet-balances = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-arithmetic = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-io = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-std = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+
+currencies = { version = "0.4.1-dev", package = "orml-currencies", default-features = false, git = 'https://github.com/open-web3-stack/open-runtime-module-library.git' }
+tokens = { version = "0.4.1-dev", package = "orml-tokens", default-features = false, git = 'https://github.com/open-web3-stack/open-runtime-module-library.git' }
+traits = { version = "0.4.1-dev", package = "orml-traits", default-features = false, git = 'https://github.com/open-web3-stack/open-runtime-module-library.git' }
+
+assets = { path = "../assets", default-features = false }
+common = { path = "../../common", default-features = false }
+permissions = { path = "../permissions", default-features = false }
+hex-literal = { version = "0.3.1", optional = true }
+
+[dev-dependencies]
+common = { path = "../../common", default-features = false, features = ["test"] }
+sp-core = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-runtime = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+
+[features]
+default = ['std']
+std = [
+    'codec/std',
+    'serde/std',
+    'frame-support/std',
+    'frame-system/std',
+    'pallet-balances/std',
+    'sp-arithmetic/std',
+    'sp-std/std',
+    'sp-io/std',
+    'currencies/std',
+    'tokens/std',
+    'traits/std',
+    'assets/std',
+    'common/std',
+    'permissions/std',
+]
