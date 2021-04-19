@@ -8,6 +8,7 @@ members = [
     'pallets/assets',
     'pallets/dex-manager',
     'pallets/trading-pair',
+    'pallets/pool-xyk',
     'runtime',
     'common',
 ]
