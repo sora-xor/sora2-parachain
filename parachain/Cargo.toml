@@ -10,6 +10,7 @@ members = [
     'pallets/trading-pair',
     'pallets/technical',
     'pallets/pool-xyk',
+    'pallets/liquidity-proxy',
     'runtime',
     'common',
 ]

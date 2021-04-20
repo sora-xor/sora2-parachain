@@ -1577,6 +1577,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "dex-api"
+version = "0.1.0"
+dependencies = [
+ "assets",
+ "common",
+ "dex-manager",
+ "frame-support",
+ "frame-system",
+ "hex-literal 0.3.1",
+ "mock-liquidity-source",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parity-scale-codec",
+ "permissions",
+ "pool-xyk",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "technical",
+ "trading-pair",
+]
+
+[[package]]
 name = "dex-manager"
 version = "0.1.0"
 dependencies = [
@@ -3933,6 +3961,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "liquidity-proxy"
+version = "0.1.0"
+dependencies = [
+ "assets",
+ "common",
+ "dex-api",
+ "dex-manager",
+ "frame-support",
+ "frame-system",
+ "mock-liquidity-source",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parity-scale-codec",
+ "permissions",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "technical",
+ "trading-pair",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4233,6 +4288,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9f1c5b025cda876f66ef43a113f91ebc9f4ccef34843000e0adf6ebbab84e21"
 dependencies = [
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "mock-liquidity-source"
+version = "0.1.0"
+dependencies = [
+ "assets",
+ "common",
+ "dex-manager",
+ "frame-support",
+ "frame-system",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parity-scale-codec",
+ "permissions",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "technical",
+ "trading-pair",
 ]
 
 [[package]]
