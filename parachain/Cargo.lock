@@ -709,6 +709,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "bonding-curve-pool"
+version = "0.1.0"
+dependencies = [
+ "assets",
+ "common",
+ "dex-api",
+ "dex-manager",
+ "frame-support",
+ "frame-system",
+ "hex-literal 0.3.1",
+ "mock-liquidity-source",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parity-scale-codec",
+ "permissions",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "technical",
+ "trading-pair",
+]
+
+[[package]]
 name = "bs58"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

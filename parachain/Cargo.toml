@@ -11,6 +11,7 @@ members = [
     'pallets/technical',
     'pallets/pool-xyk',
     'pallets/liquidity-proxy',
+    'pallets/bonding-curve-pool',
     'runtime',
     'common',
 ]
