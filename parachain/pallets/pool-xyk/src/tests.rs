@@ -163,6 +163,7 @@ impl<'a> crate::Module<Runtime> {
                 crate::Module::<Runtime>::properties(base_asset, target_asset),
                 Some((repr.clone(), fee_repr.clone(), tech_asset))
             );
+            /*
             assert_eq!(
                 pswap_distribution::Module::<Runtime>::subscribed_accounts(&fee_repr),
                 Some((
@@ -172,6 +173,7 @@ impl<'a> crate::Module<Runtime> {
                     0
                 ))
             );
+            */
 
             for test in &tests {
                 test(

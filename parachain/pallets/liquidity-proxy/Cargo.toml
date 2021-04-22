@@ -42,6 +42,18 @@ mock-liquidity-source = { path = "../mock-liquidity-source" }
 technical = { path = "../technical" }
 permissions = { path = "../permissions" }
 
+[dev-dependencies.cumulus-pallet-parachain-system]
+git = 'https://github.com/paritytech/cumulus.git'
+branch = 'rococo-v1'
+default-features = false
+
+[dev-dependencies.parachain-info]
+default-features = false
+git = 'https://github.com/paritytech/cumulus.git'
+branch = 'rococo-v1'
+version = '0.1.0'
+
+
 [features]
 default = ['std']
 std = [

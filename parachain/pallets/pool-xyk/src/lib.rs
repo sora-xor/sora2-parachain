@@ -428,11 +428,8 @@ pub mod pallet {
 
     #[pallet::config]
     pub trait Config:
-        frame_system::Config
-        + technical::Config
-        + dex_manager::Config
-        + trading_pair::Config
-        //+ pswap_distribution::Config
+        frame_system::Config + technical::Config + dex_manager::Config + trading_pair::Config
+    //+ pswap_distribution::Config
     {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;

@@ -94,24 +94,30 @@ construct_runtime! {
         NodeBlock = Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
-        System: frame_system::{Module, Call, Config, Storage, Event<T>},
-        DexApi: dex_api::{Module, Call, Config, Storage, Event<T>},
-        Tokens: tokens::{Module, Call, Config<T>, Storage, Event<T>},
-        Permissions: permissions::{Module, Call, Config<T>, Storage, Event<T>},
-        Currencies: currencies::{Module, Call, Storage, Event<T>},
-        Assets: assets::{Module, Call, Config<T>, Storage, Event<T>},
-        Balances: pallet_balances::{Module, Call, Storage, Event<T>},
-        MockLiquiditySource: mock_liquidity_source::<Instance1>::{Module, Call, Config<T>, Storage},
-        MockLiquiditySource2: mock_liquidity_source::<Instance2>::{Module, Call, Config<T>, Storage},
-        MockLiquiditySource3: mock_liquidity_source::<Instance3>::{Module, Call, Config<T>, Storage},
-        MockLiquiditySource4: mock_liquidity_source::<Instance4>::{Module, Call, Config<T>, Storage},
-        Technical: technical::{Module, Call, Storage, Event<T>},
-        DexManager: dex_manager::{Module, Call, Storage},
-        TradingPair: trading_pair::{Module, Call, Storage, Event<T>},
-        PoolXyk: pool_xyk::{Module, Call, Storage, Event<T>},
-        PswapDistribution: pswap_distribution::{Module, Call, Storage, Event<T>},
-    }
+        System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+        DexApi: dex_api::{Pallet, Call, Config, Storage, Event<T>},
+        Tokens: tokens::{Pallet, Call, Config<T>, Storage, Event<T>},
+        Permissions: permissions::{Pallet, Call, Config<T>, Storage, Event<T>},
+        Currencies: currencies::{Pallet, Call, Storage, Event<T>},
+        Assets: assets::{Pallet, Call, Config<T>, Storage, Event<T>},
+        Balances: pallet_balances::{Pallet, Call, Storage, Event<T>},
+        MockLiquiditySource: mock_liquidity_source::<Instance1>::{Pallet, Call, Config<T>, Storage},
+        MockLiquiditySource2: mock_liquidity_source::<Instance2>::{Pallet, Call, Config<T>, Storage},
+        MockLiquiditySource3: mock_liquidity_source::<Instance3>::{Pallet, Call, Config<T>, Storage},
+        MockLiquiditySource4: mock_liquidity_source::<Instance4>::{Pallet, Call, Config<T>, Storage},
+        Technical: technical::{Pallet, Call, Storage, Event<T>},
+        DexManager: dex_manager::{Pallet, Call, Storage},
+        TradingPair: trading_pair::{Pallet, Call, Storage, Event<T>},
+        PoolXyk: pool_xyk::{Pallet, Call, Storage, Event<T>},
+        //PswapDistribution: pswap_distribution::{Pallet, Call, Storage, Event<T>},
+
+            ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event},
+
+            ParachainInfo: parachain_info::{Pallet, Storage, Config},
+                }
 }
+
+impl parachain_info::Config for Runtime {}
 
 impl frame_system::Config for Runtime {
     type BaseCallFilter = ();
@@ -136,6 +142,16 @@ impl frame_system::Config for Runtime {
     type SystemWeightInfo = ();
     type PalletInfo = PalletInfo;
     type SS58Prefix = ();
+
+    type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
+}
+
+impl cumulus_pallet_parachain_system::Config for Runtime {
+    type Event = Event;
+    type OnValidationData = ();
+    type SelfParaId = parachain_info::Pallet<Runtime>;
+    type DownwardMessageHandlers = ();
+    type XcmpMessageHandlers = ();
 }
 
 impl Config for Runtime {
@@ -258,6 +274,7 @@ impl pool_xyk::Config for Runtime {
     type WeightInfo = ();
 }
 
+/*
 impl pswap_distribution::Config for Runtime {
     type Event = Event;
     type GetIncentiveAssetId = GetIncentiveAssetId;
@@ -271,6 +288,7 @@ impl pswap_distribution::Config for Runtime {
     type WeightInfo = ();
     type GetParliamentAccountId = GetParliamentAccountId;
 }
+*/
 
 pub struct ExtBuilder {
     endowed_accounts: Vec<(AccountId, AssetId, Balance)>,

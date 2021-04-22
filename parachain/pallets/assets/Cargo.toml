@@ -33,6 +33,17 @@ sp-io = { version = "3", default-features = false, branch = 'rococo-v1', git = '
 common = { path = "../../common", features = ["test"] }
 permissions = { path = "../permissions" }
 
+[dev-dependencies.cumulus-pallet-parachain-system]
+git = 'https://github.com/paritytech/cumulus.git'
+branch = 'rococo-v1'
+default-features = false
+
+[dev-dependencies.parachain-info]
+default-features = false
+git = 'https://github.com/paritytech/cumulus.git'
+branch = 'rococo-v1'
+version = '0.1.0'
+
 [features]
 default = ['std']
 std = [

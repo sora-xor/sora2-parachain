@@ -36,7 +36,7 @@ use frame_support::{dispatch, ensure};
 
 use common::balance;
 use common::prelude::{Balance, FixedWrapper};
-use frame_support::debug;
+//use frame_support::debug;
 
 use crate::{to_balance, to_fixed_wrapper};
 
@@ -317,9 +317,11 @@ impl<T: Config> common::SwapRulesValidation<AccountIdOf<T>, TechAccountIdOf<T>, 
             let diff: u128 = to_balance!(fxw_diff);
             let value = diff < balance!(100);
             if !value {
+                /*
                 debug::warn!(
                     "Potential swap operation is blocked because pool became invalid after it"
                 );
+                */
             }
             value
         };

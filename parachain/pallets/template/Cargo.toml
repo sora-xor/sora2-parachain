@@ -67,3 +67,14 @@ default-features = false
 git = 'https://github.com/paritytech/substrate.git'
 branch = 'rococo-v1'
 version = '3.0.0'
+
+[dev-dependencies.cumulus-pallet-parachain-system]
+git = 'https://github.com/paritytech/cumulus.git'
+branch = 'rococo-v1'
+default-features = false
+
+[dev-dependencies.parachain-info]
+default-features = false
+git = 'https://github.com/paritytech/cumulus.git'
+branch = 'rococo-v1'
+version = '0.1.0'
