@@ -363,6 +363,11 @@ impl template::Config for Runtime {
     type Event = Event;
 }
 
+impl permissions::Config for Runtime {
+        type Event = Event;
+}
+
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -381,6 +386,7 @@ construct_runtime!(
         //XcmHandler: cumulus_pallet_xcm_handler::{Pallet, Event<T>, Origin},
         Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
         TemplatePallet: template::{Pallet, Call, Storage, Event<T>},
+        Permissions: permissions::{Pallet, Call, Storage, Config<T>, Event<T>},
     }
 );
 
