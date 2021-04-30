@@ -195,6 +195,63 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
 
 [[package]]
+name = "assets"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "cumulus-pallet-parachain-system",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex-literal 0.2.1",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parachain-info",
+ "parity-scale-codec",
+ "permissions",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "tiny-keccak",
+]
+
+[[package]]
+name = "assets-rpc"
+version = "0.1.0"
+dependencies = [
+ "assets-runtime-api",
+ "common",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-blockchain",
+ "sp-core",
+ "sp-rpc",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "assets-runtime-api"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "parity-scale-codec",
+ "serde",
+ "serde_json",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "async-attributes"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -686,6 +743,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "bonding-curve-pool"
+version = "0.1.0"
+dependencies = [
+ "assets",
+ "common",
+ "cumulus-pallet-parachain-system",
+ "dex-api",
+ "dex-manager",
+ "frame-support",
+ "frame-system",
+ "hex-literal 0.3.1",
+ "mock-liquidity-source",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parachain-info",
+ "parity-scale-codec",
+ "permissions",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "technical",
+ "trading-pair",
+]
+
+[[package]]
 name = "bs58"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -918,6 +1005,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
 dependencies = [
  "bitflags",
+]
+
+[[package]]
+name = "common"
+version = "0.1.0"
+dependencies = [
+ "blake2-rfc",
+ "derive_more 0.99.13",
+ "fixnum",
+ "frame-support",
+ "frame-system",
+ "libsecp256k1",
+ "num-traits",
+ "orml-currencies",
+ "orml-traits",
+ "parity-scale-codec",
+ "rustc-hex",
+ "serde",
+ "serde_json",
+ "smallvec 1.6.1",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "static_assertions",
 ]
 
 [[package]]
@@ -1572,6 +1685,122 @@ dependencies = [
 ]
 
 [[package]]
+name = "dex-api"
+version = "0.1.0"
+dependencies = [
+ "assets",
+ "common",
+ "cumulus-pallet-parachain-system",
+ "dex-manager",
+ "frame-support",
+ "frame-system",
+ "hex-literal 0.3.1",
+ "mock-liquidity-source",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parachain-info",
+ "parity-scale-codec",
+ "permissions",
+ "pool-xyk",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "technical",
+ "trading-pair",
+]
+
+[[package]]
+name = "dex-api-rpc"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "dex-runtime-api",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-blockchain",
+ "sp-core",
+ "sp-rpc",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "dex-manager"
+version = "0.1.0"
+dependencies = [
+ "assets",
+ "common",
+ "cumulus-pallet-parachain-system",
+ "frame-support",
+ "frame-system",
+ "hex-literal 0.3.1",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parachain-info",
+ "parity-scale-codec",
+ "permissions",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "dex-manager-rpc"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "dex-manager-runtime-api",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-blockchain",
+ "sp-core",
+ "sp-rpc",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "dex-manager-runtime-api"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "dex-runtime-api"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "digest"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1926,6 +2155,19 @@ name = "fixedbitset"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
+
+[[package]]
+name = "fixnum"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7da3b48a12b7b627989d4a008a157b5446facb678cadb775a2f0cc2511ab71b7"
+dependencies = [
+ "derive_more 0.99.13",
+ "parity-scale-codec",
+ "serde",
+ "static_assertions",
+ "typenum",
+]
 
 [[package]]
 name = "flate2"
@@ -3879,6 +4121,66 @@ dependencies = [
 ]
 
 [[package]]
+name = "liquidity-proxy"
+version = "0.1.0"
+dependencies = [
+ "assets",
+ "common",
+ "cumulus-pallet-parachain-system",
+ "dex-api",
+ "dex-manager",
+ "frame-support",
+ "frame-system",
+ "mock-liquidity-source",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parachain-info",
+ "parity-scale-codec",
+ "permissions",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "technical",
+ "trading-pair",
+]
+
+[[package]]
+name = "liquidity-proxy-rpc"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "liquidity-proxy-runtime-api",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-blockchain",
+ "sp-core",
+ "sp-rpc",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "liquidity-proxy-runtime-api"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4182,6 +4484,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "mock-liquidity-source"
+version = "0.1.0"
+dependencies = [
+ "assets",
+ "common",
+ "cumulus-pallet-parachain-system",
+ "dex-manager",
+ "frame-support",
+ "frame-system",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parachain-info",
+ "parity-scale-codec",
+ "permissions",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "technical",
+ "trading-pair",
+]
+
+[[package]]
 name = "more-asserts"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4463,6 +4792,66 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3305af35278dd29f46fcdd139e0b1fbfae2153f0e5928b39b035542dd31e37b7"
 dependencies = [
  "num-traits",
+]
+
+[[package]]
+name = "orml-currencies"
+version = "0.4.1-dev"
+source = "git+https://github.com/EmelianPiker/open-runtime-module-library.git?branch=simple#b2e6119c34b15595f11b27add19246c894c5be58"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "orml-traits",
+ "orml-utilities",
+ "parity-scale-codec",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "orml-tokens"
+version = "0.4.1-dev"
+source = "git+https://github.com/EmelianPiker/open-runtime-module-library.git?branch=simple#b2e6119c34b15595f11b27add19246c894c5be58"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "orml-traits",
+ "parity-scale-codec",
+ "serde",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "orml-traits"
+version = "0.4.1-dev"
+source = "git+https://github.com/EmelianPiker/open-runtime-module-library.git?branch=simple#b2e6119c34b15595f11b27add19246c894c5be58"
+dependencies = [
+ "frame-support",
+ "impl-trait-for-tuples",
+ "num-traits",
+ "orml-utilities",
+ "parity-scale-codec",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "xcm",
+]
+
+[[package]]
+name = "orml-utilities"
+version = "0.4.1-dev"
+source = "git+https://github.com/EmelianPiker/open-runtime-module-library.git?branch=simple#b2e6119c34b15595f11b27add19246c894c5be58"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -5180,11 +5569,19 @@ dependencies = [
 name = "parachain-runtime"
 version = "2.0.0"
 dependencies = [
+ "assets",
+ "assets-runtime-api",
+ "bonding-curve-pool",
+ "common",
  "cumulus-pallet-parachain-system",
  "cumulus-pallet-xcm",
  "cumulus-pallet-xcmp-queue",
  "cumulus-primitives-core",
  "cumulus-primitives-utility",
+ "dex-api",
+ "dex-manager",
+ "dex-manager-runtime-api",
+ "dex-runtime-api",
  "frame-benchmarking",
  "frame-executive",
  "frame-support",
@@ -5192,6 +5589,12 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "hex-literal 0.3.1",
+ "liquidity-proxy",
+ "liquidity-proxy-runtime-api",
+ "mock-liquidity-source",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
  "pallet-balances",
  "pallet-randomness-collective-flip",
  "pallet-sudo",
@@ -5202,7 +5605,9 @@ dependencies = [
  "pallet-xcm",
  "parachain-info",
  "parity-scale-codec",
+ "permissions",
  "polkadot-parachain",
+ "pool-xyk",
  "serde",
  "smallvec 1.6.1",
  "sp-api",
@@ -5217,6 +5622,9 @@ dependencies = [
  "sp-transaction-pool",
  "sp-version",
  "substrate-wasm-builder 4.0.0",
+ "technical",
+ "trading-pair",
+ "trading-pair-runtime-api",
  "xcm",
  "xcm-builder",
  "xcm-executor",
@@ -5498,6 +5906,23 @@ name = "percent-encoding"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d4fd5641d01c8f18a23da7b6fe29298ff4b55afcccdf78973b24cf3175fee32e"
+
+[[package]]
+name = "permissions"
+version = "0.1.0"
+dependencies = [
+ "cumulus-pallet-parachain-system",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parachain-info",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
 
 [[package]]
 name = "pest"
@@ -6648,6 +7073,34 @@ dependencies = [
  "cpuid-bool 0.2.0",
  "opaque-debug 0.3.0",
  "universal-hash",
+]
+
+[[package]]
+name = "pool-xyk"
+version = "0.1.0"
+dependencies = [
+ "assets",
+ "common",
+ "cumulus-pallet-parachain-system",
+ "dex-manager",
+ "frame-support",
+ "frame-system",
+ "hex-literal 0.3.1",
+ "num-traits",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parachain-info",
+ "parity-scale-codec",
+ "permissions",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "technical",
+ "trading-pair",
 ]
 
 [[package]]
@@ -9760,6 +10213,34 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "422045212ea98508ae3d28025bc5aaa2bd4a9cdaecd442a08da2ee620ee9ea95"
 
 [[package]]
+name = "technical"
+version = "0.1.0"
+dependencies = [
+ "assets",
+ "common",
+ "cumulus-pallet-parachain-system",
+ "dex-manager",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex-literal 0.3.1",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parachain-info",
+ "parity-scale-codec",
+ "permissions",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "trading-pair",
+ "twox-hash",
+]
+
+[[package]]
 name = "tempfile"
 version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -10257,6 +10738,62 @@ dependencies = [
  "tracing-core",
  "tracing-log",
  "tracing-serde",
+]
+
+[[package]]
+name = "trading-pair"
+version = "0.1.0"
+dependencies = [
+ "assets",
+ "common",
+ "cumulus-pallet-parachain-system",
+ "dex-manager",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex-literal 0.3.1",
+ "orml-currencies",
+ "orml-tokens",
+ "orml-traits",
+ "pallet-balances",
+ "parachain-info",
+ "parity-scale-codec",
+ "permissions",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "trading-pair-rpc"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-blockchain",
+ "sp-core",
+ "sp-rpc",
+ "sp-runtime",
+ "sp-std",
+ "trading-pair-runtime-api",
+]
+
+[[package]]
+name = "trading-pair-runtime-api"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]

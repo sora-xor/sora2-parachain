@@ -22,6 +22,10 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
+use traits::parameter_type_with_key;
+use hex_literal::hex;
+use currencies::BasicCurrencyAdapter;
+
 use frame_system::{
     limits::{BlockLength, BlockWeights},
 };
@@ -53,9 +57,6 @@ pub use pallet_timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill, Perquintill};
-
-/// Import the template pallet.
-pub use template;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -262,6 +263,97 @@ impl pallet_balances::Config for Runtime {
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
+pub type Amount = i128;
+
+pub type DEXId = u32;
+
+pub type TechAccountId = common::TechAccountId<AccountId, TechAssetId, DEXId>;
+pub type TechAssetId = common::TechAssetId<common::PredefinedAssetId>;
+pub type AssetId = common::AssetId32<common::PredefinedAssetId>;
+
+parameter_type_with_key! {
+    pub ExistentialDeposits: |_currency_id: AssetId| -> Balance {
+        0
+    };
+}
+
+impl tokens::Config for Runtime {
+    type Event = Event;
+    type Balance = Balance;
+    type Amount = Amount;
+    type CurrencyId = AssetId;
+    type WeightInfo = ();
+    type ExistentialDeposits = ExistentialDeposits;
+    type OnDust = ();
+}
+
+parameter_types! {
+  pub const GetXorAssetId: AssetId = common::AssetId32::from_bytes(hex!("0200000000000000000000000000000000000000000000000000000000000000"));
+  pub const GetDotAssetId: AssetId = common::AssetId32::from_bytes(hex!("0200010000000000000000000000000000000000000000000000000000000000"));
+  pub const GetKsmAssetId: AssetId = common::AssetId32::from_bytes(hex!("0200020000000000000000000000000000000000000000000000000000000000"));
+  pub const GetUsdAssetId: AssetId = common::AssetId32::from_bytes(hex!("0200030000000000000000000000000000000000000000000000000000000000"));
+  pub const GetValAssetId: AssetId = common::AssetId32::from_bytes(hex!("0200040000000000000000000000000000000000000000000000000000000000"));
+  pub const GetPswapAssetId: AssetId = common::AssetId32::from_bytes(hex!("0200050000000000000000000000000000000000000000000000000000000000"));
+  pub const GetBaseAssetId: AssetId = GetXorAssetId::get();
+}
+
+impl currencies::Config for Runtime {
+    type Event = Event;
+    type MultiCurrency = Tokens;
+    type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
+    type GetNativeCurrencyId = <Runtime as assets::Config>::GetBaseAssetId;
+    type WeightInfo = ();
+}
+
+impl common::Config for Runtime {
+    type DEXId = DEXId;
+    type LstId = common::LiquiditySourceType;
+}
+
+
+impl assets::Config for Runtime {
+    type Event = Event;
+    type ExtraAccountId = [u8; 32];
+    type ExtraAssetRecordArg = common::AssetIdExtraAssetRecordArg<DEXId, common::LiquiditySourceType, [u8; 32]>;
+    type AssetId = AssetId;
+    type GetBaseAssetId = GetBaseAssetId;
+    type Currency = currencies::Pallet<Runtime>;
+    type WeightInfo = assets::weights::WeightInfo<Runtime>;
+}
+
+impl trading_pair::Config for Runtime {
+    type Event = Event;
+    type EnsureDEXManager = dex_manager::Pallet<Runtime>;
+    type WeightInfo = ();
+}
+
+impl dex_manager::Config for Runtime {}
+
+impl bonding_curve_pool::Config for Runtime {
+    type DEXApi = ();
+}
+
+impl technical::Config for Runtime {
+    type Event = Event;
+    type TechAssetId = TechAssetId;
+    type TechAccountId = TechAccountId;
+    type Trigger = ();
+    type Condition = ();
+    type SwapAction = pool_xyk::PolySwapAction<AssetId, TechAssetId, Balance, AccountId, TechAccountId>;
+    type WeightInfo = ();
+}
+
+impl pool_xyk::Config for Runtime {
+    type Event = Event;
+    type PairSwapAction = pool_xyk::PairSwapAction<AssetId, Balance, AccountId, TechAccountId>;
+    type DepositLiquidityAction = pool_xyk::DepositLiquidityAction<AssetId, TechAssetId, Balance, AccountId, TechAccountId>;
+    type WithdrawLiquidityAction = pool_xyk::WithdrawLiquidityAction<AssetId, TechAssetId, Balance, AccountId, TechAccountId>;
+    type PolySwapAction = pool_xyk::PolySwapAction<AssetId, TechAssetId, Balance, AccountId, TechAccountId>;
+    type EnsureDEXManager = dex_manager::Pallet<Runtime>;
+    type WeightInfo = pool_xyk::weights::WeightInfo<Runtime>;
+}
+
+
 parameter_types! {
 	pub const TransactionByteFee: Balance = 1 ;
 }
@@ -278,6 +370,10 @@ impl pallet_sudo::Config for Runtime {
     type Call = Call;
 }
 
+impl permissions::Config for Runtime {
+    type Event = Event;
+}
+
 parameter_types! {
 	pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
 }
@@ -285,7 +381,7 @@ parameter_types! {
 impl cumulus_pallet_parachain_system::Config for Runtime {
 	type Event = Event;
 	type OnValidationData = ();
-	type SelfParaId = parachain_info::Module<Runtime>;
+	type SelfParaId = parachain_info::Pallet<Runtime>;
 	type DownwardMessageHandlers = cumulus_primitives_utility::UnqueuedDmpAsParent<
 		MaxDownwardMessageWeight,
 		XcmExecutor<XcmConfig>,
@@ -419,11 +515,6 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ChannelInfo = ParachainSystem;
 }
 
-/// Configure the pallet template in pallets/template.
-impl template::Config for Runtime {
-	type Event = Event;
-}
-
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -442,7 +533,15 @@ construct_runtime!(
 		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin},
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Origin},
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
-		TemplatePallet: template::{Pallet, Call, Storage, Event<T>},
+
+        Permissions: permissions::{Pallet, Call, Storage, Config<T>, Event<T>},
+        Tokens: tokens::{Pallet, Storage, Config<T>, Event<T>},
+        Currencies: currencies::{Pallet, Call, Event<T>},
+        Assets: assets::{Pallet, Call, Storage, Config<T>, Event<T>},
+        TradingPair: trading_pair::{Pallet, Call, Storage, Config<T>, Event<T>},
+        DEXManager: dex_manager::{Pallet, Storage, Config<T>},
+        Technical: technical::{Pallet, Call, Config<T>, Event<T>},
+        PoolXYK: pool_xyk::{Pallet, Call, Storage, Event<T>},
 	}
 );
 

@@ -1,0 +1,71 @@
+[package]
+edition = '2018'
+authors = ['Polka Biome Ltd. <jihoon@tutanota.de>']
+license = "BSD-4-Clause"
+homepage = 'https://sora.org'
+repository = 'https://github.com/sora-xor/sora2-network'
+name = 'liquidity-proxy'
+version = '0.1.0'
+
+[package.metadata.docs.rs]
+targets = ['x86_64-unknown-linux-gnu']
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
+
+currencies = { version = "0.4.1-dev", package = "orml-currencies", default-features = false, git = "https://github.com/EmelianPiker/open-runtime-module-library.git", branch = "simple" }
+tokens = { version = "0.4.1-dev", package = "orml-tokens", default-features = false, git = "https://github.com/EmelianPiker/open-runtime-module-library.git", branch = "simple" }
+traits = { version = "0.4.1-dev", package = "orml-traits", default-features = false, git = "https://github.com/EmelianPiker/open-runtime-module-library.git", branch = "simple" }
+
+
+frame-support = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+frame-system = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+pallet-balances = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-arithmetic = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-runtime = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-std = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+
+common = { path = "../../common", default-features = false }
+
+assets = { path = "../assets", default-features = false }
+trading-pair = { path = "../trading-pair", default-features = false }
+
+[dev-dependencies]
+serde = { version = "1.0.101", default-features = false, features = ["derive"] }
+
+sp-core = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-io = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+common = { path = "../../common", features = ["test"] }
+dex-api = { path = "../dex-api" }
+dex-manager = { path = "../dex-manager" }
+mock-liquidity-source = { path = "../mock-liquidity-source" }
+technical = { path = "../technical" }
+permissions = { path = "../permissions" }
+
+[dev-dependencies.cumulus-pallet-parachain-system]
+git = 'https://github.com/paritytech/cumulus.git'
+branch = 'rococo-v1'
+default-features = false
+
+[dev-dependencies.parachain-info]
+default-features = false
+git = 'https://github.com/paritytech/cumulus.git'
+branch = 'rococo-v1'
+version = '0.1.0'
+
+
+[features]
+default = ['std']
+std = [
+    'codec/std',
+    'currencies/std',
+    'frame-support/std',
+    'frame-system/std',
+    'pallet-balances/std',
+    'sp-arithmetic/std',
+    'sp-runtime/std',
+    'sp-std/std',
+    'tokens/std',
+    'traits/std',
+    'trading-pair/std',
+]

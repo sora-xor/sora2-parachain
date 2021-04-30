@@ -4,6 +4,32 @@ panic = 'unwind'
 [workspace]
 members = [
     'node',
-    'pallets/*',
     'runtime',
+
+    'pallets/dex-manager/runtime-api',
+    'pallets/dex-manager/rpc',
+    'pallets/dex-manager',
+
+    'pallets/dex-api/runtime-api',
+    'pallets/dex-api/rpc',
+    'pallets/dex-api',
+
+    'pallets/liquidity-proxy/runtime-api',
+    'pallets/liquidity-proxy/rpc',
+    'pallets/liquidity-proxy',
+
+    'pallets/trading-pair/runtime-api',
+    'pallets/trading-pair/rpc',
+    'pallets/trading-pair',
+
+    'pallets/assets/runtime-api',
+    'pallets/assets/rpc',
+    'pallets/assets',
+
+    'pallets/permissions',
+    'pallets/technical',
+    'pallets/bonding-curve-pool',
+    'pallets/pool-xyk',
+    'pallets/mock-liquidity-source',
+
 ]

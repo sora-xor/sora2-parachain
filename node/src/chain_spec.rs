@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
+use parachain_runtime::{TokensConfig, PermissionsConfig, AssetsConfig, DEXManagerConfig, TechnicalConfig, TradingPairConfig};
+
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<parachain_runtime::GenesisConfig, Extensions>;
 
@@ -132,5 +134,24 @@ fn testnet_genesis(
 		},
 		pallet_sudo: parachain_runtime::SudoConfig { key: root_key },
 		parachain_info: parachain_runtime::ParachainInfoConfig { parachain_id: id },
+        tokens: TokensConfig {
+            endowed_accounts: vec![],
+        },
+        permissions: PermissionsConfig {
+            initial_permission_owners: vec![],
+            initial_permissions: vec![],
+        },
+        assets: AssetsConfig {
+            endowed_assets: vec![],
+        },
+        dex_manager: DEXManagerConfig {
+            dex_list: vec![],
+        },
+        technical: TechnicalConfig {
+            account_ids_to_tech_account_ids: vec![],
+        },
+        trading_pair: TradingPairConfig {
+            trading_pairs: vec![],
+        },
 	}
 }
