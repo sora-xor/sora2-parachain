@@ -40,7 +40,7 @@ pipeline {
                             sh '''
                                 mv /target .
                                 cargo build --release
-                                cp /target/release/parachain-collator housekeeping/parachain-collator
+                                cp target/release/parachain-collator housekeeping/parachain-collator
                             '''
                         }
                     }
