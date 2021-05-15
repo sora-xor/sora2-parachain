@@ -37,8 +37,11 @@ pipeline {
                 script {
                     docker.withRegistry( "https://" + registry, dockerRegistryRWUserId) {
                         docker.image(baseImageName).inside() {
-                            sh 'cargo build --release'
-                            sh "cp /opt/rust-target/release/parachain-collator ${env.WORKSPACE}/housekeeping/parachain-collator"
+                            sh '''
+                                mv /target .
+                                cargo build --release
+                                cp /target/release/parachain-collator housekeeping/parachain-collator
+                            '''
                         }
                     }
                 }
