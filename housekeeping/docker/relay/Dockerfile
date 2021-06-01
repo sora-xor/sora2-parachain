@@ -40,7 +40,9 @@ RUN apt-get update && \
 	find /var/lib/apt/lists/ -type f -not -name lock -delete
 # add user
 RUN useradd -m -u 10000 -U -s /bin/bash polkadot
-RUN chown -R polkadot:polkadot /home/polkadot
+RUN chown -R polkadot:polkadot /home/polkadot && \
+    mkdir /chain && \
+    chown 10000:10000 /chain
 USER polkadot
 # check if executable works in this container
 RUN /usr/local/bin/polkadot --version
