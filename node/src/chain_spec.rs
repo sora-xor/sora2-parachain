@@ -1,4 +1,5 @@
 use cumulus_primitives_core::ParaId;
+use hex_literal::hex;
 use parachain_runtime::{AccountId, Signature};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
