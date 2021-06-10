@@ -16,30 +16,30 @@ assets = { path = "../assets", default-features = false }
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
 common = { path = "../../common", default-features = false }
 
-currencies = { version = "0.4.1-dev", package = "orml-currencies", default-features = false, git = "https://github.com/EmelianPiker/open-runtime-module-library.git", branch = "simple" }
+currencies = { version = "0.4.1-dev", package = "orml-currencies", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git" }
 
 dex-manager = { path = "../dex-manager", default-features = false }
 
-frame-support = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-frame-system = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+frame-support = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+frame-system = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
 
 mock-liquidity-source = { path = "../mock-liquidity-source", default-features = false }
 
-pallet-balances = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+pallet-balances = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
 serde = { version = "1.0.101", optional = true, features = ["derive"], default-features = false }
 
-sp-arithmetic = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-sp-std = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-arithmetic = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-std = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
 trading-pair = { path = "../trading-pair", default-features = false }
 
-tokens = { version = "0.4.1-dev", package = "orml-tokens", default-features = false, git = "https://github.com/EmelianPiker/open-runtime-module-library.git", branch = "simple" }
-traits = { version = "0.4.1-dev", package = "orml-traits", default-features = false, git = "https://github.com/EmelianPiker/open-runtime-module-library.git", branch = "simple" }
+tokens = { version = "0.4.1-dev", package = "orml-tokens", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git" }
+traits = { version = "0.4.1-dev", package = "orml-traits", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git" }
 
 [dev-dependencies]
 hex-literal = "0.3.1"
-sp-core = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-sp-io = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-sp-runtime = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-core = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-io = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-runtime = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
 
 assets = { path = "../assets" }
 common = { path = "../../common", features = ["test"] }
@@ -53,13 +53,13 @@ trading-pair = { path = "../trading-pair" }
 
 [dev-dependencies.cumulus-pallet-parachain-system]
 git = 'https://github.com/paritytech/cumulus.git'
-branch = 'rococo-v1'
+branch = 'polkadot-v0.9.4'
 default-features = false
 
 [dev-dependencies.parachain-info]
 default-features = false
 git = 'https://github.com/paritytech/cumulus.git'
-branch = 'rococo-v1'
+branch = 'polkadot-v0.9.4'
 version = '0.1.0'
 
 [features]

@@ -12,11 +12,11 @@ targets = ['x86_64-unknown-linux-gnu']
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
-frame-benchmarking = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-frame-support = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-frame-system = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-sp-std = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-sp-core = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+frame-benchmarking = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+frame-support = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+frame-system = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-std = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-core = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
 common = { path = "../../../common", default-features = false }
 assets = { path = "../../assets", default-features = false }
 pool-xyk = { path = "../../pool-xyk", default-features = false }
@@ -28,14 +28,14 @@ hex-literal = "0.3.1"
 
 [dev-dependencies]
 serde = { version = "1.0.101", default-features = false, features = ["derive"] }
-sp-io = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-sp-runtime = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-pallet-balances = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-io = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-runtime = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+pallet-balances = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
 dex-manager = { path = "../../dex-manager", default-features = false }
 dex-api = { path = "../../dex-api", default-features = false }
 
-currencies = { version = "0.4", package = "orml-currencies", default-features = false, git = "https://github.com/EmelianPiker/open-runtime-module-library.git", branch = "simple" }
-tokens = { version = "0.4", package = "orml-tokens", default-features = false, git = "https://github.com/EmelianPiker/open-runtime-module-library.git", branch = "simple" }
+currencies = { version = "0.4", package = "orml-currencies", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git" }
+tokens = { version = "0.4", package = "orml-tokens", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git" }
 
 [features]
 default = ['std']

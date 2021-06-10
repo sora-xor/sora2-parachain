@@ -1,6 +1,6 @@
 use cumulus_primitives_core::ParaId;
 use hex_literal::hex;
-use parachain_runtime::{AccountId, Signature};
+use parachain_runtime::{AccountId, AuraId, Signature};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -57,6 +57,10 @@ pub fn development_config(id: ParaId) -> ChainSpec {
 			testnet_genesis(
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				vec![
+					get_from_seed::<AuraId>("Alice"),
+					get_from_seed::<AuraId>("Bob"),
+				],
+				vec![
 					get_account_id_from_seed::<sr25519::Public>("Alice"),
 					get_account_id_from_seed::<sr25519::Public>("Bob"),
 					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
@@ -70,7 +74,7 @@ pub fn development_config(id: ParaId) -> ChainSpec {
 		None,
 		None,
 		Extensions {
-			relay_chain: "rococo-dev".into(),
+			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: id.into(),
 		},
 	)
@@ -87,18 +91,22 @@ pub fn local_testnet_config(id: ParaId) -> ChainSpec {
 			testnet_genesis(
 				hex!("e02b00cb5bbf5c0338075237cdbfb7d11dbaf19aafce71744610b6a87b5e0f22").into(),
 				vec![
+					AuraId::from_slice(&hex!("caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567")),
+					AuraId::from_slice(&hex!("3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521")),
+				],
+				vec![
 					hex!("caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567").into(),
 					hex!("3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521").into(),
 				],
 				id,
 			)
 		},
-		vec![],
+		Vec::new(),
 		None,
 		None,
 		None,
 		Extensions {
-			relay_chain: "rococo-local".into(),
+			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: id.into(),
 		},
 	)
@@ -106,6 +114,7 @@ pub fn local_testnet_config(id: ParaId) -> ChainSpec {
 
 fn testnet_genesis(
 	root_key: AccountId,
+	initial_authorities: Vec<AuraId>,
 	endowed_accounts: Vec<AccountId>,
 	id: ParaId,
 ) -> parachain_runtime::GenesisConfig {
@@ -144,5 +153,9 @@ fn testnet_genesis(
         trading_pair: TradingPairConfig {
             trading_pairs: vec![],
         },
+		pallet_aura: parachain_runtime::AuraConfig {
+			authorities: initial_authorities,
+		},
+		cumulus_pallet_aura_ext: Default::default(),
 	}
 }

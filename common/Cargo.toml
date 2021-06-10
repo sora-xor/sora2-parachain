@@ -10,22 +10,22 @@ edition = "2018"
 [dependencies]
 blake2-rfc = { version = "0.2.18", default-features = false }
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
-currencies = { version = "0.4.1-dev", package = "orml-currencies", default-features = false, git = 'https://github.com/EmelianPiker/open-runtime-module-library.git', branch = "simple" }
+currencies = { version = "0.4.1-dev", package = "orml-currencies", default-features = false, git = 'https://github.com/open-web3-stack/open-runtime-module-library.git' }
 derive_more = { version = "0.99.11", default-features = false }
 fixnum = { version = "0.5", default-features = false, features = ["i128", "parity"] }
-frame-support = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-frame-system = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+frame-support = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+frame-system = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
 libsecp256k1 = { version = "0.3.5", features = ['hmac'], default-features = false }
 num-traits = { version = "0.2.12", default-features = false }
-orml-traits = { version = "0.4.1-dev", package = "orml-traits", default-features = false, git = 'https://github.com/EmelianPiker/open-runtime-module-library.git', branch = "simple" }
+orml-traits = { version = "0.4.1-dev", package = "orml-traits", default-features = false, git = 'https://github.com/open-web3-stack/open-runtime-module-library.git' }
 rustc-hex = { version = "2.1.0", default-features = false }
 serde = { version = "1.0", features = ["derive"], optional = true, default-features = false }
 smallvec = "1.5.0"
-sp-arithmetic = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-sp-core = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-sp-io = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-sp-runtime = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-sp-std = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-arithmetic = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-core = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-io = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-runtime = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-std = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
 static_assertions = "1.1.0"
 
 [dev-dependencies]
