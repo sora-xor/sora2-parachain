@@ -16,8 +16,8 @@ frame-benchmarking = { version = "3", default-features = false }
 frame-support = { version = "3", default-features = false }
 frame-system = { version = "3", default-features = false }
 hex-literal = "0.3.1"
-sp-runtime = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-sp-std = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-runtime = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-std = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
 
 assets = { path = "../../assets", default-features = false }
 common = { path = "../../../common", default-features = false }
@@ -34,14 +34,14 @@ bonding-curve-pool = { path = "../../bonding-curve-pool", default-features = fal
 dex-api = { path = "../../dex-api", default-features = false}
 
 [dev-dependencies]
-currencies = { version = "0.4", package = "orml-currencies", default-features = false, git = "https://github.com/EmelianPiker/open-runtime-module-library.git", branch = "simple" }
+currencies = { version = "0.4", package = "orml-currencies", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git" }
 
-pallet-balances = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+pallet-balances = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
 serde = { version = "1.0.101", default-features = false, features = ["derive"] }
-sp-core = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
-sp-io = { version = "3", default-features = false, branch = 'rococo-v1', git = 'https://github.com/paritytech/substrate.git' }
+sp-core = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-io = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
 
-tokens = { version = "0.4", package = "orml-tokens", default-features = false, git = "https://github.com/EmelianPiker/open-runtime-module-library.git", branch = "simple" }
+tokens = { version = "0.4", package = "orml-tokens", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git" }
 common = { path = "../../../common", default-features = false, features = ["test"] }
 mock-liquidity-source = { path = "../../mock-liquidity-source" }
 
