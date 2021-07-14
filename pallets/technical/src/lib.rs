@@ -319,7 +319,7 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         #[pallet::weight(<T as Config>::WeightInfo::create_swap())]
-        pub(crate) fn create_swap(
+        pub fn create_swap(
             origin: OriginFor<T>,
             action: T::SwapAction,
         ) -> DispatchResultWithPostInfo {

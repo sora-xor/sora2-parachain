@@ -10,9 +10,9 @@ repository = 'https://github.com/sora-xor/sora2-network'
 [dependencies]
 serde = { version = "1.0.101", optional = true, features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
-sp-api = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-sp-runtime = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-sp-std = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-api = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+sp-runtime = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+sp-std = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
 
 [features]
 default = ["std"]

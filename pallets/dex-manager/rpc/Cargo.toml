@@ -13,11 +13,11 @@ codec = { package = "parity-scale-codec", version = "2" }
 jsonrpc-core = "15.0.0"
 jsonrpc-core-client = "15.0.0"
 jsonrpc-derive = "15.0.0"
-sp-api = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-sp-blockchain = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-sp-core = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-sp-rpc = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-sp-runtime = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-sp-std = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-api = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+sp-blockchain = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+sp-core = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+sp-rpc = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+sp-runtime = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+sp-std = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
 dex-manager-runtime-api = { path = "../runtime-api" }
 common = { path = "../../../common" }
