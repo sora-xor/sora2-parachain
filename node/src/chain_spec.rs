@@ -1,13 +1,10 @@
 use cumulus_primitives_core::ParaId;
-use hex_literal::hex;
-use parachain_runtime::{AccountId, AuraId, Signature};
+use parachain_runtime::{AccountId, AssetsConfig, AuraId, DEXManagerConfig, PermissionsConfig, Signature, TechnicalConfig, TokensConfig, TradingPairConfig};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
-
-use parachain_runtime::{TokensConfig, PermissionsConfig, AssetsConfig, DEXManagerConfig, TechnicalConfig, TradingPairConfig};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<parachain_runtime::GenesisConfig, Extensions>;
@@ -119,23 +116,23 @@ fn testnet_genesis(
 	id: ParaId,
 ) -> parachain_runtime::GenesisConfig {
 	parachain_runtime::GenesisConfig {
-		frame_system: parachain_runtime::SystemConfig {
+		system: parachain_runtime::SystemConfig {
 			code: parachain_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
 			changes_trie_config: Default::default(),
 		},
-		pallet_balances: parachain_runtime::BalancesConfig {
+		balances: parachain_runtime::BalancesConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
 				.map(|k| (k, 1 << 60))
 				.collect(),
 		},
-		pallet_sudo: parachain_runtime::SudoConfig { key: root_key },
+		sudo: parachain_runtime::SudoConfig { key: root_key },
 		parachain_info: parachain_runtime::ParachainInfoConfig { parachain_id: id },
-        tokens: TokensConfig {
-            endowed_accounts: vec![],
+		tokens: TokensConfig {
+            balances: vec![],
         },
         permissions: PermissionsConfig {
             initial_permission_owners: vec![],
@@ -153,9 +150,10 @@ fn testnet_genesis(
         trading_pair: TradingPairConfig {
             trading_pairs: vec![],
         },
-		pallet_aura: parachain_runtime::AuraConfig {
+		aura: parachain_runtime::AuraConfig {
 			authorities: initial_authorities,
 		},
-		cumulus_pallet_aura_ext: Default::default(),
+		aura_ext: Default::default(),
+		parachain_system: Default::default(),
 	}
 }

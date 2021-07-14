@@ -15,16 +15,16 @@ targets = ['x86_64-unknown-linux-gnu']
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
 num-traits = { version = "0.2.12", default-features = false }
 
-currencies = { version = "0.4.1-dev", package = "orml-currencies", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git" }
-orml-traits = { version = "0.4.1-dev", package = "orml-traits", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git" }
+currencies = { version = "0.4.1-dev", package = "orml-currencies", default-features = false, git = "https://github.com/KalitaAlexey/open-runtime-module-library.git", branch = "polkadot-0.9.8" }
+orml-traits = { version = "0.4.1-dev", package = "orml-traits", default-features = false, git = "https://github.com/KalitaAlexey/open-runtime-module-library.git", branch = "polkadot-0.9.8" }
 
-frame-support = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-frame-system = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+frame-support = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+frame-system = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
 
 serde = { version = "1.0.101", optional = true, features = ["derive"], default-features = false }
-sp-core = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-sp-runtime = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-sp-std = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-core = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+sp-runtime = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+sp-std = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
 
 assets = { path = "../assets", default-features = false }
 common = { path = "../../common", default-features = false }
@@ -36,11 +36,11 @@ trading-pair = { path = "../trading-pair", default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.3.1"
-pallet-balances = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-sp-io = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+pallet-balances = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+sp-io = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
 
 
-tokens = { version = "0.4.1-dev", package = "orml-tokens", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git" }
+tokens = { version = "0.4.1-dev", package = "orml-tokens", default-features = false, git = "https://github.com/KalitaAlexey/open-runtime-module-library.git", branch = "polkadot-0.9.8" }
 
 common = { path = "../../common", features = ["test"] }
 dex-manager = { path = "../dex-manager" }
@@ -51,13 +51,13 @@ trading-pair = { path = "../trading-pair" }
 
 [dev-dependencies.cumulus-pallet-parachain-system]
 git = 'https://github.com/paritytech/cumulus.git'
-branch = 'polkadot-v0.9.4'
+branch = 'polkadot-v0.9.8'
 default-features = false
 
 [dev-dependencies.parachain-info]
 default-features = false
 git = 'https://github.com/paritytech/cumulus.git'
-branch = 'polkadot-v0.9.4'
+branch = 'polkadot-v0.9.8'
 version = '0.1.0'
 
 [features]

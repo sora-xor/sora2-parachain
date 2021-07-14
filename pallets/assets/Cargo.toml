@@ -13,39 +13,39 @@ targets = ['x86_64-unknown-linux-gnu']
 [dependencies]
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
 
-currencies = { version = "0.4.1-dev", package = "orml-currencies", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git" }
+currencies = { version = "0.4.1-dev", package = "orml-currencies", default-features = false, git = "https://github.com/KalitaAlexey/open-runtime-module-library.git", branch = "polkadot-0.9.8" }
 
-frame-benchmarking = { version = "3", default-features = false, optional = true, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-frame-support = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-frame-system = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+frame-benchmarking = { version = "3", default-features = false, optional = true, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+frame-support = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+frame-system = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
 hex-literal = "0.2.1"
 serde = { version = "1.0.119", default-features = false, optional = true, features = ["derive"] }
-sp-core = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-sp-runtime = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-sp-std = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+sp-core = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+sp-runtime = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+sp-std = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 
-tokens = { version = "0.4.1-dev", package = "orml-tokens", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git" }
-traits = { version = "0.4.1-dev", package = "orml-traits", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library.git" }
+tokens = { version = "0.4.1-dev", package = "orml-tokens", default-features = false, git = "https://github.com/KalitaAlexey/open-runtime-module-library.git", branch = "polkadot-0.9.8" }
+traits = { version = "0.4.1-dev", package = "orml-traits", default-features = false, git = "https://github.com/KalitaAlexey/open-runtime-module-library.git", branch = "polkadot-0.9.8" }
 
 common = { path = "../../common", default-features = false }
 permissions = { path = "../permissions", default-features = false }
 
 [dev-dependencies]
-pallet-balances = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
-sp-io = { version = "3", default-features = false, branch = 'polkadot-v0.9.4', git = 'https://github.com/paritytech/substrate.git' }
+pallet-balances = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
+sp-io = { version = "3", default-features = false, branch = 'polkadot-v0.9.8', git = 'https://github.com/paritytech/substrate.git' }
 common = { path = "../../common", features = ["test"] }
 permissions = { path = "../permissions" }
 
 [dev-dependencies.cumulus-pallet-parachain-system]
 git = 'https://github.com/paritytech/cumulus.git'
-branch = 'polkadot-v0.9.4'
+branch = 'polkadot-v0.9.8'
 default-features = false
 
 [dev-dependencies.parachain-info]
 default-features = false
 git = 'https://github.com/paritytech/cumulus.git'
-branch = 'polkadot-v0.9.4'
+branch = 'polkadot-v0.9.8'
 version = '0.1.0'
 
 [features]
