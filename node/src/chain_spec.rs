@@ -180,7 +180,11 @@ fn genesis(
 			changes_trie_config: Default::default(),
 		},
 		balances: runtime::BalancesConfig {
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, 1 << 60))
+				.collect(),
 		},
 		parachain_info: runtime::ParachainInfoConfig { parachain_id: id },
 		sudo: runtime::SudoConfig { key: root_key },

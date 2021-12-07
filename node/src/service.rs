@@ -4,9 +4,7 @@
 use std::sync::Arc;
 
 // Local Runtime Types
-use runtime::{
-	opaque::Block, AccountId, Balance, Hash, Index as Nonce, RuntimeApi,
-};
+use runtime::{opaque::Block, AccountId, Balance, Hash, Index as Nonce, RuntimeApi};
 
 // Cumulus Imports
 use cumulus_client_consensus_aura::{
@@ -228,7 +226,7 @@ where
 	) -> Result<Box<dyn ParachainConsensus<Block>>, sc_service::Error>,
 {
 	if matches!(parachain_config.role, Role::Light) {
-		return Err("Light client not supported!".into())
+		return Err("Light client not supported!".into());
 	}
 
 	let parachain_config = prepare_node_config(parachain_config);
