@@ -62,13 +62,14 @@ pub fn template_session_keys(keys: AuraId) -> runtime::SessionKeys {
 	runtime::SessionKeys { aura: keys }
 }
 
-pub fn local_chain_spec(id: ParaId) -> ChainSpec {
+pub fn local_chain_spec() -> ChainSpec {
+	const PARA_ID: u32 = 2000;
 	ChainSpec::from_genesis(
 		// Name
 		"SORA parachain local",
 		// ID
 		"sora-parachain-local",
-		ChainType::Development,
+		ChainType::Local,
 		move || {
 			genesis(
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -97,21 +98,24 @@ pub fn local_chain_spec(id: ParaId) -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
-				id,
+				PARA_ID.into(),
 			)
 		},
+		// Bootnodes
 		Vec::new(),
+		// Telemetry
 		None,
-		None,
+		Some("sora-ksm-local"),
 		Some(properties()),
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: id.into(),
+			para_id: PARA_ID,
 		},
 	)
 }
 
-pub fn dev_chain_spec(id: ParaId) -> ChainSpec {
+pub fn dev_chain_spec() -> ChainSpec {
+	const PARA_ID: u32 = 2000;
 	ChainSpec::from_genesis(
 		// Name
 		"SORA parachain dev",
@@ -144,16 +148,18 @@ pub fn dev_chain_spec(id: ParaId) -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
-				id,
+				PARA_ID.into(),
 			)
 		},
+		// Bootnodes
 		Vec::new(),
+		// Telemetry
 		None,
-		None,
+		Some("sora-ksm-dev"),
 		Some(properties()),
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: id.into(),
+			para_id: PARA_ID,
 		},
 	)
 }
@@ -177,14 +183,9 @@ fn genesis(
 			code: runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
-			changes_trie_config: Default::default(),
 		},
 		balances: runtime::BalancesConfig {
-			balances: endowed_accounts
-				.iter()
-				.cloned()
-				.map(|k| (k, 1 << 60))
-				.collect(),
+			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
 		parachain_info: runtime::ParachainInfoConfig { parachain_id: id },
 		sudo: runtime::SudoConfig { key: root_key },
