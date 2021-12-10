@@ -3,7 +3,7 @@ FROM debian:buster-slim
 ENV RUSTUP_HOME="/opt/rust"
 ENV CARGO_HOME="/opt/rust"
 ENV PATH="$PATH:$RUSTUP_HOME/bin"
-ENV RUST_VERSION=nightly-2021-03-11
+ENV RUST_VERSION=nightly-2021-11-28
 # Install dependencies
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
