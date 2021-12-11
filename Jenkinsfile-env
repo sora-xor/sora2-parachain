@@ -3,7 +3,7 @@
 def pipeline = new org.docker.AppPipeline(steps: this,
     workerLabel: 'docker-build-agent',
     dockerFileName: 'housekeeping/docker/develop/Dockerfile',
-    dockerImageName: 'parachain-env',
+    dockerImageName: 'sora2/parachain-env',
     dockerRegistryCred: 'bot-sora2-rw',
     nameCI: 'env-CI',
     triggerCommonBuildExpression: (env.CHANGE_TARGET ==~ /master/),

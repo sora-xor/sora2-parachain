@@ -7,10 +7,10 @@ String imageName = 'docker.soramitsu.co.jp/sora2/polkadot-relaychain'
 
 properties([
     parameters([
-        string(defaultValue: '56d0154', name: 'polkadotCommit', trim: true, description: 'It MUST be short version hash')
+        string(defaultValue: '7d8f00b', name: 'polkadotCommit', trim: true, description: 'It MUST be short version hash')
     ])
 ])
- 
+
 pipeline {
     options {
         buildDiscarder(logRotator(numToKeepStr: '20'))
@@ -49,14 +49,10 @@ pipeline {
         }
     }
     post {
-        success {
-            script { gitNotify('polkadot-CI', 'SUCCESS', 'Success')}
-        }
-        failure {
-            script { gitNotify('polkadot-CI', 'FAILURE', 'Failure')}
-        }
-        aborted {
-            script { gitNotify('polkadot-CI', 'FAILURE', 'Aborted')}
+        always {
+            script{
+                gitNotify('main-CI', currentBuild.result, currentBuild.result)
+            }
         }
         cleanup { cleanWs() }
     }
