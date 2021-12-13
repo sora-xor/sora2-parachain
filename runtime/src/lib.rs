@@ -8,7 +8,11 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_core::{
+	crypto::KeyTypeId,
+	u32_trait::{_1, _2, _3},
+	OpaqueMetadata,
+};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
@@ -23,7 +27,7 @@ use sp_version::RuntimeVersion;
 
 use frame_support::{
 	construct_runtime, match_type, parameter_types,
-	traits::{Everything, Nothing},
+	traits::{EqualPrivilegeOnly, Everything, Nothing},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
 		DispatchClass, IdentityFee, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
@@ -33,7 +37,7 @@ use frame_support::{
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
-	EnsureRoot,
+	EnsureOneOf, EnsureRoot,
 };
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
@@ -115,6 +119,19 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPallets,
+>;
+
+type CouncilCollective = pallet_collective::Instance1;
+type TechnicalCollective = pallet_collective::Instance2;
+type AtLeastHalfCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, CouncilCollective>,
+	EnsureRoot<AccountId>,
+>;
+type AtLeastTwoThirdsCouncil = EnsureOneOf<
+	AccountId,
+	pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>,
+	EnsureRoot<AccountId>,
 >;
 
 /// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
@@ -381,6 +398,117 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
+parameter_types! {
+	pub const CouncilCollectiveMotionDuration: BlockNumber = 5 * DAYS;
+	pub const CouncilCollectiveMaxProposals: u32 = 100;
+	pub const CouncilCollectiveMaxMembers: u32 = 100;
+}
+
+impl pallet_collective::Config<CouncilCollective> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = CouncilCollectiveMotionDuration;
+	type MaxProposals = CouncilCollectiveMaxProposals;
+	type MaxMembers = CouncilCollectiveMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const TechnicalCollectiveMotionDuration: BlockNumber = 5 * DAYS;
+	pub const TechnicalCollectiveMaxProposals: u32 = 100;
+	pub const TechnicalCollectiveMaxMembers: u32 = 100;
+}
+
+impl pallet_collective::Config<TechnicalCollective> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = TechnicalCollectiveMotionDuration;
+	type MaxProposals = TechnicalCollectiveMaxProposals;
+	type MaxMembers = TechnicalCollectiveMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const DemocracyEnactmentPeriod: BlockNumber = 30 * DAYS;
+	pub const DemocracyLaunchPeriod: BlockNumber = 28 * DAYS;
+	pub const DemocracyVotingPeriod: BlockNumber = 14 * DAYS;
+	pub const DemocracyMinimumDeposit: Balance = 1E18 as Balance;
+	pub const DemocracyFastTrackVotingPeriod: BlockNumber = 3 * HOURS;
+	pub const DemocracyInstantAllowed: bool = true;
+	pub const DemocracyCooloffPeriod: BlockNumber = 28 * DAYS;
+	pub const DemocracyPreimageByteDeposit: Balance = 2E12 as Balance; // 2 * 10^-6, 5 MiB -> 10.48576 XOR
+	pub const DemocracyMaxVotes: u32 = 100;
+	pub const DemocracyMaxProposals: u32 = 100;
+}
+
+impl pallet_democracy::Config for Runtime {
+	type Proposal = Call;
+	type Event = Event;
+	type Currency = Balances;
+	type EnactmentPeriod = DemocracyEnactmentPeriod;
+	type LaunchPeriod = DemocracyLaunchPeriod;
+	type VotingPeriod = DemocracyVotingPeriod;
+	type VoteLockingPeriod = DemocracyEnactmentPeriod;
+	type MinimumDeposit = DemocracyMinimumDeposit;
+	/// `external_propose` call condition
+	type ExternalOrigin = AtLeastHalfCouncil;
+	/// A super-majority can have the next scheduled referendum be a straight majority-carries vote.
+	/// `external_propose_majority` call condition
+	type ExternalMajorityOrigin = AtLeastHalfCouncil;
+	/// `external_propose_default` call condition
+	type ExternalDefaultOrigin = AtLeastHalfCouncil;
+	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
+	/// be tabled immediately and with a shorter voting/enactment period.
+	type FastTrackOrigin = EnsureOneOf<
+		AccountId,
+		pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, TechnicalCollective>,
+		EnsureRoot<AccountId>,
+	>;
+	type InstantOrigin = EnsureOneOf<
+		AccountId,
+		pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, TechnicalCollective>,
+		EnsureRoot<AccountId>,
+	>;
+	type InstantAllowed = DemocracyInstantAllowed;
+	type FastTrackVotingPeriod = DemocracyFastTrackVotingPeriod;
+	/// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
+	/// `emergency_cancel` call condition.
+	type CancellationOrigin = AtLeastTwoThirdsCouncil;
+	type CancelProposalOrigin = AtLeastTwoThirdsCouncil;
+	type BlacklistOrigin = EnsureRoot<AccountId>;
+	/// `veto_external` - vetoes and blacklists the external proposal hash
+	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
+	type CooloffPeriod = DemocracyCooloffPeriod;
+	type PreimageByteDeposit = DemocracyPreimageByteDeposit;
+	type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
+	type Slash = ();
+	type Scheduler = Scheduler;
+	type PalletsOrigin = OriginCaller;
+	type MaxVotes = DemocracyMaxVotes;
+	type WeightInfo = ();
+	type MaxProposals = DemocracyMaxProposals;
+}
+
+parameter_types! {
+	pub const SchedulerMaxWeight: Weight = 1024;
+}
+
+impl pallet_scheduler::Config for Runtime {
+	type Event = Event;
+	type Origin = Origin;
+	type PalletsOrigin = OriginCaller;
+	type Call = Call;
+	type MaximumWeight = SchedulerMaxWeight;
+	type ScheduleOrigin = frame_system::EnsureRoot<AccountId>;
+	type OriginPrivilegeCmp = EqualPrivilegeOnly;
+	type MaxScheduledPerBlock = ();
+	type WeightInfo = ();
+}
+
 impl cumulus_pallet_aura_ext::Config for Runtime {}
 
 parameter_types! {
@@ -599,24 +727,28 @@ construct_runtime!(
 		} = 1,
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
 		ParachainInfo: parachain_info::{Pallet, Storage, Config} = 3,
-		Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 5,
+		Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 4,
+		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 5,
+		TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 6,
+		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 7,
+		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Config, Event<T>} = 8,
 
 		// Monetary stuff.
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
-		TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 11,
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 9,
+		TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 10,
 
 		// Collator support. The order of these 4 are important and shall not change.
-		Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
-		CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
-		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
-		Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
-		AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 24,
+		Authorship: pallet_authorship::{Pallet, Call, Storage} = 11,
+		CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 12,
+		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 13,
+		Aura: pallet_aura::{Pallet, Storage, Config<T>} = 14,
+		AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 15,
 
 		// XCM helpers.
-		XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,
-		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin} = 31,
-		CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 32,
-		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
+		XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 16,
+		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin} = 17,
+		CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 18,
+		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 19,
 	}
 );
 

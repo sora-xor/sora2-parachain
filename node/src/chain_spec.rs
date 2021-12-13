@@ -188,7 +188,7 @@ fn genesis(
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
 		parachain_info: runtime::ParachainInfoConfig { parachain_id: id },
-		sudo: runtime::SudoConfig { key: root_key },
+		sudo: runtime::SudoConfig { key: root_key.clone() },
 		collator_selection: runtime::CollatorSelectionConfig {
 			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
 			candidacy_bond: 0,
@@ -211,5 +211,15 @@ fn genesis(
 		aura: Default::default(),
 		aura_ext: Default::default(),
 		parachain_system: Default::default(),
+		council: runtime::CouncilConfig {
+			phantom: Default::default(),
+			members: vec![root_key.clone()],
+		},
+		technical_committee: runtime::TechnicalCommitteeConfig {
+			phantom: Default::default(),
+			members: vec![root_key],
+		},
+		democracy: runtime::DemocracyConfig::default(),
+		scheduler: runtime::SchedulerConfig {},
 	}
 }
