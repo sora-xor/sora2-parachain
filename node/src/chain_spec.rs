@@ -1,6 +1,5 @@
 use cumulus_primitives_core::ParaId;
-use hex_literal::hex;
-use runtime::{AccountId, AuraId, Signature};
+use parachain_template_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -8,7 +7,8 @@ use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec = sc_service::GenericChainSpec<runtime::GenesisConfig, Extensions>;
+pub type ChainSpec =
+	sc_service::GenericChainSpec<parachain_template_runtime::GenesisConfig, Extensions>;
 
 /// Helper function to generate a crypto pair from seed
 pub fn get_public_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -51,27 +51,28 @@ where
 	AccountPublic::from(get_public_from_seed::<TPublic>(seed)).into_account()
 }
 
-fn get_account_keys(key: [u8; 32]) -> (AccountId, AuraId) {
-	(key.into(), AuraId::from_slice(&key))
-}
-
 /// Generate the session keys from individual elements.
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn template_session_keys(keys: AuraId) -> runtime::SessionKeys {
-	runtime::SessionKeys { aura: keys }
+pub fn template_session_keys(keys: AuraId) -> parachain_template_runtime::SessionKeys {
+	parachain_template_runtime::SessionKeys { aura: keys }
 }
 
-pub fn local_chain_spec() -> ChainSpec {
-	const PARA_ID: u32 = 2000;
+pub fn development_config() -> ChainSpec {
+	// Give your base currency a unit name and decimal places
+	let mut properties = sc_chain_spec::Properties::new();
+	properties.insert("tokenSymbol".into(), "XOR".into());
+	properties.insert("tokenDecimals".into(), 18u64.into());
+	properties.insert("ss58Format".into(), parachain_template_runtime::SS58Prefix::get().into());
+
 	ChainSpec::from_genesis(
 		// Name
-		"SORA parachain local",
+		"SORA Kusama",
 		// ID
-		"sora-parachain-local",
-		ChainType::Local,
+		"sora_ksm_dev",
+		ChainType::Development,
 		move || {
-			genesis(
+			testnet_genesis(
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				// initial collators.
 				vec![
@@ -98,41 +99,46 @@ pub fn local_chain_spec() -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
-				PARA_ID.into(),
+				2000u32.into(),
 			)
 		},
-		// Bootnodes
 		Vec::new(),
-		// Telemetry
 		None,
-		Some("sora-ksm-local"),
-		Some(properties()),
+		Some("sora_ksm_dev"),
+		None,
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: PARA_ID,
+			para_id: 2000,
 		},
 	)
 }
 
-pub fn dev_chain_spec() -> ChainSpec {
-	const PARA_ID: u32 = 2000;
+pub fn local_config() -> ChainSpec {
+	// Give your base currency a unit name and decimal places
+	let mut properties = sc_chain_spec::Properties::new();
+	properties.insert("tokenSymbol".into(), "XOR".into());
+	properties.insert("tokenDecimals".into(), 18u64.into());
+	properties.insert("ss58Format".into(), parachain_template_runtime::SS58Prefix::get().into());
+
 	ChainSpec::from_genesis(
 		// Name
-		"SORA parachain dev",
+		"SORA Kusama",
 		// ID
-		"sora-parachain-dev",
-		ChainType::Development,
+		"sora_ksm_local",
+		ChainType::Local,
 		move || {
-			genesis(
+			testnet_genesis(
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				// initial collators.
 				vec![
-					get_account_keys(hex!(
-						"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
-					)),
-					get_account_keys(hex!(
-						"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
-					)),
+					(
+						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						get_collator_keys_from_seed("Alice"),
+					),
+					(
+						get_account_id_from_seed::<sr25519::Public>("Bob"),
+						get_collator_keys_from_seed("Bob"),
+					),
 				],
 				vec![
 					get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -148,53 +154,47 @@ pub fn dev_chain_spec() -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
-				PARA_ID.into(),
+				2000u32.into(),
 			)
 		},
 		// Bootnodes
 		Vec::new(),
 		// Telemetry
 		None,
-		Some("sora-ksm-dev"),
-		Some(properties()),
+		// Protocol ID
+		Some("sora_ksm_local"),
+		// Properties
+		Some(properties),
+		// Extensions
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: PARA_ID,
+			para_id: 2000,
 		},
 	)
 }
 
-fn properties() -> sc_chain_spec::Properties {
-	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("ss58Format".into(), runtime::SS58Prefix::get().into());
-	properties.insert("tokenSymbol".into(), "XOR".into());
-	properties.insert("tokenDecimals".into(), 18u64.into());
-	properties
-}
-
-fn genesis(
+fn testnet_genesis(
 	root_key: AccountId,
 	invulnerables: Vec<(AccountId, AuraId)>,
 	endowed_accounts: Vec<AccountId>,
 	id: ParaId,
-) -> runtime::GenesisConfig {
-	runtime::GenesisConfig {
-		system: runtime::SystemConfig {
-			code: runtime::WASM_BINARY
+) -> parachain_template_runtime::GenesisConfig {
+	parachain_template_runtime::GenesisConfig {
+		system: parachain_template_runtime::SystemConfig {
+			code: parachain_template_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
 		},
-		balances: runtime::BalancesConfig {
+		balances: parachain_template_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
-		parachain_info: runtime::ParachainInfoConfig { parachain_id: id },
-		sudo: runtime::SudoConfig { key: root_key },
-		collator_selection: runtime::CollatorSelectionConfig {
+		parachain_info: parachain_template_runtime::ParachainInfoConfig { parachain_id: id },
+		collator_selection: parachain_template_runtime::CollatorSelectionConfig {
 			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
 			candidacy_bond: 0,
 			desired_candidates: 0,
 		},
-		session: runtime::SessionConfig {
+		session: parachain_template_runtime::SessionConfig {
 			keys: invulnerables
 				.into_iter()
 				.map(|(acc, aura)| {
@@ -211,5 +211,6 @@ fn genesis(
 		aura: Default::default(),
 		aura_ext: Default::default(),
 		parachain_system: Default::default(),
+		sudo: parachain_template_runtime::SudoConfig { key: root_key },
 	}
 }
