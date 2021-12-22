@@ -18,6 +18,12 @@ use sp_core::hexdisplay::HexDisplay;
 use sp_runtime::traits::Block as BlockT;
 use std::{io::Write, net::SocketAddr};
 
+fn set_default_ss58_version() {
+    sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::custom(
+        parachain_template_runtime::SS58Prefix::get() as u16,
+    ));
+}
+
 fn load_spec(id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 	Ok(match id {
 		"dev" => Box::new(chain_spec::development_config()),
@@ -136,30 +142,36 @@ pub fn run() -> Result<()> {
 
 	match &cli.subcommand {
 		Some(Subcommand::BuildSpec(cmd)) => {
+			set_default_ss58_version();
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
 		},
 		Some(Subcommand::CheckBlock(cmd)) => {
+			set_default_ss58_version();
 			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, components.import_queue))
 			})
 		},
 		Some(Subcommand::ExportBlocks(cmd)) => {
+			set_default_ss58_version();
 			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, config.database))
 			})
 		},
 		Some(Subcommand::ExportState(cmd)) => {
+			set_default_ss58_version();
 			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, config.chain_spec))
 			})
 		},
 		Some(Subcommand::ImportBlocks(cmd)) => {
+			set_default_ss58_version();
 			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, components.import_queue))
 			})
 		},
 		Some(Subcommand::PurgeChain(cmd)) => {
+			set_default_ss58_version();
 			let runner = cli.create_runner(cmd)?;
 
 			runner.sync_run(|config| {
@@ -179,11 +191,13 @@ pub fn run() -> Result<()> {
 			})
 		},
 		Some(Subcommand::Revert(cmd)) => {
+			set_default_ss58_version();
 			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, components.backend))
 			})
 		},
 		Some(Subcommand::ExportGenesisState(params)) => {
+			set_default_ss58_version();
 			let mut builder = sc_cli::LoggerBuilder::new("");
 			builder.with_profiling(sc_tracing::TracingReceiver::Log, "");
 			let _ = builder.init();
@@ -206,6 +220,7 @@ pub fn run() -> Result<()> {
 			Ok(())
 		},
 		Some(Subcommand::ExportGenesisWasm(params)) => {
+			set_default_ss58_version();
 			let mut builder = sc_cli::LoggerBuilder::new("");
 			builder.with_profiling(sc_tracing::TracingReceiver::Log, "");
 			let _ = builder.init();
@@ -237,6 +252,7 @@ pub fn run() -> Result<()> {
 					.into())
 			},
 		None => {
+			set_default_ss58_version();
 			let runner = cli.create_runner(&cli.run.normalize())?;
 
 			runner.run_node_until_exit(|config| async move {
