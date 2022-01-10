@@ -59,6 +59,68 @@ pub fn template_session_keys(keys: AuraId) -> parachain_template_runtime::Sessio
 	parachain_template_runtime::SessionKeys { aura: keys }
 }
 
+pub fn kusama_config() -> ChainSpec {
+	// Give your base currency a unit name and decimal places
+	let mut properties = sc_chain_spec::Properties::new();
+	properties.insert("tokenSymbol".into(), "XOR".into());
+	properties.insert("tokenDecimals".into(), 18u64.into());
+	properties.insert("ss58Format".into(), parachain_template_runtime::SS58Prefix::get().into());
+
+	ChainSpec::from_genesis(
+		// Name
+		"SORA Kusama",
+		// ID
+		"sora_ksm",
+		ChainType::Live,
+		move || {
+			testnet_genesis(
+				AccountId::from(hex!(
+					"de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058"
+				)),
+				// initial collators.
+				vec![
+					(
+						AccountId::from(hex!(
+							"ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"
+						)),
+						AuraId::from_slice(&hex!(
+							"ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"
+						)),
+					),
+					(
+						AccountId::from(hex!(
+							"f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"
+						)),
+						AuraId::from_slice(&hex!(
+							"f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"
+						)),
+					),
+				],
+				vec![
+					AccountId::from(hex!(
+						"de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058"
+					)),
+					AccountId::from(hex!(
+						"ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"
+					)),
+					AccountId::from(hex!(
+						"f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"
+					)),
+				],
+				2011u32.into(),
+			)
+		},
+		Vec::new(),
+		None,
+		Some("sora_ksm"),
+		None,
+		Extensions {
+			relay_chain: "kusama".into(), // You MUST set this to the correct network!
+			para_id: 2011,
+		},
+	)
+}
+
 pub fn development_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
@@ -194,7 +256,7 @@ fn testnet_genesis(
 				.to_vec(),
 		},
 		balances: parachain_template_runtime::BalancesConfig {
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
+			balances: endowed_accounts.iter().cloned().map(|k| (k, 1_000_000_000_000_000_000)).collect(),
 		},
 		parachain_info: parachain_template_runtime::ParachainInfoConfig { parachain_id: id },
 		collator_selection: parachain_template_runtime::CollatorSelectionConfig {
