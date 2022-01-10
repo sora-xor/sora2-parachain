@@ -59,7 +59,7 @@ pub fn template_session_keys(keys: AuraId) -> parachain_template_runtime::Sessio
 	parachain_template_runtime::SessionKeys { aura: keys }
 }
 
-pub fn kusama_config() -> ChainSpec {
+pub fn kusama_config(relay_chain: String) -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "XOR".into());
@@ -115,7 +115,7 @@ pub fn kusama_config() -> ChainSpec {
 		Some("sora_ksm"),
 		None,
 		Extensions {
-			relay_chain: "kusama".into(), // You MUST set this to the correct network!
+			relay_chain,
 			para_id: 2011,
 		},
 	)
