@@ -19,15 +19,17 @@ use sp_runtime::traits::Block as BlockT;
 use std::{io::Write, net::SocketAddr};
 
 fn set_default_ss58_version() {
-    sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::custom(
-        parachain_template_runtime::SS58Prefix::get() as u16,
-    ));
+	sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::custom(
+		parachain_template_runtime::SS58Prefix::get() as u16,
+	));
 }
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 	Ok(match id {
 		"dev" => Box::new(chain_spec::development_config()),
 		"" | "local" => Box::new(chain_spec::local_config()),
+		"kusama" => Box::new(chain_spec::kusama_config("kusama".to_owned())),
+		"kusama-rococo-local" => Box::new(chain_spec::kusama_config("rococo-local".to_owned())),
 		path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
 	})
 }
