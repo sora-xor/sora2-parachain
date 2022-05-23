@@ -1,9 +1,10 @@
 use cumulus_primitives_core::ParaId;
+use hex_literal::hex;
 use parachain_template_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
-use sp_core::{sr25519, Pair, Public};
+use sp_core::{sr25519, ByteArray, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
@@ -134,27 +135,34 @@ pub fn local_testnet_config() -> ChainSpec {
 				// initial collators.
 				vec![
 					(
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
-						get_collator_keys_from_seed("Alice"),
+						AccountId::from(hex!(
+							"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
+						)),
+						AuraId::from_slice(&hex!(
+							"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
+						))
+						.unwrap(),
 					),
 					(
-						get_account_id_from_seed::<sr25519::Public>("Bob"),
-						get_collator_keys_from_seed("Bob"),
+						AccountId::from(hex!(
+							"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
+						)),
+						AuraId::from_slice(&hex!(
+							"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
+						))
+						.unwrap(),
 					),
 				],
 				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
-					get_account_id_from_seed::<sr25519::Public>("Dave"),
-					get_account_id_from_seed::<sr25519::Public>("Eve"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+					AccountId::from(hex!(
+						"e02b00cb5bbf5c0338075237cdbfb7d11dbaf19aafce71744610b6a87b5e0f22"
+					)),
+					AccountId::from(hex!(
+						"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
+					)),
+					AccountId::from(hex!(
+						"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
+					)),
 				],
 				1000.into(),
 			)
