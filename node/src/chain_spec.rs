@@ -135,6 +135,10 @@ pub fn local_testnet_config() -> ChainSpec {
 				// initial collators.
 				vec![
 					(
+						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						get_collator_keys_from_seed("Alice"),
+					),
+					(
 						AccountId::from(hex!(
 							"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
 						)),
