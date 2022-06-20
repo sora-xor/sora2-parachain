@@ -1,5 +1,5 @@
 use crate::{
-	chain_spec,
+	chain_spec::{self, RelayChain},
 	cli::{Cli, RelayChainCli, Subcommand},
 	service::{new_partial, TemplateRuntimeExecutor},
 };
@@ -24,6 +24,8 @@ use std::{io::Write, net::SocketAddr};
 fn load_spec(id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 	Ok(match id {
 		"dev" => Box::new(chain_spec::development_config()),
+		"kusama" => Box::new(chain_spec::kusama_config(RelayChain::Kusama)),
+		"rococo" => Box::new(chain_spec::kusama_config(RelayChain::Rococo)),
 		"template-rococo" => Box::new(chain_spec::local_testnet_config()),
 		"" | "local" => Box::new(chain_spec::local_testnet_config()),
 		path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),

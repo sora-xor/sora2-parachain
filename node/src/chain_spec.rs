@@ -40,6 +40,44 @@ impl Extensions {
 
 type AccountPublic = <Signature as Verify>::Signer;
 
+pub enum RelayChain {
+	Kusama,
+	Rococo,
+}
+
+impl RelayChain {
+	pub fn name(&self) -> &'static str {
+		match self {
+			RelayChain::Kusama => "SORA Kusama",
+			RelayChain::Rococo => "SORA Rococo",
+		}
+	}
+
+	pub fn id(&self) -> &'static str {
+		match self {
+			RelayChain::Kusama => "sora_kusama",
+			RelayChain::Rococo => "sora_rococo",
+		}
+	}
+
+	pub fn root_key(&self) -> AccountId {
+		let bytes = match self {
+			RelayChain::Kusama =>
+				hex!("de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058"),
+			RelayChain::Rococo =>
+				hex!("54fd1e1728cd833d21da6f3e36c50884062e35edfc24aec7a70c18a60451255a"),
+		};
+		AccountId::from(bytes)
+	}
+
+	pub fn relay_chain(&self) -> &'static str {
+		match self {
+			RelayChain::Kusama => "kusama",
+			RelayChain::Rococo => "rococo",
+		}
+	}
+}
+
 /// Generate collator keys from seed.
 ///
 /// This function's return type must always match the session keys of the chain in tuple format.
@@ -62,6 +100,66 @@ pub fn template_session_keys(keys: AuraId) -> parachain_template_runtime::Sessio
 	parachain_template_runtime::SessionKeys { aura: keys }
 }
 
+pub fn kusama_config(relay_chain: RelayChain) -> ChainSpec {
+	// Give your base currency a unit name and decimal places
+	let mut properties = sc_chain_spec::Properties::new();
+	properties.insert("tokenSymbol".into(), "XOR".into());
+	properties.insert("tokenDecimals".into(), 18u64.into());
+	properties.insert("ss58Format".into(), parachain_template_runtime::SS58Prefix::get().into());
+	let root_key = relay_chain.root_key();
+	ChainSpec::from_genesis(
+		// Name
+		relay_chain.name(),
+		// ID
+		relay_chain.id(),
+		ChainType::Live,
+		move || {
+			testnet_genesis(
+				root_key.clone(),
+				// initial collators.
+				vec![
+					(
+						AccountId::from(hex!(
+							"ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"
+						)),
+						AuraId::from_slice(&hex!(
+							"ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"
+						))
+						.unwrap(),
+					),
+					(
+						AccountId::from(hex!(
+							"f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"
+						)),
+						AuraId::from_slice(&hex!(
+							"f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"
+						))
+						.unwrap(),
+					),
+				],
+				vec![
+					AccountId::from(hex!(
+						"de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058"
+					)),
+					AccountId::from(hex!(
+						"ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"
+					)),
+					AccountId::from(hex!(
+						"f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"
+					)),
+				],
+				2011u32.into(),
+			)
+		},
+		Vec::new(),
+		None,
+		Some(relay_chain.id()),
+		None,
+		Some(properties),
+		Extensions { relay_chain: relay_chain.relay_chain().to_owned(), para_id: 2011 },
+	)
+}
+
 pub fn development_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
@@ -77,6 +175,7 @@ pub fn development_config() -> ChainSpec {
 		ChainType::Development,
 		move || {
 			testnet_genesis(
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				// initial collators.
 				vec![
 					(
@@ -132,6 +231,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		ChainType::Local,
 		move || {
 			testnet_genesis(
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				// initial collators.
 				vec![
 					(
@@ -190,6 +290,7 @@ pub fn local_testnet_config() -> ChainSpec {
 }
 
 fn testnet_genesis(
+	root_key: AccountId,
 	invulnerables: Vec<(AccountId, AuraId)>,
 	endowed_accounts: Vec<AccountId>,
 	id: ParaId,
@@ -229,5 +330,6 @@ fn testnet_genesis(
 		polkadot_xcm: parachain_template_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
+		sudo: parachain_template_runtime::SudoConfig { key: Some(root_key) },
 	}
 }
