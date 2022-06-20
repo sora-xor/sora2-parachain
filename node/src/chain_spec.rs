@@ -70,6 +70,29 @@ impl RelayChain {
 		AccountId::from(bytes)
 	}
 
+	pub fn session_keys(&self) -> Vec<(AccountId, AuraId)> {
+		let public_keys = match self {
+			RelayChain::Kusama => vec![
+				hex!("ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"),
+				hex!("f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"),
+			],
+			RelayChain::Rococo => vec![
+				hex!("caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"),
+				hex!("3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"),
+			],
+		};
+		public_keys
+			.into_iter()
+			.map(|x| (AccountId::from(x), AuraId::from_slice(&x).unwrap()))
+			.collect()
+	}
+
+	pub fn endowed_accounts(&self) -> Vec<AccountId> {
+		std::iter::once(self.root_key())
+			.chain(self.session_keys().into_iter().map(|x| x.0))
+			.collect()
+	}
+
 	pub fn relay_chain(&self) -> &'static str {
 		match self {
 			RelayChain::Kusama => "kusama",
@@ -107,6 +130,8 @@ pub fn kusama_config(relay_chain: RelayChain) -> ChainSpec {
 	properties.insert("tokenDecimals".into(), 18u64.into());
 	properties.insert("ss58Format".into(), parachain_template_runtime::SS58Prefix::get().into());
 	let root_key = relay_chain.root_key();
+	let session_keys = relay_chain.session_keys();
+	let endowed_accounts = relay_chain.endowed_accounts();
 	ChainSpec::from_genesis(
 		// Name
 		relay_chain.name(),
@@ -116,38 +141,8 @@ pub fn kusama_config(relay_chain: RelayChain) -> ChainSpec {
 		move || {
 			testnet_genesis(
 				root_key.clone(),
-				// initial collators.
-				vec![
-					(
-						AccountId::from(hex!(
-							"ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"
-						)),
-						AuraId::from_slice(&hex!(
-							"ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"
-						))
-						.unwrap(),
-					),
-					(
-						AccountId::from(hex!(
-							"f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"
-						)),
-						AuraId::from_slice(&hex!(
-							"f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"
-						))
-						.unwrap(),
-					),
-				],
-				vec![
-					AccountId::from(hex!(
-						"de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058"
-					)),
-					AccountId::from(hex!(
-						"ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"
-					)),
-					AccountId::from(hex!(
-						"f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"
-					)),
-				],
+				session_keys.clone(),
+				endowed_accounts.clone(),
 				2011u32.into(),
 			)
 		},
