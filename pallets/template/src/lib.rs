@@ -78,7 +78,7 @@ pub mod pallet {
 			<Something<T>>::put(something);
 
 			// Emit an event.
-			Self::deposit_event(Event::SomethingStored(something * 5, who));
+			Self::deposit_event(Event::SomethingStored(something, who));
 			// Return a successful DispatchResultWithPostInfo
 			Ok(().into())
 		}
