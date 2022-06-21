@@ -123,7 +123,11 @@ pub fn template_session_keys(keys: AuraId) -> parachain_template_runtime::Sessio
 	parachain_template_runtime::SessionKeys { aura: keys }
 }
 
-pub fn kusama_config(relay_chain: RelayChain) -> ChainSpec {
+pub fn rococo_chain_spec() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../res/rococo.json")[..])
+}
+
+pub fn raw_config(relay_chain: RelayChain) -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "XOR".into());
