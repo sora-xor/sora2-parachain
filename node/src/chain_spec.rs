@@ -123,6 +123,10 @@ pub fn template_session_keys(keys: AuraId) -> parachain_template_runtime::Sessio
 	parachain_template_runtime::SessionKeys { aura: keys }
 }
 
+pub fn kusama_chain_spec() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../res/kusama.json")[..])
+}
+
 pub fn rococo_chain_spec() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(&include_bytes!("../res/rococo.json")[..])
 }
