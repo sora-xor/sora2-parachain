@@ -54,7 +54,7 @@ use xcm::latest::prelude::BodyId;
 use xcm_executor::XcmExecutor;
 
 /// Import the template pallet.
-pub use pallet_template;
+// pub use pallet_template;
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = MultiSignature;
@@ -394,6 +394,7 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ControllerOrigin = EnsureRoot<AccountId>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type WeightInfo = ();
+	type PriceForSiblingDelivery = ();
 }
 
 impl cumulus_pallet_dmp_queue::Config for Runtime {
@@ -457,9 +458,9 @@ impl pallet_collator_selection::Config for Runtime {
 }
 
 /// Configure the pallet template in pallets/template.
-impl pallet_template::Config for Runtime {
-	type Event = Event;
-}
+// impl pallet_template::Config for Runtime {
+// 	type Event = Event;
+// }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -495,7 +496,7 @@ construct_runtime!(
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 
 		// Template
-		TemplatePallet: pallet_template::{Pallet, Call, Storage, Event<T>}  = 40,
+		// TemplatePallet: pallet_template::{Pallet, Call, Storage, Event<T>}  = 40,
 	}
 );
 
@@ -715,3 +716,80 @@ cumulus_pallet_parachain_system::register_validate_block! {
 	BlockExecutor = cumulus_pallet_aura_ext::BlockExecutor::<Runtime, Executive>,
 	CheckInherents = CheckInherents,
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// pub struct XcmExecutor<Config: config::Config> {
+// 	holding: Assets,
+// 	holding_limit: usize,
+// 	context: XcmContext,
+// 	original_origin: MultiLocation,
+// 	trader: Config::Trader,
+// 	/// The most recent error result and instruction index into the fragment in which it occurred,
+// 	/// if any.
+// 	error: Option<(u32, XcmError)>,
+// 	/// The surplus weight, defined as the amount by which `max_weight` is
+// 	/// an over-estimate of the actual weight consumed. We do it this way to avoid needing the
+// 	/// execution engine to keep track of all instructions' weights (it only needs to care about
+// 	/// the weight of dynamically determined instructions such as `Transact`).
+// 	total_surplus: u64,
+// 	total_refunded: u64,
+// 	error_handler: Xcm<Config::Call>,
+// 	error_handler_weight: u64,
+// 	appendix: Xcm<Config::Call>,
+// 	appendix_weight: u64,
+// 	transact_status: MaybeErrorCode,
+// 	fees_mode: FeesMode,
+// 	topic: Option<[u8; 32]>,
+// 	_config: PhantomData<Config>,
+// }
+
+// impl pallet_xcm::Config for Runtime {
+// 	type Event = Event;
+// 	type SendXcmOrigin = EnsureXcmOrigin<Origin, LocalOriginToLocation>;
+// 	type XcmRouter = XcmRouter;
+// 	type ExecuteXcmOrigin = EnsureXcmOrigin<Origin, LocalOriginToLocation>;
+// 	type XcmExecuteFilter = Everything;
+// 	type XcmExecutor = XcmExecutor<XcmConfig>;
+// 	type XcmTeleportFilter = Everything;
+// 	type XcmReserveTransferFilter = Everything;
+// 	type Weigher = XcmWeigher;
+// 	type Origin = Origin;
+// 	type Call = Call;
+// 	const VERSION_DISCOVERY_QUEUE_SIZE: u32 = 100;
+// 	type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
+// 	type Currency = Balances;
+// 	type CurrencyMatcher = ();
+// 	type TrustedLockers = ();
+// 	type SovereignAccountOf = ();
+// 	type MaxLockers = frame_support::traits::ConstU32<8>;
+// 	type UniversalLocation = UniversalLocation;
+// }
+
+// impl cumulus_pallet_xcm::Config for Runtime {
+// 	type Event = Event;
+// 	type XcmExecutor = XcmExecutor<XcmConfig>;
+// }
+
+// /// No local origins on this chain are allowed to dispatch XCM sends/executions.
+// pub type LocalOriginToLocation = SignedToAccountId32<Origin, AccountId, RelayNetwork>;
+
+// /// The means for routing XCM messages which are not for local execution into the right message
+// /// queues.
+// pub type XcmRouter = (
+// 	// Two routers - use UMP to communicate with the relay chain:
+// 	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, (), ()>,
+// 	// ..and XCMP to communicate with the sibling chains.
+// 	XcmpQueue,
+// );
