@@ -427,7 +427,7 @@ pub mod pallet {
 							dispatch_weight,
 							dispatch_weight_left,
 						);
-						break
+						break;
 					}
 					total_messages += 1;
 
@@ -452,9 +452,9 @@ pub mod pallet {
 								!dispatch_result.dispatch_fee_paid_during_dispatch,
 							)
 						},
-						ReceivalResult::InvalidNonce |
-						ReceivalResult::TooManyUnrewardedRelayers |
-						ReceivalResult::TooManyUnconfirmedMessages => (dispatch_weight, true),
+						ReceivalResult::InvalidNonce
+						| ReceivalResult::TooManyUnrewardedRelayers
+						| ReceivalResult::TooManyUnconfirmedMessages => (dispatch_weight, true),
 					};
 
 					let unspent_weight = sp_std::cmp::min(unspent_weight, dispatch_weight);
@@ -531,10 +531,10 @@ pub mod pallet {
 			// (we only care about total number of entries and messages, because this affects call
 			// weight)
 			ensure!(
-				total_unrewarded_messages(&lane_data.relayers).unwrap_or(MessageNonce::MAX) ==
-					relayers_state.total_messages &&
-					lane_data.relayers.len() as MessageNonce ==
-						relayers_state.unrewarded_relayer_entries,
+				total_unrewarded_messages(&lane_data.relayers).unwrap_or(MessageNonce::MAX)
+					== relayers_state.total_messages
+					&& lane_data.relayers.len() as MessageNonce
+						== relayers_state.unrewarded_relayer_entries,
 				Error::<T, I>::InvalidUnrewardedRelayersState
 			);
 			// the `last_delivered_nonce` field may also be used by the signed extension. Even
@@ -552,8 +552,9 @@ pub mod pallet {
 				last_delivered_nonce,
 				&lane_data.relayers,
 			) {
-				ReceivalConfirmationResult::ConfirmedMessages(confirmed_messages) =>
-					Some(confirmed_messages),
+				ReceivalConfirmationResult::ConfirmedMessages(confirmed_messages) => {
+					Some(confirmed_messages)
+				},
 				ReceivalConfirmationResult::NoNewConfirmations => None,
 				ReceivalConfirmationResult::TryingToConfirmMoreMessagesThanExpected(
 					to_confirm_messages_count,
@@ -960,10 +961,10 @@ where
 
 /// Ensure that the pallet is in normal operational mode.
 fn ensure_normal_operating_mode<T: Config<I>, I: 'static>() -> Result<(), Error<T, I>> {
-	if PalletOperatingMode::<T, I>::get() ==
-		MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
+	if PalletOperatingMode::<T, I>::get()
+		== MessagesOperatingMode::Basic(BasicOperatingMode::Normal)
 	{
-		return Ok(())
+		return Ok(());
 	}
 
 	Err(Error::<T, I>::NotOperatingNormally)
@@ -2243,8 +2244,8 @@ mod tests {
 			let weight_when_max_messages_are_pruned = send_regular_message();
 			assert_eq!(
 				weight_when_max_messages_are_pruned,
-				when_zero_messages_are_pruned +
-					crate::mock::DbWeight::get().writes(max_messages_to_prune),
+				when_zero_messages_are_pruned
+					+ crate::mock::DbWeight::get().writes(max_messages_to_prune),
 			);
 		});
 	}

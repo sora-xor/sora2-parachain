@@ -152,8 +152,9 @@ pub enum TestMessagesParameter {
 impl MessagesParameter for TestMessagesParameter {
 	fn save(&self) {
 		match *self {
-			TestMessagesParameter::TokenConversionRate(conversion_rate) =>
-				TokenConversionRate::set(&conversion_rate),
+			TestMessagesParameter::TokenConversionRate(conversion_rate) => {
+				TokenConversionRate::set(&conversion_rate)
+			},
 		}
 	}
 }
@@ -188,8 +189,9 @@ impl Config for TestRuntime {
 impl SenderOrigin<AccountId> for Origin {
 	fn linked_account(&self) -> Option<AccountId> {
 		match self.caller {
-			OriginCaller::system(frame_system::RawOrigin::Signed(ref submitter)) =>
-				Some(*submitter),
+			OriginCaller::system(frame_system::RawOrigin::Signed(ref submitter)) => {
+				Some(*submitter)
+			},
 			_ => None,
 		}
 	}
@@ -352,7 +354,7 @@ impl MessageDeliveryAndDispatchPayment<Origin, AccountId, TestMessageFee>
 		fee: &TestMessageFee,
 	) -> Result<(), Self::Error> {
 		if frame_support::storage::unhashed::get(b":reject-message-fee:") == Some(true) {
-			return Err(TEST_ERROR)
+			return Err(TEST_ERROR);
 		}
 
 		let raw_origin: Result<frame_system::RawOrigin<_>, _> = submitter.clone().into();

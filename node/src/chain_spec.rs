@@ -62,10 +62,12 @@ impl RelayChain {
 
 	pub fn root_key(&self) -> AccountId {
 		let bytes = match self {
-			RelayChain::Kusama =>
-				hex!("de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058"),
-			RelayChain::Rococo =>
-				hex!("54fd1e1728cd833d21da6f3e36c50884062e35edfc24aec7a70c18a60451255a"),
+			RelayChain::Kusama => {
+				hex!("de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058")
+			},
+			RelayChain::Rococo => {
+				hex!("54fd1e1728cd833d21da6f3e36c50884062e35edfc24aec7a70c18a60451255a")
+			},
 		};
 		AccountId::from(bytes)
 	}

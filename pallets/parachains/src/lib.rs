@@ -383,7 +383,7 @@ pub mod pallet {
 							stored_best_head.at_relay_block_number,
 							updated_at_relay_block_number,
 						);
-						return Err(())
+						return Err(());
 					}
 
 					stored_best_head.next_imported_hash_position
@@ -400,7 +400,7 @@ pub mod pallet {
 						stored_best_head.at_relay_block_number,
 						updated_at_relay_block_number,
 					);
-					return Err(())
+					return Err(());
 				},
 			};
 
@@ -410,8 +410,8 @@ pub mod pallet {
 			let updated_best_para_head = BestParaHead {
 				at_relay_block_number: updated_at_relay_block_number,
 				head_hash: updated_head_hash,
-				next_imported_hash_position: (next_imported_hash_position + 1) %
-					T::HeadsToKeep::get(),
+				next_imported_hash_position: (next_imported_hash_position + 1)
+					% T::HeadsToKeep::get(),
 			};
 			ImportedParaHashes::<T, I>::insert(
 				parachain,

@@ -717,19 +717,6 @@ cumulus_pallet_parachain_system::register_validate_block! {
 	CheckInherents = CheckInherents,
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 // pub struct XcmExecutor<Config: config::Config> {
 // 	holding: Assets,
 // 	holding_limit: usize,

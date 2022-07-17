@@ -46,13 +46,13 @@ where
 	C::Api: BlockBuilder<Block>,
 	P: TransactionPool + Sync + Send + 'static,
 {
-	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
-	use substrate_frame_rpc_system::{System, SystemApiServer};
+	// use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
+	// use substrate_frame_rpc_system::{System, SystemApiServer};
 
 	let mut module = RpcExtension::new(());
-	let FullDeps { client, pool, deny_unsafe } = deps;
+	// let FullDeps { client, pool, deny_unsafe } = deps;
 
-	module.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
-	module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
+	// module.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
+	// module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 	Ok(module)
 }
