@@ -16,8 +16,8 @@ serde = { version = "1.0.101", optional = true, features = ["derive"] }
 
 # Bridge dependencies
 
-bp-messages = { path = "../../primitives/messages", default-features = false }
-bp-runtime = { path = "../../primitives/runtime", default-features = false }
+bp-messages = { path = "../primitives/messages", default-features = false }
+bp-runtime = { path = "../primitives/runtime", default-features = false }
 
 # Substrate Dependencies
 
@@ -31,7 +31,7 @@ sp-std = { git = "https://github.com/paritytech/substrate", branch = "master", d
 [dev-dependencies]
 sp-io = { git = "https://github.com/paritytech/substrate", branch = "master" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "master" }
-bp-test-utils = { path = "../../primitives/test-utils" }
+bp-test-utils = { path = "../primitives/test-utils" }
 
 [features]
 default = ["std"]

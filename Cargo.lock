@@ -12621,21 +12621,6 @@ dependencies = [
 ]
 
 [[patch.unused]]
-name = "polkadot-test-runtime"
-version = "0.9.19"
-source = "git+https://github.com/paritytech//polkadot?branch=locked-for-gav-xcm-v3-and-bridges#81128ab75395e256ae8ef50994d46101d0e67cea"
-
-[[patch.unused]]
-name = "polkadot-test-service"
-version = "0.9.19"
-source = "git+https://github.com/paritytech//polkadot?branch=locked-for-gav-xcm-v3-and-bridges#81128ab75395e256ae8ef50994d46101d0e67cea"
-
-[[patch.unused]]
-name = "test-runtime-constants"
-version = "0.9.19"
-source = "git+https://github.com/paritytech//polkadot?branch=locked-for-gav-xcm-v3-and-bridges#81128ab75395e256ae8ef50994d46101d0e67cea"
-
-[[patch.unused]]
 name = "node-inspect"
 version = "0.9.0-dev"
 source = "git+https://github.com/paritytech//substrate?branch=sv-locked-for-gav-xcm-v3-and-bridges#aa7520bd0a2094204a6c0b33865aa264e6d686a5"
@@ -12649,3 +12634,18 @@ source = "git+https://github.com/paritytech//substrate?branch=sv-locked-for-gav-
 name = "substrate-test-client"
 version = "2.0.1"
 source = "git+https://github.com/paritytech//substrate?branch=sv-locked-for-gav-xcm-v3-and-bridges#aa7520bd0a2094204a6c0b33865aa264e6d686a5"
+
+[[patch.unused]]
+name = "polkadot-test-runtime"
+version = "0.9.19"
+source = "git+https://github.com/paritytech//polkadot?branch=locked-for-gav-xcm-v3-and-bridges#81128ab75395e256ae8ef50994d46101d0e67cea"
+
+[[patch.unused]]
+name = "polkadot-test-service"
+version = "0.9.19"
+source = "git+https://github.com/paritytech//polkadot?branch=locked-for-gav-xcm-v3-and-bridges#81128ab75395e256ae8ef50994d46101d0e67cea"
+
+[[patch.unused]]
+name = "test-runtime-constants"
+version = "0.9.19"
+source = "git+https://github.com/paritytech//polkadot?branch=locked-for-gav-xcm-v3-and-bridges#81128ab75395e256ae8ef50994d46101d0e67cea"
