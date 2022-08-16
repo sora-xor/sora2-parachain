@@ -21,6 +21,7 @@ use xcm_builder::{
 };
 use xcm_executor::{traits::ShouldExecute, XcmExecutor};
 use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get;
+use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key, MultiCurrency};
 
 parameter_types! {
 	pub const RelayLocation: MultiLocation = MultiLocation::parent();
@@ -229,29 +230,64 @@ parameter_types! {
 	pub const MaxAssetsForTransfer: usize = 2;
 }
 
-// parameter_type_with_key! {
-// 	pub ParachainMinFee: |location: MultiLocation| -> Option<u128> {
-// 		#[allow(clippy::match_ref_pats)] // false positive
-// 		match (location.parents, location.first_interior()) {
-// 			(1, Some(Parachain(parachains::statemint::ID))) => Some(XcmInterface::get_parachain_fee(location.clone())),
-// 			_ => None,
-// 		}
-// 	};
-// }
+parameter_type_with_key! {
+	pub ParachainMinFee: |location: MultiLocation| -> Option<u128> {
+		// #[allow(clippy::match_ref_pats)] // false positive
+		match (location.parents, location.first_interior()) {
+			// (1, Some(Parachain(parachains::statemint::ID))) => Some(XcmInterface::get_parachain_fee(location.clone())),
+			_ => None,
+		}
+	};
+}
 
-// impl orml_xtokens::Config for Runtime {
-// 	type Event = Event;
-// 	type Balance = Balances;
-// 	type CurrencyId = u64;
-// 	type CurrencyIdConvert = CurrencyIdConvert;
-// 	type AccountIdToMultiLocation = AccountIdToMultiLocation;
-// 	type SelfLocation = SelfLocation;
-// 	type XcmExecutor = XcmExecutor<XcmConfig>;
-// 	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
-// 	type BaseXcmWeight = BaseXcmWeight;
-// 	type LocationInverter = LocationInverter<Ancestry>;
-// 	type MaxAssetsForTransfer = MaxAssetsForTransfer;
-// 	type MinXcmFee = ParachainMinFee;
-// 	type MultiLocationsFilter = Everything;
-// 	type ReserveProvider = ();
-// }
+pub struct CurrencyIdConvert;
+impl sp_runtime::traits::Convert<u64, Option<MultiLocation>> for CurrencyIdConvert {
+	fn convert(id: u64) -> Option<MultiLocation> {
+		// use primitives::TokenSymbol::*;
+		// use CurrencyId::{Erc20, ForeignAsset, LiquidCrowdloan, StableAssetPoolToken, Token};
+		None
+		// match id {
+		// 	Token(DOT) => Some(MultiLocation::parent()),
+		// 	Token(ACA) | Token(AUSD) | Token(LDOT) | Token(TAP) => {
+		// 		Some(native_currency_location(ParachainInfo::get().into(), id.encode()))
+		// 	}
+		// 	Erc20(address) if !is_system_contract(address) => {
+		// 		Some(native_currency_location(ParachainInfo::get().into(), id.encode()))
+		// 	}
+		// 	LiquidCrowdloan(_lease) => Some(native_currency_location(ParachainInfo::get().into(), id.encode())),
+		// 	StableAssetPoolToken(_pool_id) => Some(native_currency_location(ParachainInfo::get().into(), id.encode())),
+		// 	ForeignAsset(foreign_asset_id) => AssetIdMaps::<Runtime>::get_multi_location(foreign_asset_id),
+		// 	_ => None,
+		// }
+	}
+}
+
+pub struct AccountIdToMultiLocation;
+impl sp_runtime::traits::Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
+	fn convert(account: AccountId) -> MultiLocation {
+		X1(AccountId32 {
+			network: NetworkId::Any,
+			id: account.into(),
+		})
+		.into()
+	}
+}
+
+impl orml_xtokens::Config for Runtime {
+	type Event = Event;
+	// type Balance = Balances;
+	type Balance = crate::Balance;
+	type CurrencyId = u64;
+	type CurrencyIdConvert = CurrencyIdConvert;
+	type AccountIdToMultiLocation = AccountIdToMultiLocation;
+	type SelfLocation = SelfLocation;
+	type XcmExecutor = XcmExecutor<XcmConfig>;
+	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
+	type BaseXcmWeight = BaseXcmWeight;
+	type LocationInverter = LocationInverter<Ancestry>;
+	type MaxAssetsForTransfer = MaxAssetsForTransfer;
+	type MinXcmFee = ParachainMinFee;
+	// type MinXcmFee = u64;
+	type MultiLocationsFilter = Everything;
+	type ReserveProvider = AbsoluteReserveProvider;
+}
