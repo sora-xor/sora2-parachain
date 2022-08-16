@@ -6080,6 +6080,7 @@ dependencies = [
  "frame-try-runtime",
  "hex-literal",
  "log",
+ "orml-traits",
  "orml-xtokens",
  "pallet-aura",
  "pallet-authorship",

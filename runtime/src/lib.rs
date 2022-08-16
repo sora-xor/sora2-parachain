@@ -496,6 +496,9 @@ construct_runtime!(
 
 		// Template
 		TemplatePallet: pallet_template::{Pallet, Call, Storage, Event<T>}  = 40,
+
+		// ORML
+		// XTokens: orml_xtokens = 41,
 	}
 );
 

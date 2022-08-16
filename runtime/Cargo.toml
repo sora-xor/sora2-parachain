@@ -76,6 +76,7 @@ pallet-collator-selection = { git = "https://github.com/paritytech/cumulus", def
 parachain-info = { git = "https://github.com/paritytech/cumulus", default-features = false,  branch = "polkadot-v0.9.24" }
 
 orml-xtokens = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.24"}
+orml-traits = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.24"}
 
 [features]
 default = [
@@ -127,7 +128,8 @@ std = [
 	"xcm-builder/std",
 	"xcm-executor/std",
 	"xcm/std",
-	"orml-xtokens/std"
+	"orml-xtokens/std",
+	"orml-traits/std",
 ]
 
 runtime-benchmarks = [
