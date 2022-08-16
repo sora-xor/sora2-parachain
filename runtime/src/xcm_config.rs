@@ -2,12 +2,14 @@ use super::{
 	AccountId, Balances, Call, Event, Origin, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime,
 	WeightToFee, XcmpQueue,
 };
+use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get;
 use core::marker::PhantomData;
 use frame_support::{
 	log, match_types, parameter_types,
 	traits::{Everything, Nothing},
 	weights::Weight,
 };
+use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key, MultiCurrency};
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain::primitives::Sibling;
 use polkadot_runtime_common::impls::ToAuthor;
@@ -20,8 +22,6 @@ use xcm_builder::{
 	UsingComponents,
 };
 use xcm_executor::{traits::ShouldExecute, XcmExecutor};
-use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get;
-use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key, MultiCurrency};
 
 parameter_types! {
 	pub const RelayLocation: MultiLocation = MultiLocation::parent();
@@ -232,20 +232,22 @@ parameter_types! {
 
 parameter_type_with_key! {
 	pub ParachainMinFee: |location: MultiLocation| -> Option<u128> {
-		// #[allow(clippy::match_ref_pats)] // false positive
+		#[allow(clippy::match_ref_pats)] // false positive
 		match (location.parents, location.first_interior()) {
-			// (1, Some(Parachain(parachains::statemint::ID))) => Some(XcmInterface::get_parachain_fee(location.clone())),
+			(1, Some(_)) => Some(1_000_000),
 			_ => None,
 		}
 	};
 }
 
+type CurrencyId = u64;
+
 pub struct CurrencyIdConvert;
-impl sp_runtime::traits::Convert<u64, Option<MultiLocation>> for CurrencyIdConvert {
-	fn convert(id: u64) -> Option<MultiLocation> {
+impl sp_runtime::traits::Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
+	fn convert(id: CurrencyId) -> Option<MultiLocation> {
 		// use primitives::TokenSymbol::*;
 		// use CurrencyId::{Erc20, ForeignAsset, LiquidCrowdloan, StableAssetPoolToken, Token};
-		None
+		// None
 		// match id {
 		// 	Token(DOT) => Some(MultiLocation::parent()),
 		// 	Token(ACA) | Token(AUSD) | Token(LDOT) | Token(TAP) => {
@@ -259,25 +261,23 @@ impl sp_runtime::traits::Convert<u64, Option<MultiLocation>> for CurrencyIdConve
 		// 	ForeignAsset(foreign_asset_id) => AssetIdMaps::<Runtime>::get_multi_location(foreign_asset_id),
 		// 	_ => None,
 		// }
+		match id {
+			_ => None,
+		}
 	}
 }
 
 pub struct AccountIdToMultiLocation;
 impl sp_runtime::traits::Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
 	fn convert(account: AccountId) -> MultiLocation {
-		X1(AccountId32 {
-			network: NetworkId::Any,
-			id: account.into(),
-		})
-		.into()
+		X1(AccountId32 { network: NetworkId::Any, id: account.into() }).into()
 	}
 }
 
 impl orml_xtokens::Config for Runtime {
 	type Event = Event;
-	// type Balance = Balances;
 	type Balance = crate::Balance;
-	type CurrencyId = u64;
+	type CurrencyId = CurrencyId;
 	type CurrencyIdConvert = CurrencyIdConvert;
 	type AccountIdToMultiLocation = AccountIdToMultiLocation;
 	type SelfLocation = SelfLocation;
@@ -287,7 +287,6 @@ impl orml_xtokens::Config for Runtime {
 	type LocationInverter = LocationInverter<Ancestry>;
 	type MaxAssetsForTransfer = MaxAssetsForTransfer;
 	type MinXcmFee = ParachainMinFee;
-	// type MinXcmFee = u64;
 	type MultiLocationsFilter = Everything;
 	type ReserveProvider = AbsoluteReserveProvider;
 }
