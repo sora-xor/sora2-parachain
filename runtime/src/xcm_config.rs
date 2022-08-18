@@ -240,11 +240,11 @@ parameter_type_with_key! {
 	};
 }
 
-type CurrencyId = u64;
+// type CurrencyId = u64;
 
 pub struct CurrencyIdConvert;
-impl sp_runtime::traits::Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
-	fn convert(id: CurrencyId) -> Option<MultiLocation> {
+impl sp_runtime::traits::Convert<common::primitives::AssetId, Option<MultiLocation>> for CurrencyIdConvert {
+	fn convert(id: common::primitives::AssetId) -> Option<MultiLocation> {
 		// use primitives::TokenSymbol::*;
 		// use CurrencyId::{Erc20, ForeignAsset, LiquidCrowdloan, StableAssetPoolToken, Token};
 		// None
@@ -262,6 +262,7 @@ impl sp_runtime::traits::Convert<CurrencyId, Option<MultiLocation>> for Currency
 		// 	_ => None,
 		// }
 		match id {
+			// common::primitives::
 			_ => None,
 		}
 	}
@@ -277,7 +278,7 @@ impl sp_runtime::traits::Convert<AccountId, MultiLocation> for AccountIdToMultiL
 impl orml_xtokens::Config for Runtime {
 	type Event = Event;
 	type Balance = crate::Balance;
-	type CurrencyId = CurrencyId;
+	type CurrencyId = common::primitives::AssetId;
 	type CurrencyIdConvert = CurrencyIdConvert;
 	type AccountIdToMultiLocation = AccountIdToMultiLocation;
 	type SelfLocation = SelfLocation;
