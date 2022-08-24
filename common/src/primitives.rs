@@ -30,6 +30,11 @@
 
 pub type AssetId = u64;
 
+pub enum CurrencyId {
+	XOR,
+	XTUSD,
+}
+
 // TODO: Convert to AssetId32
 pub const XOR: u8 = 0;
 pub const DOT: u8 = 1;

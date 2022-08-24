@@ -26,7 +26,7 @@ use sp_version::RuntimeVersion;
 
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{Everything, ConstU32, ConstU64, ConstU128},
+	traits::{ConstU128, ConstU32, ConstU64, Everything},
 	weights::{
 		constants::WEIGHT_PER_SECOND, ConstantMultiplier, DispatchClass, Weight,
 		WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
@@ -464,7 +464,7 @@ impl pallet_collator_selection::Config for Runtime {
 impl pallet_assets::Config for Runtime {
 	type Event = Event;
 	type Balance = u64;
-	type AssetId = u32;
+	type AssetId = common::primitives::AssetId;
 	type Currency = Balances;
 	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
 	type AssetDeposit = ConstU128<1>;
@@ -476,6 +476,57 @@ impl pallet_assets::Config for Runtime {
 	type Freezer = ();
 	type WeightInfo = ();
 	type Extra = ();
+}
+
+impl orml_unknown_tokens::Config for Runtime {
+	type Event = Event;
+}
+
+use codec::{Decode, Encode};
+use frame_support::RuntimeDebug;
+use scale_info::TypeInfo;
+use serde::{Deserialize, Serialize};
+
+#[derive(
+	Encode,
+	Decode,
+	Eq,
+	PartialEq,
+	Copy,
+	Clone,
+	RuntimeDebug,
+	PartialOrd,
+	Ord,
+	codec::MaxEncodedLen,
+	TypeInfo,
+)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub enum CurrencyId {
+	XOR,
+	XTUSD,
+}
+
+orml_traits::parameter_type_with_key! {
+	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
+		Default::default()
+	};
+}
+
+impl orml_tokens::Config for Runtime {
+	type Event = Event;
+	type Balance = Balance;
+	// type AssetId = common::primitives::AssetId;
+	type Amount = i128;
+	type CurrencyId = CurrencyId;
+	type WeightInfo = ();
+	type ExistentialDeposits = ExistentialDeposits;
+	type OnDust = ();
+	type MaxLocks = ConstU32<50>;
+	type MaxReserves = ConstU32<50>;
+	type ReserveIdentifier = [u8; 8];
+	type DustRemovalWhitelist = Everything;
+	type OnNewTokenAccount = ();
+	type OnKilledTokenAccount = ();
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -516,7 +567,10 @@ construct_runtime!(
 
 		// ORML
 		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 41,
-		Assets: pallet_assets::{Pallet, Call, Storage, Event<T>} = 42,
+		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>} = 42,
+
+		Assets: pallet_assets::{Pallet, Call, Storage, Event<T>} = 54,
+		UnknownTokens: orml_unknown_tokens exclude_parts { Call } = 55,
 	}
 );
 

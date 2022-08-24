@@ -10,6 +10,9 @@ use frame_support::{
 	weights::Weight,
 };
 use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key, MultiCurrency};
+use orml_xcm_support::{
+	DepositToAlternative, IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset,
+};
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain::primitives::Sibling;
 use polkadot_runtime_common::impls::ToAuthor;
@@ -43,16 +46,29 @@ pub type LocationToAccountId = (
 );
 
 /// Means for transacting assets on this chain.
-pub type LocalAssetTransactor = CurrencyAdapter<
-	// Use this currency:
-	Balances,
-	// Use this currency when it is a fungible asset matching the given location or name:
-	IsConcrete<RelayLocation>,
-	// Do a simple punn to convert an AccountId32 MultiLocation into a native chain account ID:
-	LocationToAccountId,
-	// Our chain's account ID type (we can't get away without mentioning it explicitly):
+// pub type LocalAssetTransactor = CurrencyAdapter<
+// 	// Use this currency:
+// 	Balances,
+// 	// Use this currency when it is a fungible asset matching the given location or name:
+// 	IsConcrete<RelayLocation>,
+// 	// Do a simple punn to convert an AccountId32 MultiLocation into a native chain account ID:
+// 	LocationToAccountId,
+// 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
+// 	AccountId,
+// 	// We don't track any teleports.
+// 	(),
+// >;
+
+pub type LocalAssetTransactor = MultiCurrencyAdapter<
+	crate::Tokens,
+	(),
+	IsNativeConcrete<crate::CurrencyId, CurrencyIdConvert>,
 	AccountId,
-	// We don't track any teleports.
+	LocationToAccountId,
+	crate::CurrencyId,
+	// common::primitives::AssetId,
+	CurrencyIdConvert,
+	// DepositToAlternative<KaruraTreasuryAccount, Currencies, CurrencyId, AccountId, Balance>,
 	(),
 >;
 
@@ -243,27 +259,85 @@ parameter_type_with_key! {
 // type CurrencyId = u64;
 
 pub struct CurrencyIdConvert;
-impl sp_runtime::traits::Convert<common::primitives::AssetId, Option<MultiLocation>> for CurrencyIdConvert {
-	fn convert(id: common::primitives::AssetId) -> Option<MultiLocation> {
-		// use primitives::TokenSymbol::*;
-		// use CurrencyId::{Erc20, ForeignAsset, LiquidCrowdloan, StableAssetPoolToken, Token};
-		// None
-		// match id {
-		// 	Token(DOT) => Some(MultiLocation::parent()),
-		// 	Token(ACA) | Token(AUSD) | Token(LDOT) | Token(TAP) => {
-		// 		Some(native_currency_location(ParachainInfo::get().into(), id.encode()))
-		// 	}
-		// 	Erc20(address) if !is_system_contract(address) => {
-		// 		Some(native_currency_location(ParachainInfo::get().into(), id.encode()))
-		// 	}
-		// 	LiquidCrowdloan(_lease) => Some(native_currency_location(ParachainInfo::get().into(), id.encode())),
-		// 	StableAssetPoolToken(_pool_id) => Some(native_currency_location(ParachainInfo::get().into(), id.encode())),
-		// 	ForeignAsset(foreign_asset_id) => AssetIdMaps::<Runtime>::get_multi_location(foreign_asset_id),
-		// 	_ => None,
-		// }
+use crate::CurrencyId;
+// impl sp_runtime::traits::Convert<common::primitives::AssetId, Option<MultiLocation>> for CurrencyIdConvert {
+// 	// use parity_scale_codec::Encode;
+// 	fn convert(id: common::primitives::AssetId) -> Option<MultiLocation> {
+// 		// use primitives::TokenSymbol::*;
+// 		// use CurrencyId::{Erc20, ForeignAsset, LiquidCrowdloan, StableAssetPoolToken, Token};
+// 		// None
+// 		// match id {
+// 		// 	Token(DOT) => Some(MultiLocation::parent()),
+// 		// 	Token(ACA) | Token(AUSD) | Token(LDOT) | Token(TAP) => {
+// 		// 		Some(native_currency_location(ParachainInfo::get().into(), id.encode()))
+// 		// 	}
+// 		// 	Erc20(address) if !is_system_contract(address) => {
+// 		// 		Some(native_currency_location(ParachainInfo::get().into(), id.encode()))
+// 		// 	}
+// 		// 	LiquidCrowdloan(_lease) => Some(native_currency_location(ParachainInfo::get().into(), id.encode())),
+// 		// 	StableAssetPoolToken(_pool_id) => Some(native_currency_location(ParachainInfo::get().into(), id.encode())),
+// 		// 	ForeignAsset(foreign_asset_id) => AssetIdMaps::<Runtime>::get_multi_location(foreign_asset_id),
+// 		// 	_ => None,
+// 		// }
+// 		// match id {
+// 		// 	// common::primitives::
+// 		// 	_ => None,
+// 		// }
+// 		// Some(MultiLocation { parents: 1, interior:Here })
+// 		Some(native_currency_location(ParachainInfo::get().into(), id))
+// 	}
+// }
+
+impl sp_runtime::traits::Convert<crate::CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
+	// use parity_scale_codec::Encode;
+	fn convert(id: crate::CurrencyId) -> Option<MultiLocation> {
 		match id {
-			// common::primitives::
+			crate::CurrencyId::XOR => Some(Parent.into()),
+			crate::CurrencyId::XTUSD => Some(
+				(
+					Parent,
+					Parachain(2000),
+					GeneralKey(b"XTUSD".to_vec().try_into().unwrap()),
+				)
+					.into(),
+			),
+		}
+	}
+}
+
+impl sp_runtime::traits::Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
+	// use parity_scale_codec::Encode;
+	fn convert(l: MultiLocation) -> Option<CurrencyId> {
+		let a: Vec<u8> = "XTUSD".into();
+		if l == MultiLocation::parent() {
+			return Some(CurrencyId::XOR);
+		}
+
+		match l {
+			MultiLocation { parents, interior } if parents == 1 => match interior {
+				X2(Parachain(2000), GeneralKey(k)) if k == a => Some(CurrencyId::XTUSD),
+				_ => None,
+			},
+			MultiLocation { parents, interior } if parents == 0 => match interior {
+				X1(GeneralKey(k)) if k == a => Some(CurrencyId::XTUSD),
+				_ => None,
+			},
 			_ => None,
+		}
+	}
+}
+
+impl sp_runtime::traits::Convert<MultiAsset, Option<CurrencyId>> for CurrencyIdConvert {
+	// use parity_scale_codec::Encode;
+	fn convert(a: MultiAsset) -> Option<CurrencyId> {
+		if let MultiAsset {
+			fun: Fungible(_),
+			id: Concrete(id),
+		} = a
+		{
+			Self::convert(id)
+		} else {
+			Option::None
 		}
 	}
 }
@@ -278,7 +352,7 @@ impl sp_runtime::traits::Convert<AccountId, MultiLocation> for AccountIdToMultiL
 impl orml_xtokens::Config for Runtime {
 	type Event = Event;
 	type Balance = crate::Balance;
-	type CurrencyId = common::primitives::AssetId;
+	type CurrencyId = crate::CurrencyId;
 	type CurrencyIdConvert = CurrencyIdConvert;
 	type AccountIdToMultiLocation = AccountIdToMultiLocation;
 	type SelfLocation = SelfLocation;
@@ -290,4 +364,20 @@ impl orml_xtokens::Config for Runtime {
 	type MinXcmFee = ParachainMinFee;
 	type MultiLocationsFilter = Everything;
 	type ReserveProvider = AbsoluteReserveProvider;
+}
+
+use frame_support::traits::{ConstU128, ConstU32, ConstU64};
+use sp_std::vec::Vec;
+// pub fn native_currency_location(para_id: u32, key: Vec<u8>) -> MultiLocation {
+// 	MultiLocation::new(
+// 		1,
+// 		X2(
+// 			Parachain(para_id),
+// 			GeneralKey(frame_support::WeakBoundedVec::<u8, ConstU32<32>>::force_from(key, None).to_vec()),
+// 		)
+// 	)
+// }
+
+pub fn native_currency_location(para_id: u32, key: u64) -> MultiLocation {
+	MultiLocation::new(1, X2(Parachain(para_id), GeneralKey(key.to_ne_bytes().to_vec())))
 }

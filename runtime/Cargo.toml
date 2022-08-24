@@ -19,7 +19,7 @@ codec = { package = "parity-scale-codec", version = "3.0.0", default-features = 
 hex-literal = { version = "0.3.4", optional = true }
 log = { version = "0.4.17", default-features = false }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
-serde = { version = "1.0.137", optional = true, features = ["derive"] }
+serde = { version = "1.0.137", features = ["derive"], default-features = false }
 smallvec = "1.6.1"
 
 # Local
@@ -81,6 +81,8 @@ parachain-info = { git = "https://github.com/paritytech/cumulus", default-featur
 orml-xtokens = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.24"}
 orml-traits = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.24"}
 orml-xcm-support = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.24"}
+orml-unknown-tokens = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.24"}
+orml-tokens = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.24"}
 
 [features]
 default = [
@@ -90,7 +92,7 @@ std = [
 	"codec/std",
 	"log/std",
 	"scale-info/std",
-	"serde",
+	# "serde",
 	"cumulus-pallet-aura-ext/std",
 	"cumulus-pallet-dmp-queue/std",
 	"cumulus-pallet-parachain-system/std",
@@ -136,6 +138,8 @@ std = [
 	"orml-traits/std",
 	"orml-xcm-support/std",
 	"pallet-assets/std",
+	"orml-unknown-tokens/std",
+	"orml-tokens/std"
 ]
 
 runtime-benchmarks = [
