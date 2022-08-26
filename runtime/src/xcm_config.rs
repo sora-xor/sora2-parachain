@@ -169,15 +169,17 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 	}
 }
 
-pub type Barrier = DenyThenTry<
-	DenyReserveTransferToRelayChain,
-	(
-		TakeWeightCredit,
-		AllowTopLevelPaidExecutionFrom<Everything>,
-		AllowUnpaidExecutionFrom<ParentOrParentsExecutivePlurality>,
-		// ^^^ Parent and its exec plurality get free execution
-	),
->;
+// pub type Barrier = DenyThenTry<
+// 	DenyReserveTransferToRelayChain,
+// 	(
+// 		TakeWeightCredit,
+// 		AllowTopLevelPaidExecutionFrom<Everything>,
+// 		AllowUnpaidExecutionFrom<ParentOrParentsExecutivePlurality>,
+// 		// ^^^ Parent and its exec plurality get free execution
+// 	),
+// >;
+
+pub type Barrier = (TakeWeightCredit, AllowTopLevelPaidExecutionFrom<Everything>);
 
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
@@ -187,9 +189,11 @@ impl xcm_executor::Config for XcmConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
 	type IsReserve = NativeAsset;
-	type IsTeleporter = (); // Teleporting is disabled.
+	// type IsTeleporter = (); // Teleporting is disabled.
+	type IsTeleporter = NativeAsset; // Teleporting is disabled.
 	type LocationInverter = LocationInverter<Ancestry>;
 	type Barrier = Barrier;
+	// type Barrier = ();
 	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
 	type Trader =
 		UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToAuthor<Runtime>>;
@@ -299,7 +303,7 @@ impl sp_runtime::traits::Convert<crate::CurrencyId, Option<MultiLocation>> for C
 					Parachain(2000),
 					GeneralKey(b"XTUSD".to_vec().try_into().unwrap()),
 				)
-					.into(),
+					.into(),	
 			),
 		}
 	}
