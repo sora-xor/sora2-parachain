@@ -188,7 +188,8 @@ impl xcm_executor::Config for XcmConfig {
 	// How to withdraw and deposit an asset.
 	type AssetTransactor = LocalAssetTransactor;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
-	type IsReserve = NativeAsset;
+	// type IsReserve = NativeAsset;
+	type IsReserve = MultiNativeAsset<AbsoluteReserveProvider>;
 	// type IsTeleporter = (); // Teleporting is disabled.
 	type IsTeleporter = NativeAsset; // Teleporting is disabled.
 	type LocationInverter = LocationInverter<Ancestry>;
@@ -263,6 +264,7 @@ parameter_type_with_key! {
 // type CurrencyId = u64;
 
 pub struct CurrencyIdConvert;
+pub const XSTUSD_PREFIX: &[u8; 6] = b"XSTUSD";
 use crate::CurrencyId;
 // impl sp_runtime::traits::Convert<common::primitives::AssetId, Option<MultiLocation>> for CurrencyIdConvert {
 // 	// use parity_scale_codec::Encode;
@@ -297,11 +299,11 @@ impl sp_runtime::traits::Convert<crate::CurrencyId, Option<MultiLocation>> for C
 	fn convert(id: crate::CurrencyId) -> Option<MultiLocation> {
 		match id {
 			crate::CurrencyId::XOR => Some(Parent.into()),
-			crate::CurrencyId::XTUSD => Some(
+			crate::CurrencyId::XSTUSD => Some(
 				(
 					Parent,
 					Parachain(2000),
-					GeneralKey(b"XTUSD".to_vec().try_into().unwrap()),
+					GeneralKey(b"XSTUSD".to_vec().try_into().unwrap()),
 				)
 					.into(),	
 			),
@@ -312,18 +314,18 @@ impl sp_runtime::traits::Convert<crate::CurrencyId, Option<MultiLocation>> for C
 impl sp_runtime::traits::Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
 	// use parity_scale_codec::Encode;
 	fn convert(l: MultiLocation) -> Option<CurrencyId> {
-		let a: Vec<u8> = "XTUSD".into();
+		let a: Vec<u8> = "XSTUSD".into();
 		if l == MultiLocation::parent() {
 			return Some(CurrencyId::XOR);
 		}
 
 		match l {
 			MultiLocation { parents, interior } if parents == 1 => match interior {
-				X2(Parachain(2000), GeneralKey(k)) if k == a => Some(CurrencyId::XTUSD),
+				X2(Parachain(2000), GeneralKey(k)) if k == a => Some(CurrencyId::XSTUSD),
 				_ => None,
 			},
 			MultiLocation { parents, interior } if parents == 0 => match interior {
-				X1(GeneralKey(k)) if k == a => Some(CurrencyId::XTUSD),
+				X1(GeneralKey(k)) if k == a => Some(CurrencyId::XSTUSD),
 				_ => None,
 			},
 			_ => None,

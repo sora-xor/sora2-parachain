@@ -503,7 +503,7 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum CurrencyId {
 	XOR,
-	XTUSD,
+	XSTUSD,
 }
 
 orml_traits::parameter_type_with_key! {
