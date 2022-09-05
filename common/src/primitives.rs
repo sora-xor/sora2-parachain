@@ -33,6 +33,7 @@ use frame_support::RuntimeDebug;
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 
+pub type SoraMainnetAssetId = [u8; 32];
 pub type AssetId = u64;
 
 #[derive(
@@ -51,5 +52,31 @@ pub type AssetId = u64;
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum CurrencyId {
 	XOR,
+	XSTUSD,
+}
+
+pub enum CurrencyIdNew {
+	KSM,
+	SoraNative(SoraNativeAssets),
+	Parachain(ParachainTokens),
+}
+
+pub enum ParachainTokens {
+	//Karura Native Token 
+	KAR,
+	//Acala Dollar
+	AUSD,
+	//Liquid KSM
+	LKSM,
+}
+
+pub enum SoraNativeAssets {
+	// SORA
+	XOR,
+	// Polkaswap
+	PSWAP,
+	//  Validators
+	VAL,
+	// XOR Synthetic Dolla
 	XSTUSD,
 }
