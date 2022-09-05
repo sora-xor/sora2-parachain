@@ -8,6 +8,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 mod weights;
 pub mod xcm_config;
+pub mod currency_id_convert;
 
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;

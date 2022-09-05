@@ -3,6 +3,7 @@ use super::{
 	WeightToFee, XcmpQueue,
 };
 use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get;
+use crate::currency_id_convert::*;
 use core::marker::PhantomData;
 use frame_support::{
 	log, match_types, parameter_types,
@@ -266,94 +267,6 @@ parameter_type_with_key! {
 	};
 }
 
-pub struct CurrencyIdConvert;
-pub const XSTUSD_PREFIX: &[u8; 6] = b"XSTUSD";
-// use crate::CurrencyId;
-// impl sp_runtime::traits::Convert<common::primitives::AssetId, Option<MultiLocation>> for CurrencyIdConvert {
-// 	// use parity_scale_codec::Encode;
-// 	fn convert(id: common::primitives::AssetId) -> Option<MultiLocation> {
-// 		// use primitives::TokenSymbol::*;
-// 		// use CurrencyId::{Erc20, ForeignAsset, LiquidCrowdloan, StableAssetPoolToken, Token};
-// 		// None
-// 		// match id {
-// 		// 	Token(DOT) => Some(MultiLocation::parent()),
-// 		// 	Token(ACA) | Token(AUSD) | Token(LDOT) | Token(TAP) => {
-// 		// 		Some(get_para_key_multilocation(ParachainInfo::get().into(), id.encode()))
-// 		// 	}
-// 		// 	Erc20(address) if !is_system_contract(address) => {
-// 		// 		Some(get_para_key_multilocation(ParachainInfo::get().into(), id.encode()))
-// 		// 	}
-// 		// 	LiquidCrowdloan(_lease) => Some(get_para_key_multilocation(ParachainInfo::get().into(), id.encode())),
-// 		// 	StableAssetPoolToken(_pool_id) => Some(get_para_key_multilocation(ParachainInfo::get().into(), id.encode())),
-// 		// 	ForeignAsset(foreign_asset_id) => AssetIdMaps::<Runtime>::get_multi_location(foreign_asset_id),
-// 		// 	_ => None,
-// 		// }
-// 		// match id {
-// 		// 	// common::primitives::
-// 		// 	_ => None,
-// 		// }
-// 		// Some(MultiLocation { parents: 1, interior:Here })
-// 		Some(get_para_key_multilocation(ParachainInfo::get().into(), id))
-// 	}
-// }
-use common::primitives::SoraNativeAssets;
-
-pub const SORA_PARA_ID: u32 = 2011;
-pub const XOR_KEY: &[u8; 3] = b"XOR";
-pub const PSWAP_KEY: &[u8; 5] = b"PSWAP";
-pub const VAL_KEY: &[u8; 3] = b"VAL";
-pub const XSTUSD_KEY: &[u8; 6] = b"XSTUSD";
-
-impl sp_runtime::traits::Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
-	fn convert(id: CurrencyId) -> Option<MultiLocation> {
-		match id {
-			CurrencyId::KSM => Some(Parent.into()),
-			CurrencyId::SoraNative(sora_asset) => match sora_asset {
-				SoraNativeAssets::XOR =>  get_para_key_multilocation(SORA_PARA_ID, XOR_KEY.to_vec()),
-				SoraNativeAssets::PSWAP =>  get_para_key_multilocation(SORA_PARA_ID, PSWAP_KEY.to_vec()),
-				SoraNativeAssets::VAL =>  get_para_key_multilocation(SORA_PARA_ID, VAL_KEY.to_vec()),
-				SoraNativeAssets::XSTUSD =>  get_para_key_multilocation(SORA_PARA_ID, XSTUSD_KEY.to_vec()),
-			},
-			_ => None,
-		}
-	}
-}
-
-impl sp_runtime::traits::Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
-	fn convert(multilocation: MultiLocation) -> Option<CurrencyId> {
-		if multilocation == MultiLocation::parent() {
-			return Some(CurrencyId::KSM);
-		}
-		match multilocation {
-			MultiLocation { parents, interior } if parents == 1 => match interior {
-				X2(Parachain(SORA_PARA_ID), GeneralKey(key)) => match key {
-					key if key == XOR_KEY => Some(CurrencyId::SoraNative(SoraNativeAssets::XOR)),
-					key if key == PSWAP_KEY => Some(CurrencyId::SoraNative(SoraNativeAssets::PSWAP)),
-					key if key == VAL_KEY => Some(CurrencyId::SoraNative(SoraNativeAssets::VAL)),
-					key if key == XSTUSD_KEY => Some(CurrencyId::SoraNative(SoraNativeAssets::XSTUSD)),
-					_ => None
-				} 
-				_ => None,
-			},
-			// MultiLocation { parents, interior } if parents == 0 => match interior {
-			// 	X1(GeneralKey(k)) if k == a => Some(CurrencyId::XSTUSD),
-			// 	_ => None,
-			// },
-			_ => None,
-		}
-	}
-}
-
-impl sp_runtime::traits::Convert<MultiAsset, Option<CurrencyId>> for CurrencyIdConvert {
-	fn convert(a: MultiAsset) -> Option<CurrencyId> {
-		if let MultiAsset { fun: Fungible(_), id: Concrete(id) } = a {
-			Self::convert(id)
-		} else {
-			Option::None
-		}
-	}
-}
-
 pub struct AccountIdToMultiLocation;
 impl sp_runtime::traits::Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
 	fn convert(account: AccountId) -> MultiLocation {
@@ -378,21 +291,6 @@ impl orml_xtokens::Config for Runtime {
 	type ReserveProvider = AbsoluteReserveProvider;
 }
 
-// use frame_support::traits::{ConstU128, ConstU32, ConstU64};
-use sp_std::vec::Vec;
-// pub fn get_para_key_multilocation(para_id: u32, key: Vec<u8>) -> MultiLocation {
-// 	MultiLocation::new(
-// 		1,
-// 		X2(
-// 			Parachain(para_id),
-// 			GeneralKey(frame_support::WeakBoundedVec::<u8, ConstU32<32>>::force_from(key, None).to_vec()),
-// 		)
-// 	)
-// }
-
-pub fn get_para_key_multilocation(para_id: u32, key: Vec<u8>) -> Option<MultiLocation> {
-	Some(MultiLocation::new(1, X2(Parachain(para_id), GeneralKey(key.to_vec()))))
-}
 
 
 
