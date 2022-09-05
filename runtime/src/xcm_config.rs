@@ -145,19 +145,19 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 				InitiateReserveWithdraw {
 					reserve: MultiLocation { parents: 1, interior: Here },
 					..
-				} | DepositReserveAsset { dest: MultiLocation { parents: 1, interior: Here }, .. } |
-					TransferReserveAsset {
+				} | DepositReserveAsset { dest: MultiLocation { parents: 1, interior: Here }, .. }
+					| TransferReserveAsset {
 						dest: MultiLocation { parents: 1, interior: Here },
 						..
 					}
 			)
 		}) {
-			return Err(()) // Deny
+			return Err(()); // Deny
 		}
 
 		// allow reserve transfers to arrive from relay chain
-		if matches!(origin, MultiLocation { parents: 1, interior: Here }) &&
-			message.0.iter().any(|inst| matches!(inst, ReserveAssetDeposited { .. }))
+		if matches!(origin, MultiLocation { parents: 1, interior: Here })
+			&& message.0.iter().any(|inst| matches!(inst, ReserveAssetDeposited { .. }))
 		{
 			log::warn!(
 				target: "xcm::barriers",
@@ -196,8 +196,9 @@ impl xcm_executor::Config for XcmConfig {
 	type Barrier = Barrier;
 	// type Barrier = ();
 	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
-	type Trader =
-		UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToAuthor<Runtime>>;
+	// type Trader =
+	// 	UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToAuthor<Runtime>>;
+	type Trader = AllTokensAreCreatedEqualToWeight;
 	type ResponseHandler = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
 	type AssetClaims = PolkadotXcm;
@@ -221,12 +222,14 @@ impl pallet_xcm::Config for Runtime {
 	type SendXcmOrigin = EnsureXcmOrigin<Origin, LocalOriginToLocation>;
 	type XcmRouter = XcmRouter;
 	type ExecuteXcmOrigin = EnsureXcmOrigin<Origin, LocalOriginToLocation>;
-	type XcmExecuteFilter = Nothing;
+	// type XcmExecuteFilter = Nothing;
+	type XcmExecuteFilter = Everything;
 	// ^ Disable dispatchable execute on the XCM pallet.
 	// Needs to be `Everything` for local testing.
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type XcmTeleportFilter = Everything;
-	type XcmReserveTransferFilter = Nothing;
+	// type XcmReserveTransferFilter = Nothing;
+	type XcmReserveTransferFilter = Everything;
 	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
 	type LocationInverter = LocationInverter<Ancestry>;
 	type Origin = Origin;
@@ -300,12 +303,16 @@ impl sp_runtime::traits::Convert<crate::CurrencyId, Option<MultiLocation>> for C
 		match id {
 			crate::CurrencyId::XOR => Some(Parent.into()),
 			crate::CurrencyId::XSTUSD => Some(
-				(
-					Parent,
-					Parachain(2000),
-					GeneralKey(b"XSTUSD".to_vec().try_into().unwrap()),
-				)
-					.into(),	
+				// (
+				// 	Parent,
+				// 	Parachain(2000),
+				// 	GeneralKey(b"XSTUSD".to_vec().try_into().unwrap()),
+				// )
+				// 	.into(),
+				MultiLocation::new(
+					1,
+					X2(Parachain(2000), GeneralKey(b"XSTUSD".to_vec().try_into().unwrap())),
+				),
 			),
 		}
 	}
@@ -336,11 +343,7 @@ impl sp_runtime::traits::Convert<MultiLocation, Option<CurrencyId>> for Currency
 impl sp_runtime::traits::Convert<MultiAsset, Option<CurrencyId>> for CurrencyIdConvert {
 	// use parity_scale_codec::Encode;
 	fn convert(a: MultiAsset) -> Option<CurrencyId> {
-		if let MultiAsset {
-			fun: Fungible(_),
-			id: Concrete(id),
-		} = a
-		{
+		if let MultiAsset { fun: Fungible(_), id: Concrete(id) } = a {
 			Self::convert(id)
 		} else {
 			Option::None
@@ -386,4 +389,53 @@ use sp_std::vec::Vec;
 
 pub fn native_currency_location(para_id: u32, key: u64) -> MultiLocation {
 	MultiLocation::new(1, X2(Parachain(para_id), GeneralKey(key.to_ne_bytes().to_vec())))
+}
+
+
+
+
+
+
+// TEMPORARYYYY!!!!!!
+/// A trader who believes all tokens are created equal to "weight" of any chain,
+/// which is not true, but good enough to mock the fee payment of XCM execution.
+///
+/// This mock will always trade `n` amount of weight to `n` amount of tokens.
+pub struct AllTokensAreCreatedEqualToWeight(MultiLocation);
+impl xcm_executor::traits::WeightTrader for AllTokensAreCreatedEqualToWeight {
+	fn new() -> Self {
+		Self(MultiLocation::parent())
+	}
+
+	fn buy_weight(&mut self, weight: Weight, payment: xcm_executor::Assets) -> Result<xcm_executor::Assets, XcmError> {
+		let asset_id = payment
+			.fungible
+			.iter()
+			.next()
+			.expect("Payment must be something; qed")
+			.0;
+		let required = MultiAsset {
+			id: asset_id.clone(),
+			fun: Fungible(weight as u128),
+		};
+
+		if let MultiAsset {
+			fun: _,
+			id: Concrete(ref id),
+		} = &required
+		{
+			self.0 = id.clone();
+		}
+
+		let unused = payment.checked_sub(required).map_err(|_| XcmError::TooExpensive)?;
+		Ok(unused)
+	}
+
+	fn refund_weight(&mut self, weight: Weight) -> Option<MultiAsset> {
+		if weight == 0 {
+			None
+		} else {
+			Some((self.0.clone(), weight as u128).into())
+		}
+	}
 }
