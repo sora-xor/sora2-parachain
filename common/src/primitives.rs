@@ -51,16 +51,45 @@ pub type AssetId = u64;
 )]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum CurrencyId {
-	XOR,
-	XSTUSD,
-}
-
-pub enum CurrencyIdNew {
 	KSM,
 	SoraNative(SoraNativeAssets),
 	Parachain(ParachainTokens),
 }
 
+// #[derive(
+// 	Encode,
+// 	Decode,
+// 	Eq,
+// 	PartialEq,
+// 	Copy,
+// 	Clone,
+// 	RuntimeDebug,
+// 	PartialOrd,
+// 	Ord,
+// 	codec::MaxEncodedLen,
+// 	TypeInfo,
+// )]
+// #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+// pub enum CurrencyIdNew {
+// 	KSM,
+// 	SoraNative(SoraNativeAssets),
+// 	Parachain(ParachainTokens),
+// }
+
+#[derive(
+	Encode,
+	Decode,
+	Eq,
+	PartialEq,
+	Copy,
+	Clone,
+	RuntimeDebug,
+	PartialOrd,
+	Ord,
+	codec::MaxEncodedLen,
+	TypeInfo,
+)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum ParachainTokens {
 	//Karura Native Token 
 	KAR,
@@ -70,6 +99,20 @@ pub enum ParachainTokens {
 	LKSM,
 }
 
+#[derive(
+	Encode,
+	Decode,
+	Eq,
+	PartialEq,
+	Copy,
+	Clone,
+	RuntimeDebug,
+	PartialOrd,
+	Ord,
+	codec::MaxEncodedLen,
+	TypeInfo,
+)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum SoraNativeAssets {
 	// SORA
 	XOR,
