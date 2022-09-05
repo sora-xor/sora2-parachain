@@ -25,6 +25,8 @@ use xcm_builder::{
 	UsingComponents,
 };
 use xcm_executor::{traits::ShouldExecute, XcmExecutor};
+use crate::CurrencyId;
+// use common::primitives::CurrencyId;
 
 parameter_types! {
 	pub const RelayLocation: MultiLocation = MultiLocation::parent();
@@ -62,10 +64,10 @@ pub type LocationToAccountId = (
 pub type LocalAssetTransactor = MultiCurrencyAdapter<
 	crate::Tokens,
 	(),
-	IsNativeConcrete<crate::CurrencyId, CurrencyIdConvert>,
+	IsNativeConcrete<CurrencyId, CurrencyIdConvert>,
 	AccountId,
 	LocationToAccountId,
-	crate::CurrencyId,
+	CurrencyId,
 	// common::primitives::AssetId,
 	CurrencyIdConvert,
 	// DepositToAlternative<KaruraTreasuryAccount, Currencies, CurrencyId, AccountId, Balance>,
@@ -264,11 +266,9 @@ parameter_type_with_key! {
 	};
 }
 
-// type CurrencyId = u64;
-
 pub struct CurrencyIdConvert;
 pub const XSTUSD_PREFIX: &[u8; 6] = b"XSTUSD";
-use crate::CurrencyId;
+// use crate::CurrencyId;
 // impl sp_runtime::traits::Convert<common::primitives::AssetId, Option<MultiLocation>> for CurrencyIdConvert {
 // 	// use parity_scale_codec::Encode;
 // 	fn convert(id: common::primitives::AssetId) -> Option<MultiLocation> {
@@ -297,12 +297,12 @@ use crate::CurrencyId;
 // 	}
 // }
 
-impl sp_runtime::traits::Convert<crate::CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
+impl sp_runtime::traits::Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
 	// use parity_scale_codec::Encode;
-	fn convert(id: crate::CurrencyId) -> Option<MultiLocation> {
+	fn convert(id: CurrencyId) -> Option<MultiLocation> {
 		match id {
-			crate::CurrencyId::XOR => Some(Parent.into()),
-			crate::CurrencyId::XSTUSD => Some(
+			CurrencyId::XOR => Some(Parent.into()),
+			CurrencyId::XSTUSD => Some(
 				// (
 				// 	Parent,
 				// 	Parachain(2000),
@@ -361,7 +361,7 @@ impl sp_runtime::traits::Convert<AccountId, MultiLocation> for AccountIdToMultiL
 impl orml_xtokens::Config for Runtime {
 	type Event = Event;
 	type Balance = crate::Balance;
-	type CurrencyId = crate::CurrencyId;
+	type CurrencyId = CurrencyId;
 	type CurrencyIdConvert = CurrencyIdConvert;
 	type AccountIdToMultiLocation = AccountIdToMultiLocation;
 	type SelfLocation = SelfLocation;

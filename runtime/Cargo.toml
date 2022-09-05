@@ -139,7 +139,7 @@ std = [
 	"orml-xcm-support/std",
 	"pallet-assets/std",
 	"orml-unknown-tokens/std",
-	"orml-tokens/std"
+	"orml-tokens/std",
 ]
 
 runtime-benchmarks = [

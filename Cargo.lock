@@ -1110,6 +1110,12 @@ dependencies = [
 [[package]]
 name = "common"
 version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+]
 
 [[package]]
 name = "concurrent-queue"

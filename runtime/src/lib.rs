@@ -40,6 +40,7 @@ use frame_system::{
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
+use common::primitives::CurrencyId;
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -482,29 +483,29 @@ impl orml_unknown_tokens::Config for Runtime {
 	type Event = Event;
 }
 
-use codec::{Decode, Encode};
-use frame_support::RuntimeDebug;
-use scale_info::TypeInfo;
-use serde::{Deserialize, Serialize};
+// use codec::{Decode, Encode};
+// use frame_support::RuntimeDebug;
+// use scale_info::TypeInfo;
+// use serde::{Deserialize, Serialize};
 
-#[derive(
-	Encode,
-	Decode,
-	Eq,
-	PartialEq,
-	Copy,
-	Clone,
-	RuntimeDebug,
-	PartialOrd,
-	Ord,
-	codec::MaxEncodedLen,
-	TypeInfo,
-)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum CurrencyId {
-	XOR,
-	XSTUSD,
-}
+// #[derive(
+// 	Encode,
+// 	Decode,
+// 	Eq,
+// 	PartialEq,
+// 	Copy,
+// 	Clone,
+// 	RuntimeDebug,
+// 	PartialOrd,
+// 	Ord,
+// 	codec::MaxEncodedLen,
+// 	TypeInfo,
+// )]
+// #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+// pub enum CurrencyId {
+// 	XOR,
+// 	XSTUSD,
+// }
 
 orml_traits::parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {

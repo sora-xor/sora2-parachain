@@ -28,18 +28,28 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use codec::{Decode, Encode};
+use frame_support::RuntimeDebug;
+use scale_info::TypeInfo;
+use serde::{Deserialize, Serialize};
+
 pub type AssetId = u64;
 
+#[derive(
+	Encode,
+	Decode,
+	Eq,
+	PartialEq,
+	Copy,
+	Clone,
+	RuntimeDebug,
+	PartialOrd,
+	Ord,
+	codec::MaxEncodedLen,
+	TypeInfo,
+)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum CurrencyId {
 	XOR,
-	XTUSD,
+	XSTUSD,
 }
-
-// TODO: Convert to AssetId32
-pub const XOR: u8 = 0;
-pub const DOT: u8 = 1;
-pub const KSM: u8 = 2;
-pub const USDT: u8 = 4;
-pub const VAL: u8 = 8;
-pub const PSWAP: u8 = 16;
-pub const DAI: u8 = 32;
