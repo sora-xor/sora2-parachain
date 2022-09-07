@@ -201,7 +201,8 @@ impl xcm_executor::Config for XcmConfig {
 	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
 	// type Trader =
 	// 	UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToAuthor<Runtime>>;
-	type Trader = AllTokensAreCreatedEqualToWeight;
+	// type Trader = AllTokensAreCreatedEqualToWeight;
+	type Trader = crate::trader::ParachainTrader;
 	type ResponseHandler = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
 	type AssetClaims = PolkadotXcm;
