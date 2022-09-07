@@ -31,10 +31,10 @@ impl WeightTrader for ParachainTrader {
 	}
 
     fn refund_weight(&mut self, weight: Weight) -> Option<MultiAsset> {
-		// log::trace!(
-		// 	target: "xcm::weight", "refund_weight weight: {:?}, weight: {:?}, amount: {:?}, ratio: {:?}, multi_location: {:?}",
-		// 	weight, self.weight, self.amount, self.ratio, self.multi_location
-		// );
+		log::trace!(
+			target: "xcm::weight", "refund_weight weight: {:?} ",
+			weight
+		);
         None
 	}
 }
