@@ -53,7 +53,7 @@ pub type AssetId = u64;
 pub enum CurrencyId {
 	KSM,
 	SoraNative(SoraNativeAssets),
-	Parachain(ParachainTokens),
+	Parachain(ParachainAssets),
 }
 
 // #[derive(
@@ -90,8 +90,8 @@ pub enum CurrencyId {
 	TypeInfo,
 )]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum ParachainTokens {
-	//Karura Native Token 
+pub enum ParachainAssets {
+	//Karura Native Token
 	KAR,
 	//Acala Dollar
 	AUSD,

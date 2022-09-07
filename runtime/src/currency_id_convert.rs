@@ -1,10 +1,10 @@
-use sp_std::vec::Vec;
-use crate::CurrencyId;
 use super::{
 	AccountId, Balances, Call, Event, Origin, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime,
 	WeightToFee, XcmpQueue,
 };
 use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get;
+use crate::CurrencyId;
+use common::primitives::{ParachainAssets, SoraNativeAssets};
 use core::marker::PhantomData;
 use frame_support::{
 	log, match_types, parameter_types,
@@ -18,6 +18,7 @@ use orml_xcm_support::{
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain::primitives::Sibling;
 use polkadot_runtime_common::impls::ToAuthor;
+use sp_std::vec::Vec;
 use xcm::latest::prelude::*;
 use xcm_builder::{
 	AccountId32Aliases, AllowTopLevelPaidExecutionFrom, AllowUnpaidExecutionFrom, CurrencyAdapter,
@@ -27,14 +28,12 @@ use xcm_builder::{
 	UsingComponents,
 };
 use xcm_executor::{traits::ShouldExecute, XcmExecutor};
-use common::primitives::SoraNativeAssets;
-
 
 pub const SORA_PARA_ID: u32 = 2011;
-pub const XOR_KEY: &[u8; 3] = b"XOR";
-pub const PSWAP_KEY: &[u8; 5] = b"PSWAP";
-pub const VAL_KEY: &[u8; 3] = b"VAL";
-pub const XSTUSD_KEY: &[u8; 6] = b"XSTUSD";
+pub const XOR_KEY: &[u8] = b"XOR";
+pub const PSWAP_KEY: &[u8] = b"PSWAP";
+pub const VAL_KEY: &[u8] = b"VAL";
+pub const XSTUSD_KEY: &[u8] = b"XSTUSD";
 
 pub fn get_para_key_multilocation(para_id: u32, key: Vec<u8>) -> Option<MultiLocation> {
 	Some(MultiLocation::new(1, X2(Parachain(para_id), GeneralKey(key.to_vec()))))
@@ -47,10 +46,18 @@ impl sp_runtime::traits::Convert<CurrencyId, Option<MultiLocation>> for Currency
 		match id {
 			CurrencyId::KSM => Some(Parent.into()),
 			CurrencyId::SoraNative(sora_asset) => match sora_asset {
-				SoraNativeAssets::XOR =>  get_para_key_multilocation(SORA_PARA_ID, XOR_KEY.to_vec()),
-				SoraNativeAssets::PSWAP =>  get_para_key_multilocation(SORA_PARA_ID, PSWAP_KEY.to_vec()),
-				SoraNativeAssets::VAL =>  get_para_key_multilocation(SORA_PARA_ID, VAL_KEY.to_vec()),
-				SoraNativeAssets::XSTUSD =>  get_para_key_multilocation(SORA_PARA_ID, XSTUSD_KEY.to_vec()),
+				SoraNativeAssets::XOR => get_para_key_multilocation(SORA_PARA_ID, XOR_KEY.to_vec()),
+				SoraNativeAssets::PSWAP => {
+					get_para_key_multilocation(SORA_PARA_ID, PSWAP_KEY.to_vec())
+				},
+				SoraNativeAssets::VAL => get_para_key_multilocation(SORA_PARA_ID, VAL_KEY.to_vec()),
+				SoraNativeAssets::XSTUSD => {
+					get_para_key_multilocation(SORA_PARA_ID, XSTUSD_KEY.to_vec())
+				},
+			},
+			CurrencyId::Parachain(parachain_asset) => match parachain_asset {
+				ParachainAssets::KAR => None,
+				_ => None,
 			},
 			_ => None,
 		}
@@ -66,11 +73,15 @@ impl sp_runtime::traits::Convert<MultiLocation, Option<CurrencyId>> for Currency
 			MultiLocation { parents, interior } if parents == 1 => match interior {
 				X2(Parachain(SORA_PARA_ID), GeneralKey(key)) => match key {
 					key if key == XOR_KEY => Some(CurrencyId::SoraNative(SoraNativeAssets::XOR)),
-					key if key == PSWAP_KEY => Some(CurrencyId::SoraNative(SoraNativeAssets::PSWAP)),
+					key if key == PSWAP_KEY => {
+						Some(CurrencyId::SoraNative(SoraNativeAssets::PSWAP))
+					},
 					key if key == VAL_KEY => Some(CurrencyId::SoraNative(SoraNativeAssets::VAL)),
-					key if key == XSTUSD_KEY => Some(CurrencyId::SoraNative(SoraNativeAssets::XSTUSD)),
-					_ => None
-				} 
+					key if key == XSTUSD_KEY => {
+						Some(CurrencyId::SoraNative(SoraNativeAssets::XSTUSD))
+					},
+					_ => None,
+				},
 				_ => None,
 			},
 			// MultiLocation { parents, interior } if parents == 0 => match interior {

@@ -6,9 +6,10 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+mod currency_id_convert;
 mod weights;
+mod trader;
 pub mod xcm_config;
-pub mod currency_id_convert;
 
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -25,6 +26,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
+use common::primitives::CurrencyId;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{ConstU128, ConstU32, ConstU64, Everything},
@@ -41,7 +43,6 @@ use frame_system::{
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
-use common::primitives::CurrencyId;
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;

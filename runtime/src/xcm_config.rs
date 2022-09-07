@@ -2,8 +2,9 @@ use super::{
 	AccountId, Balances, Call, Event, Origin, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime,
 	WeightToFee, XcmpQueue,
 };
-use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get;
 use crate::currency_id_convert::*;
+use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get;
+use crate::CurrencyId;
 use core::marker::PhantomData;
 use frame_support::{
 	log, match_types, parameter_types,
@@ -26,7 +27,6 @@ use xcm_builder::{
 	UsingComponents,
 };
 use xcm_executor::{traits::ShouldExecute, XcmExecutor};
-use crate::CurrencyId;
 // use common::primitives::CurrencyId;
 
 parameter_types! {
@@ -291,12 +291,6 @@ impl orml_xtokens::Config for Runtime {
 	type ReserveProvider = AbsoluteReserveProvider;
 }
 
-
-
-
-
-
-
 // TEMPORARYYYY!!!!!!
 /// A trader who believes all tokens are created equal to "weight" of any chain,
 /// which is not true, but good enough to mock the fee payment of XCM execution.
@@ -308,23 +302,15 @@ impl xcm_executor::traits::WeightTrader for AllTokensAreCreatedEqualToWeight {
 		Self(MultiLocation::parent())
 	}
 
-	fn buy_weight(&mut self, weight: Weight, payment: xcm_executor::Assets) -> Result<xcm_executor::Assets, XcmError> {
-		let asset_id = payment
-			.fungible
-			.iter()
-			.next()
-			.expect("Payment must be something; qed")
-			.0;
-		let required = MultiAsset {
-			id: asset_id.clone(),
-			fun: Fungible(weight as u128),
-		};
+	fn buy_weight(
+		&mut self,
+		weight: Weight,
+		payment: xcm_executor::Assets,
+	) -> Result<xcm_executor::Assets, XcmError> {
+		let asset_id = payment.fungible.iter().next().expect("Payment must be something; qed").0;
+		let required = MultiAsset { id: asset_id.clone(), fun: Fungible(weight as u128) };
 
-		if let MultiAsset {
-			fun: _,
-			id: Concrete(ref id),
-		} = &required
-		{
+		if let MultiAsset { fun: _, id: Concrete(ref id) } = &required {
 			self.0 = id.clone();
 		}
 
