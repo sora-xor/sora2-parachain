@@ -490,56 +490,6 @@ impl pallet_collator_selection::Config for Runtime {
 	type WeightInfo = ();
 }
 
-/// Configure the pallet template in pallets/template.
-// impl pallet_template::Config for Runtime {
-// 	type Event = Event;
-// }
-
-impl pallet_assets::Config for Runtime {
-	type Event = Event;
-	type Balance = u64;
-	type AssetId = common::primitives::AssetId;
-	type Currency = Balances;
-	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
-	type AssetDeposit = ConstU128<1>;
-	type AssetAccountDeposit = ConstU128<10>;
-	type MetadataDepositBase = ConstU128<1>;
-	type MetadataDepositPerByte = ConstU128<1>;
-	type ApprovalDeposit = ConstU128<1>;
-	type StringLimit = ConstU32<50>;
-	type Freezer = ();
-	type WeightInfo = ();
-	type Extra = ();
-}
-
-impl orml_unknown_tokens::Config for Runtime {
-	type Event = Event;
-}
-
-// use codec::{Decode, Encode};
-// use frame_support::RuntimeDebug;
-// use scale_info::TypeInfo;
-// use serde::{Deserialize, Serialize};
-
-// #[derive(
-// 	Encode,
-// 	Decode,
-// 	Eq,
-// 	PartialEq,
-// 	Copy,
-// 	Clone,
-// 	RuntimeDebug,
-// 	PartialOrd,
-// 	Ord,
-// 	codec::MaxEncodedLen,
-// 	TypeInfo,
-// )]
-// #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-// pub enum CurrencyId {
-// 	XOR,
-// 	XSTUSD,
-// }
-
 orml_traits::parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
 		Default::default()
@@ -549,7 +499,6 @@ orml_traits::parameter_type_with_key! {
 impl orml_tokens::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
-	// type AssetId = common::primitives::AssetId;
 	type Amount = i128;
 	type CurrencyId = CurrencyId;
 	type WeightInfo = ();
@@ -596,15 +545,9 @@ construct_runtime!(
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 32,
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 
-		// Template
-		// TemplatePallet: pallet_template::{Pallet, Call, Storage, Event<T>}  = 40,
-
 		// ORML
 		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 41,
 		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>} = 42,
-
-		Assets: pallet_assets::{Pallet, Call, Storage, Event<T>} = 54,
-		UnknownTokens: orml_unknown_tokens exclude_parts { Call } = 55,
 	}
 );
 

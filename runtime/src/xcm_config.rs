@@ -231,8 +231,8 @@ impl xcm_executor::Config for XcmConfig {
 	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
 	// type Trader =
 	// 	UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToAuthor<Runtime>>;
-	type Trader = AllTokensAreCreatedEqualToWeight;
-	// type Trader = crate::trader::ParachainTrader;
+	// type Trader = AllTokensAreCreatedEqualToWeight;
+	type Trader = crate::trader::ParachainTrader;
 	type ResponseHandler = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
 	type AssetClaims = PolkadotXcm;
@@ -320,40 +320,4 @@ impl orml_xtokens::Config for Runtime {
 	type MinXcmFee = ParachainMinFee;
 	type MultiLocationsFilter = Everything;
 	type ReserveProvider = AbsoluteReserveProvider;
-}
-
-// TEMPORARYYYY!!!!!!
-/// A trader who believes all tokens are created equal to "weight" of any chain,
-/// which is not true, but good enough to mock the fee payment of XCM execution.
-///
-/// This mock will always trade `n` amount of weight to `n` amount of tokens.
-pub struct AllTokensAreCreatedEqualToWeight(MultiLocation);
-impl xcm_executor::traits::WeightTrader for AllTokensAreCreatedEqualToWeight {
-	fn new() -> Self {
-		Self(MultiLocation::parent())
-	}
-
-	fn buy_weight(
-		&mut self,
-		weight: Weight,
-		payment: xcm_executor::Assets,
-	) -> Result<xcm_executor::Assets, XcmError> {
-		let asset_id = payment.fungible.iter().next().expect("Payment must be something; qed").0;
-		let required = MultiAsset { id: asset_id.clone(), fun: Fungible(weight as u128) };
-
-		if let MultiAsset { fun: _, id: Concrete(ref id) } = &required {
-			self.0 = id.clone();
-		}
-
-		let unused = payment.checked_sub(required).map_err(|_| XcmError::TooExpensive)?;
-		Ok(unused)
-	}
-
-	fn refund_weight(&mut self, weight: Weight) -> Option<MultiAsset> {
-		if weight == 0 {
-			None
-		} else {
-			Some((self.0.clone(), weight as u128).into())
-		}
-	}
 }
