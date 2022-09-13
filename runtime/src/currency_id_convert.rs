@@ -190,3 +190,29 @@ mod convert_tests {
 		});
 	}
 }
+
+
+
+
+
+// impl sp_runtime::traits::Convert<[u8; 32], Option<MultiLocation>> for Converter {
+// 	fn convert(id: [u8; 32]) -> Option<MultiLocation> {
+// 		None
+// 	}
+// }
+
+// impl sp_runtime::traits::Convert<MultiLocation, Option<[u8; 32]>> for Converter {
+// 	fn convert(multilocation: MultiLocation) -> Option<[u8; 32]> {
+//         None
+// 	}
+// }
+
+// impl sp_runtime::traits::Convert<MultiAsset, Option<CurrencyId>> for Converter {
+// 	fn convert(a: MultiAsset) -> Option<CurrencyId> {
+// 		if let MultiAsset { fun: Fungible(_), id: Concrete(id) } = a {
+// 			Self::convert(id)
+// 		} else {
+// 			Option::None
+// 		}
+// 	}
+// }

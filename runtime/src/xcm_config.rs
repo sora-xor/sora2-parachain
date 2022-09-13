@@ -95,12 +95,14 @@ pub type LocationToAccountId = (
 pub type LocalAssetTransactor = MultiCurrencyAdapter<
 	crate::Tokens,
 	(),
-	IsNativeConcrete<CurrencyId, CurrencyIdConvert>,
+	// IsNativeConcrete<CurrencyId, CurrencyIdConvert>,
+	IsNativeConcrete<CurrencyId, crate::Converter>,
 	AccountId,
 	LocationToAccountId,
 	CurrencyId,
 	// common::primitives::AssetId,
-	CurrencyIdConvert,
+	// CurrencyIdConvert,
+	crate::Converter,
 	// DepositToAlternative<KaruraTreasuryAccount, Currencies, CurrencyId, AccountId, Balance>,
 	(),
 >;
@@ -309,7 +311,8 @@ impl orml_xtokens::Config for Runtime {
 	type Event = Event;
 	type Balance = crate::Balance;
 	type CurrencyId = CurrencyId;
-	type CurrencyIdConvert = CurrencyIdConvert;
+	// type CurrencyIdConvert = CurrencyIdConvert;
+	type CurrencyIdConvert = crate::Converter;
 	type AccountIdToMultiLocation = AccountIdToMultiLocation;
 	type SelfLocation = SelfLocation;
 	type XcmExecutor = XcmExecutor<XcmConfig>;

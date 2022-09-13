@@ -24,6 +24,7 @@ smallvec = "1.6.1"
 
 # Local
 pallet-template = { path = "../pallets/template", default-features = false }
+pallet-converter = { path = "../pallets/converter", default-features = false }
 common = { path = "../common", default-features = false }
 
 # Substrate
@@ -109,7 +110,7 @@ std = [
 	"pallet-collator-selection/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
-	"pallet-template/std",
+	"pallet-converter/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",

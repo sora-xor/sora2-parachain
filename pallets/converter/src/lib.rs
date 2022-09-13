@@ -4,6 +4,7 @@
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
+use xcm::latest::prelude::*;
 
 // #[cfg(test)]
 // mod mock;
@@ -99,4 +100,19 @@ pub mod pallet {
 
 		// }
 	}
+
+
+	impl<T> sp_runtime::traits::Convert<[u8; 32], Option<MultiLocation>> for Pallet<T> {
+		fn convert(id: [u8; 32]) -> Option<MultiLocation> {
+			None
+		}
+	}
+
+	impl<T> sp_runtime::traits::Convert<MultiLocation, Option<[u8; 32]>> for Pallet<T> {
+		fn convert(multilocation: MultiLocation) -> Option<[u8; 32]> {
+			None
+		}
 }
+}
+
+

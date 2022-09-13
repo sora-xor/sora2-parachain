@@ -6130,6 +6130,7 @@ dependencies = [
  "pallet-authorship",
  "pallet-balances",
  "pallet-collator-selection",
+ "pallet-converter",
  "pallet-session",
  "pallet-sudo",
  "pallet-template",

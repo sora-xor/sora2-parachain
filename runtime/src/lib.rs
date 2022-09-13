@@ -511,6 +511,11 @@ impl orml_tokens::Config for Runtime {
 	type OnKilledTokenAccount = ();
 }
 
+impl pallet_converter::Config for Runtime {
+	type Event = Event;
+	type AssetId = [u8; 32];
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -547,6 +552,8 @@ construct_runtime!(
 		// ORML
 		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 41,
 		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>} = 42,
+
+		Converter: pallet_converter::{Pallet, Call, Storage, Event<T>} = 43,
 	}
 );
 
