@@ -82,7 +82,10 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 
 		#[pallet::weight(0)]
-		pub fn register_pair(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		pub fn register_pair(origin: OriginFor<T>, asset_id: [u8; 32], multilocation: MultiLocation) -> DispatchResultWithPostInfo {
+			let _ = ensure_root(origin);
+			AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
+			MultilocationToAssetId::<T>::insert(multilocation, asset_id);
 			Ok(().into())
 		}
 
