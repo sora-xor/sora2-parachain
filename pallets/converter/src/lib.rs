@@ -44,10 +44,12 @@ pub mod pallet {
 	pub type Something<T> = StorageValue<_, u32>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn get_multilocation_from_asset_id)]
 	pub type AssetIdToMultilocation<T: Config> =
 		StorageMap<_, Blake2_256, [u8; 32], MultiLocation, OptionQuery>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn get_asset_id_from_multilocation)]
 	pub type MultilocationToAssetId<T: Config> =
 		StorageMap<_, Blake2_256, MultiLocation, [u8; 32], OptionQuery>;
 
@@ -95,24 +97,25 @@ pub mod pallet {
 		}
 	}
 
-	impl<T: Config> Pallet<T> {
-		// pub fn get_mulilocation(asset_id: [u8;32]) -> Option<MultiLocation>{
-
-		// }
-	}
-
-
-	impl<T> sp_runtime::traits::Convert<[u8; 32], Option<MultiLocation>> for Pallet<T> {
+	impl<T: Config> sp_runtime::traits::Convert<[u8; 32], Option<MultiLocation>> for Pallet<T> {
 		fn convert(id: [u8; 32]) -> Option<MultiLocation> {
-			None
+			Pallet::<T>::get_multilocation_from_asset_id(id)
 		}
 	}
 
-	impl<T> sp_runtime::traits::Convert<MultiLocation, Option<[u8; 32]>> for Pallet<T> {
+	impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<[u8; 32]>> for Pallet<T> {
 		fn convert(multilocation: MultiLocation) -> Option<[u8; 32]> {
-			None
+			Pallet::<T>::get_asset_id_from_multilocation(multilocation)
 		}
-}
-}
+	}
 
-
+	impl<T: Config> sp_runtime::traits::Convert<MultiAsset, Option<[u8; 32]>> for Pallet<T> {
+		fn convert(a: MultiAsset) -> Option<[u8; 32]> {
+			if let MultiAsset { fun: Fungible(_), id: Concrete(id) } = a {
+				Self::convert(id)
+			} else {
+				Option::None
+			}
+		}
+	}
+}

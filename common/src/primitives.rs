@@ -35,26 +35,7 @@ use serde::{Deserialize, Serialize};
 
 pub type SoraMainnetAssetId = [u8; 32];
 pub type AssetId = u64;
-
-#[derive(
-	Encode,
-	Decode,
-	Eq,
-	PartialEq,
-	Copy,
-	Clone,
-	RuntimeDebug,
-	PartialOrd,
-	Ord,
-	codec::MaxEncodedLen,
-	TypeInfo,
-)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum CurrencyId {
-	KSM,
-	SoraNative(SoraNativeAssets),
-	Parachain(ParachainAssets),
-}
+pub type CurrencyId = [u8; 32];
 
 // #[derive(
 // 	Encode,
@@ -70,56 +51,56 @@ pub enum CurrencyId {
 // 	TypeInfo,
 // )]
 // #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-// pub enum CurrencyIdNew {
+// pub enum CurrencyId {
 // 	KSM,
 // 	SoraNative(SoraNativeAssets),
-// 	Parachain(ParachainTokens),
+// 	Parachain(ParachainAssets),
+// }	
+
+// #[derive(
+// 	Encode,
+// 	Decode,
+// 	Eq,
+// 	PartialEq,
+// 	Copy,
+// 	Clone,
+// 	RuntimeDebug,
+// 	PartialOrd,
+// 	Ord,
+// 	codec::MaxEncodedLen,
+// 	TypeInfo,
+// )]
+// #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+// pub enum ParachainAssets {
+// 	//Karura Native Token
+// 	KAR,
+// 	//Acala Dollar
+// 	AUSD,
+// 	//Liquid KSM
+// 	LKSM,
 // }
 
-#[derive(
-	Encode,
-	Decode,
-	Eq,
-	PartialEq,
-	Copy,
-	Clone,
-	RuntimeDebug,
-	PartialOrd,
-	Ord,
-	codec::MaxEncodedLen,
-	TypeInfo,
-)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum ParachainAssets {
-	//Karura Native Token
-	KAR,
-	//Acala Dollar
-	AUSD,
-	//Liquid KSM
-	LKSM,
-}
-
-#[derive(
-	Encode,
-	Decode,
-	Eq,
-	PartialEq,
-	Copy,
-	Clone,
-	RuntimeDebug,
-	PartialOrd,
-	Ord,
-	codec::MaxEncodedLen,
-	TypeInfo,
-)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum SoraNativeAssets {
-	// SORA
-	XOR,
-	// Polkaswap
-	PSWAP,
-	//  Validators
-	VAL,
-	// XOR Synthetic Dolla
-	XSTUSD,
-}
+// #[derive(
+// 	Encode,
+// 	Decode,
+// 	Eq,
+// 	PartialEq,
+// 	Copy,
+// 	Clone,
+// 	RuntimeDebug,
+// 	PartialOrd,
+// 	Ord,
+// 	codec::MaxEncodedLen,
+// 	TypeInfo,
+// )]
+// #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+// pub enum SoraNativeAssets {
+// 	// SORA
+// 	XOR,
+// 	// Polkaswap
+// 	PSWAP,
+// 	//  Validators
+// 	VAL,
+// 	// XOR Synthetic Dolla
+// 	XSTUSD,
+// }
