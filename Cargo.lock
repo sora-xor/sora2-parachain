@@ -5000,21 +5000,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "orml-unknown-tokens"
-version = "0.4.1-dev"
-source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.24#41dddc878ecef961b9b20207713abdcb8d84ae53"
-dependencies = [
- "frame-support",
- "frame-system",
- "orml-xcm-support",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-std",
- "xcm",
-]
-
-[[package]]
 name = "orml-utilities"
 version = "0.4.1-dev"
 source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.24#41dddc878ecef961b9b20207713abdcb8d84ae53"
@@ -5076,20 +5061,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ff55baddef9e4ad00f88b6c743a2a8062d4c6ade126c2a528644b8e444d52ce"
 dependencies = [
  "stable_deref_trait",
-]
-
-[[package]]
-name = "pallet-assets"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.24#814752f60ab8cce7e2ece3ce0c1b10799b4eab28"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "scale-info",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]
@@ -6137,10 +6108,8 @@ dependencies = [
  "log",
  "orml-tokens",
  "orml-traits",
- "orml-unknown-tokens",
  "orml-xcm-support",
  "orml-xtokens",
- "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",

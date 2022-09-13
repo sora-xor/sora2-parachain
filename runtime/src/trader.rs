@@ -28,14 +28,13 @@ impl WeightTrader for ParachainTrader {
 			.iter()
 			.next()
 			.map_or(Err(XcmError::TooExpensive), |v| Ok(v.0))?;
-            
+
 		let required = MultiAsset { id: asset_id.clone(), fun: Fungible(weight as u128) };
 
 		if let MultiAsset { fun: _, id: Concrete(ref id) } = &required {
 			self.multi_location = Some(id.clone());
 		} else {
-
-        }
+		}
 
 		let unused = payment.checked_sub(required).map_err(|_| XcmError::TooExpensive)?;
 		Ok(unused)
@@ -49,12 +48,12 @@ impl WeightTrader for ParachainTrader {
 		match &self.multi_location {
 			None => None,
 			Some(ml) => {
-                if weight == 0 {
-                    None
-                } else {
-                    Some((ml.clone(), weight as u128).into())
-                }
-            }
+				if weight == 0 {
+					None
+				} else {
+					Some((ml.clone(), weight as u128).into())
+				}
+			},
 		}
 	}
 }

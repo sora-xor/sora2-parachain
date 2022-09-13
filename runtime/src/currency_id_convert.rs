@@ -28,7 +28,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 use super::{
 	AccountId, Balances, Call, Event, Origin, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime,
 	WeightToFee, XcmpQueue,
@@ -60,11 +59,19 @@ use xcm_builder::{
 };
 use xcm_executor::{traits::ShouldExecute, XcmExecutor};
 
-pub const SORA_PARA_ID: u32 = 2000;
+pub const SORA_PARA_ID: u32 = 2011;
+pub const KARURA_PARA_ID: u32 = 2000;
+
+// Sora tokens
 pub const XOR_KEY: &[u8] = b"XOR";
 pub const PSWAP_KEY: &[u8] = b"PSWAP";
 pub const VAL_KEY: &[u8] = b"VAL";
 pub const XSTUSD_KEY: &[u8] = b"XSTUSD";
+
+// Karura tokens
+pub const KAR_KEY: &[u8] = &[0, 0, 8, 0];
+pub const AUSD_KEY: &[u8] = &[0, 0, 8, 1];
+pub const LKSM_KEY: &[u8] = &[0, 0, 8, 3];
 
 pub fn get_para_key_multilocation(para_id: u32, key: Vec<u8>) -> Option<MultiLocation> {
 	Some(MultiLocation::new(1, X2(Parachain(para_id), GeneralKey(key.to_vec()))))
@@ -77,20 +84,30 @@ impl sp_runtime::traits::Convert<CurrencyId, Option<MultiLocation>> for Currency
 		match id {
 			CurrencyId::KSM => Some(Parent.into()),
 			CurrencyId::SoraNative(sora_asset) => match sora_asset {
-				SoraNativeAssets::XOR => get_para_key_multilocation(SORA_PARA_ID, XOR_KEY.to_vec()),
-				SoraNativeAssets::PSWAP => {
-					get_para_key_multilocation(SORA_PARA_ID, PSWAP_KEY.to_vec())
+				SoraNativeAssets::XOR => {
+					get_para_key_multilocation(u32::from(ParachainInfo::get()), XOR_KEY.to_vec())
 				},
-				SoraNativeAssets::VAL => get_para_key_multilocation(SORA_PARA_ID, VAL_KEY.to_vec()),
+				SoraNativeAssets::PSWAP => {
+					get_para_key_multilocation(u32::from(ParachainInfo::get()), PSWAP_KEY.to_vec())
+				},
+				SoraNativeAssets::VAL => {
+					get_para_key_multilocation(u32::from(ParachainInfo::get()), VAL_KEY.to_vec())
+				},
 				SoraNativeAssets::XSTUSD => {
-					get_para_key_multilocation(SORA_PARA_ID, XSTUSD_KEY.to_vec())
+					get_para_key_multilocation(u32::from(ParachainInfo::get()), XSTUSD_KEY.to_vec())
 				},
 			},
 			CurrencyId::Parachain(parachain_asset) => match parachain_asset {
-				ParachainAssets::KAR => None,
-				_ => None,
+				ParachainAssets::KAR => {
+					get_para_key_multilocation(KARURA_PARA_ID, KAR_KEY.to_vec())
+				},
+				ParachainAssets::AUSD => {
+					get_para_key_multilocation(KARURA_PARA_ID, AUSD_KEY.to_vec())
+				},
+				ParachainAssets::LKSM => {
+					get_para_key_multilocation(KARURA_PARA_ID, LKSM_KEY.to_vec())
+				},
 			},
-			_ => None,
 		}
 	}
 }
@@ -101,19 +118,33 @@ impl sp_runtime::traits::Convert<MultiLocation, Option<CurrencyId>> for Currency
 			return Some(CurrencyId::KSM);
 		}
 		match multilocation {
-			MultiLocation { parents, interior } if parents == 1 => match interior {
-				X2(Parachain(SORA_PARA_ID), GeneralKey(key)) => match key {
-					key if key == XOR_KEY => Some(CurrencyId::SoraNative(SoraNativeAssets::XOR)),
-					key if key == PSWAP_KEY => {
+			MultiLocation { parents: 1, interior: X2(Parachain(para_id), GeneralKey(key)) } => {
+				match (para_id, &key[..]) {
+					(KARURA_PARA_ID, KAR_KEY) => Some(CurrencyId::Parachain(ParachainAssets::KAR)),
+					(KARURA_PARA_ID, AUSD_KEY) => {
+						Some(CurrencyId::Parachain(ParachainAssets::AUSD))
+					},
+					(KARURA_PARA_ID, LKSM_KEY) => {
+						Some(CurrencyId::Parachain(ParachainAssets::LKSM))
+					},
+					(self_para_id, XOR_KEY) if self_para_id == u32::from(ParachainInfo::get()) => {
+						Some(CurrencyId::SoraNative(SoraNativeAssets::XOR))
+					},
+					(self_para_id, PSWAP_KEY)
+						if self_para_id == u32::from(ParachainInfo::get()) =>
+					{
 						Some(CurrencyId::SoraNative(SoraNativeAssets::PSWAP))
 					},
-					key if key == VAL_KEY => Some(CurrencyId::SoraNative(SoraNativeAssets::VAL)),
-					key if key == XSTUSD_KEY => {
+					(self_para_id, VAL_KEY) if self_para_id == u32::from(ParachainInfo::get()) => {
+						Some(CurrencyId::SoraNative(SoraNativeAssets::VAL))
+					},
+					(self_para_id, XSTUSD_KEY)
+						if self_para_id == u32::from(ParachainInfo::get()) =>
+					{
 						Some(CurrencyId::SoraNative(SoraNativeAssets::XSTUSD))
 					},
 					_ => None,
-				},
-				_ => None,
+				}
 			},
 			// MultiLocation { parents, interior } if parents == 0 => match interior {
 			// 	X1(GeneralKey(k)) if k == a => Some(CurrencyId::XSTUSD),
@@ -131,5 +162,31 @@ impl sp_runtime::traits::Convert<MultiAsset, Option<CurrencyId>> for CurrencyIdC
 		} else {
 			Option::None
 		}
+	}
+}
+
+#[cfg(test)]
+mod convert_tests {
+	use super::*;
+	#[test]
+	fn convert_parachains_multiloc_suceed() {
+		[
+			(KARURA_PARA_ID, KAR_KEY, CurrencyId::Parachain(ParachainAssets::KAR)),
+			(KARURA_PARA_ID, AUSD_KEY, CurrencyId::Parachain(ParachainAssets::AUSD)),
+			(KARURA_PARA_ID, LKSM_KEY, CurrencyId::Parachain(ParachainAssets::LKSM)),
+		]
+		.into_iter()
+		.for_each(|(x, y, z)| {
+			assert_eq!(
+				<CurrencyIdConvert as sp_runtime::traits::Convert<
+					MultiLocation,
+					Option<CurrencyId>,
+				>>::convert(MultiLocation {
+					parents: 1,
+					interior: X2(Parachain(x), GeneralKey(y.to_vec())),
+				}),
+				Some(z)
+			);
+		});
 	}
 }
