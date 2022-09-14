@@ -5346,6 +5346,7 @@ dependencies = [
 name = "pallet-converter"
 version = "0.1.0"
 dependencies = [
+ "common",
  "frame-benchmarking",
  "frame-support",
  "frame-system",

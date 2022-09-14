@@ -34,7 +34,7 @@ use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 
 pub type SoraMainnetAssetId = [u8; 32];
-pub type AssetId = u64;
+pub type AssetId = [u8; 32];
 pub type CurrencyId = [u8; 32];
 
 // #[derive(

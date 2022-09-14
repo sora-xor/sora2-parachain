@@ -513,7 +513,6 @@ impl orml_tokens::Config for Runtime {
 
 impl pallet_converter::Config for Runtime {
 	type Event = Event;
-	type AssetId = [u8; 32];
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

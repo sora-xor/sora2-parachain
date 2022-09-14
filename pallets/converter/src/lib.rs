@@ -1,10 +1,38 @@
+// This file is part of the SORA network and Polkaswap app.
+
+// Copyright (c) 2020, 2021, Polka Biome Ltd. All rights reserved.
+// SPDX-License-Identifier: BSD-4-Clause
+
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+
+// Redistributions of source code must retain the above copyright notice, this list
+// of conditions and the following disclaimer.
+// Redistributions in binary form must reproduce the above copyright notice, this
+// list of conditions and the following disclaimer in the documentation and/or other
+// materials provided with the distribution.
+//
+// All advertising materials mentioning features or use of this software must display
+// the following acknowledgement: This product includes software developed by Polka Biome
+// Ltd., SORA, and Polkaswap.
+//
+// Neither the name of the Polka Biome Ltd. nor the names of its contributors may be used
+// to endorse or promote products derived from this software without specific prior written permission.
+
+// THIS SOFTWARE IS PROVIDED BY Polka Biome Ltd. AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES,
+// INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Polka Biome Ltd. BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+// OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/v3/runtime/frame>
+
 pub use pallet::*;
-use xcm::latest::prelude::*;
+// use xcm::latest::prelude::*;
+
 
 // #[cfg(test)]
 // mod mock;
@@ -19,15 +47,14 @@ use xcm::latest::prelude::*;
 pub mod pallet {
 	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
-	use xcm::latest::prelude::*;
+	use common::primitives::AssetId;
+	use xcm::v1::{MultiLocation, MultiAsset};
+	use xcm::opaque::latest::{Fungibility::Fungible, AssetId::Concrete};
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
-		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-
-		type AssetId;
 	}
 
 	#[pallet::pallet]
@@ -35,23 +62,15 @@ pub mod pallet {
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
-	// The pallet's runtime storage items.
-	// https://docs.substrate.io/v3/runtime/storage
-	#[pallet::storage]
-	#[pallet::getter(fn something)]
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
-	pub type Something<T> = StorageValue<_, u32>;
-
 	#[pallet::storage]
 	#[pallet::getter(fn get_multilocation_from_asset_id)]
 	pub type AssetIdToMultilocation<T: Config> =
-		StorageMap<_, Blake2_256, [u8; 32], MultiLocation, OptionQuery>;
+		StorageMap<_, Blake2_256, AssetId, MultiLocation, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_asset_id_from_multilocation)]
 	pub type MultilocationToAssetId<T: Config> =
-		StorageMap<_, Blake2_256, MultiLocation, [u8; 32], OptionQuery>;
+		StorageMap<_, Blake2_256, MultiLocation, AssetId, OptionQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events-and-errors
@@ -75,14 +94,10 @@ pub mod pallet {
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
 
-	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
-	// These functions materialize as "extrinsics", which are often compared to transactions.
-	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-
 		#[pallet::weight(0)]
-		pub fn register_pair(origin: OriginFor<T>, asset_id: [u8; 32], multilocation: MultiLocation) -> DispatchResultWithPostInfo {
+		pub fn register_pair(origin: OriginFor<T>, asset_id: AssetId, multilocation: MultiLocation) -> DispatchResultWithPostInfo {
 			let _ = ensure_root(origin);
 			AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
 			MultilocationToAssetId::<T>::insert(multilocation, asset_id);
@@ -100,20 +115,20 @@ pub mod pallet {
 		}
 	}
 
-	impl<T: Config> sp_runtime::traits::Convert<[u8; 32], Option<MultiLocation>> for Pallet<T> {
-		fn convert(id: [u8; 32]) -> Option<MultiLocation> {
+	impl<T: Config> sp_runtime::traits::Convert<AssetId, Option<MultiLocation>> for Pallet<T> {
+		fn convert(id: AssetId) -> Option<MultiLocation> {
 			Pallet::<T>::get_multilocation_from_asset_id(id)
 		}
 	}
 
-	impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<[u8; 32]>> for Pallet<T> {
-		fn convert(multilocation: MultiLocation) -> Option<[u8; 32]> {
+	impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<AssetId>> for Pallet<T> {
+		fn convert(multilocation: MultiLocation) -> Option<AssetId> {
 			Pallet::<T>::get_asset_id_from_multilocation(multilocation)
 		}
 	}
 
-	impl<T: Config> sp_runtime::traits::Convert<MultiAsset, Option<[u8; 32]>> for Pallet<T> {
-		fn convert(a: MultiAsset) -> Option<[u8; 32]> {
+	impl<T: Config> sp_runtime::traits::Convert<MultiAsset, Option<AssetId>> for Pallet<T> {
+		fn convert(a: MultiAsset) -> Option<AssetId> {
 			if let MultiAsset { fun: Fungible(_), id: Concrete(id) } = a {
 				Self::convert(id)
 			} else {
