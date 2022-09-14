@@ -29,29 +29,25 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #![cfg_attr(not(feature = "std"), no_std)]
 
-
 pub use pallet::*;
-// use xcm::latest::prelude::*;
 
+#[cfg(test)]
+mod mock;
 
-// #[cfg(test)]
-// mod mock;
-
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;
 
 // #[cfg(feature = "runtime-benchmarks")]
 // mod benchmarking;
 
 #[frame_support::pallet]
 pub mod pallet {
+	use common::primitives::AssetId;
 	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
-	use common::primitives::AssetId;
-	use xcm::v1::{MultiLocation, MultiAsset};
-	use xcm::opaque::latest::{Fungibility::Fungible, AssetId::Concrete};
+	use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
+	use xcm::v1::{MultiAsset, MultiLocation};
 
-	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
@@ -72,23 +68,18 @@ pub mod pallet {
 	pub type MultilocationToAssetId<T: Config> =
 		StorageMap<_, Blake2_256, MultiLocation, AssetId, OptionQuery>;
 
-	// Pallets use events to inform users when important changes are made.
-	// https://docs.substrate.io/v3/runtime/events-and-errors
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Event documentation should end with an array that provides descriptive names for event
-		/// parameters. [something, who]
-		SomethingStored(u32, T::AccountId),
+		MappingCreated(AssetId, MultiLocation),
+		MappingChanged(AssetId, MultiLocation),
+		MappingDeleted(AssetId, MultiLocation),
 	}
 
-	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
-		// /// Error names should be descriptive.
-		// NoneValue,
-		// /// Errors should have helpful documentation associated with them.
-		// StorageOverflow,
+		MappingAlreadyExists,
+		MappingNotExist,
 	}
 
 	#[pallet::hooks]
@@ -97,20 +88,65 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(0)]
-		pub fn register_pair(origin: OriginFor<T>, asset_id: AssetId, multilocation: MultiLocation) -> DispatchResultWithPostInfo {
-			let _ = ensure_root(origin);
+		#[frame_support::transactional]
+		pub fn register_mapping(
+			origin: OriginFor<T>,
+			asset_id: AssetId,
+			multilocation: MultiLocation,
+		) -> DispatchResultWithPostInfo {
+			let _ = ensure_root(origin)?;
+			ensure!(
+				AssetIdToMultilocation::<T>::get(asset_id).is_none()
+					|| MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
+				Error::<T>::MappingAlreadyExists
+			);
 			AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
-			MultilocationToAssetId::<T>::insert(multilocation, asset_id);
+			MultilocationToAssetId::<T>::insert(multilocation.clone(), asset_id);
+			Self::deposit_event(Event::<T>::MappingCreated(asset_id, multilocation));
 			Ok(().into())
 		}
 
 		#[pallet::weight(0)]
-		pub fn change_pair(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		#[frame_support::transactional]
+		pub fn change_mapping(
+			origin: OriginFor<T>,
+			asset_id: AssetId,
+			multilocation: MultiLocation,
+		) -> DispatchResultWithPostInfo {
+			let _ = ensure_root(origin)?;
+			AssetIdToMultilocation::<T>::try_mutate(asset_id, |ml_opt| -> DispatchResult {
+				ensure!(ml_opt.is_some(), Error::<T>::MappingNotExist);
+				*ml_opt = Some(multilocation.clone());
+				Ok(())
+			})?;
+			MultilocationToAssetId::<T>::try_mutate(
+				multilocation.clone(),
+				|asset_opt| -> DispatchResult {
+					ensure!(asset_opt.is_some(), Error::<T>::MappingNotExist);
+					*asset_opt = Some(asset_id);
+					Ok(())
+				},
+			)?;
+			Self::deposit_event(Event::<T>::MappingChanged(asset_id, multilocation));
 			Ok(().into())
 		}
 
 		#[pallet::weight(0)]
-		pub fn delete_pair(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		#[frame_support::transactional]
+		pub fn delete_mapping(
+			origin: OriginFor<T>,
+			asset_id: AssetId,
+			multilocation: MultiLocation,
+		) -> DispatchResultWithPostInfo {
+			let _ = ensure_root(origin)?;
+			ensure!(
+				AssetIdToMultilocation::<T>::get(asset_id).is_some()
+					|| MultilocationToAssetId::<T>::get(multilocation.clone()).is_some(),
+				Error::<T>::MappingNotExist
+			);
+			AssetIdToMultilocation::<T>::remove(asset_id);
+			MultilocationToAssetId::<T>::remove(multilocation.clone());
+			Self::deposit_event(Event::<T>::MappingDeleted(asset_id, multilocation));
 			Ok(().into())
 		}
 	}
