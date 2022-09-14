@@ -55,7 +55,7 @@ pub type CurrencyId = [u8; 32];
 // 	KSM,
 // 	SoraNative(SoraNativeAssets),
 // 	Parachain(ParachainAssets),
-// }	
+// }
 
 // #[derive(
 // 	Encode,

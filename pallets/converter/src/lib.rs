@@ -43,7 +43,7 @@ mod tests;
 #[frame_support::pallet]
 pub mod pallet {
 	use common::primitives::AssetId;
-	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
+	use frame_support::{dispatch::DispatchResultWithPostInfo, fail, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
 	use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
 	use xcm::v1::{MultiAsset, MultiLocation};
@@ -72,7 +72,8 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		MappingCreated(AssetId, MultiLocation),
-		MappingChanged(AssetId, MultiLocation),
+		AssetMappingChanged(AssetId, MultiLocation),
+		MultilocationtMappingChanged(AssetId, MultiLocation),
 		MappingDeleted(AssetId, MultiLocation),
 	}
 
@@ -108,26 +109,55 @@ pub mod pallet {
 
 		#[pallet::weight(0)]
 		#[frame_support::transactional]
-		pub fn change_mapping(
+		pub fn change_asset_mapping(
 			origin: OriginFor<T>,
 			asset_id: AssetId,
-			multilocation: MultiLocation,
+			new_multilocation: MultiLocation,
 		) -> DispatchResultWithPostInfo {
 			let _ = ensure_root(origin)?;
 			AssetIdToMultilocation::<T>::try_mutate(asset_id, |ml_opt| -> DispatchResult {
-				ensure!(ml_opt.is_some(), Error::<T>::MappingNotExist);
-				*ml_opt = Some(multilocation.clone());
+				match ml_opt {
+					None => fail!(Error::<T>::MappingNotExist),
+					Some(ml) => {
+						// ensure that new_multilocation mapping does not exist
+						ensure!(
+							MultilocationToAssetId::<T>::get(new_multilocation.clone()).is_none(),
+							Error::<T>::MappingAlreadyExists
+						);
+						MultilocationToAssetId::<T>::insert(new_multilocation.clone(), asset_id);
+
+						// remove old multilocation
+						MultilocationToAssetId::<T>::remove(ml.clone());
+
+						*ml = new_multilocation.clone();
+					},
+				}
 				Ok(())
 			})?;
+			Self::deposit_event(Event::<T>::AssetMappingChanged(asset_id, new_multilocation));
+			Ok(().into())
+		}
+
+		#[pallet::weight(0)]
+		#[frame_support::transactional]
+		pub fn change_multilocation_mapping(
+			origin: OriginFor<T>,
+			multilocation: MultiLocation,
+			new_asset_id: AssetId,
+		) -> DispatchResultWithPostInfo {
+			let _ = ensure_root(origin)?;
 			MultilocationToAssetId::<T>::try_mutate(
 				multilocation.clone(),
 				|asset_opt| -> DispatchResult {
 					ensure!(asset_opt.is_some(), Error::<T>::MappingNotExist);
-					*asset_opt = Some(asset_id);
+					*asset_opt = Some(new_asset_id);
 					Ok(())
 				},
 			)?;
-			Self::deposit_event(Event::<T>::MappingChanged(asset_id, multilocation));
+			Self::deposit_event(Event::<T>::MultilocationtMappingChanged(
+				new_asset_id,
+				multilocation,
+			));
 			Ok(().into())
 		}
 
