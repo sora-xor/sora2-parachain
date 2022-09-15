@@ -37,16 +37,14 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-// #[cfg(feature = "runtime-benchmarks")]
-// mod benchmarking;
-
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
 
 use common::primitives::AssetId;
 use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
 use xcm::v1::{MultiAsset, MultiLocation};
 
-
-// IMPLS for p_runtime::traits::Convert trait to allow this pallet be used as Converter in xcm:
+// IMPLS for p_runtime::traits::Convert trait to allow this pallet be used as Converter in XCM localasset transactor:
 
 impl<T: Config> sp_runtime::traits::Convert<AssetId, Option<MultiLocation>> for Pallet<T> {
 	fn convert(id: AssetId) -> Option<MultiLocation> {
@@ -73,7 +71,6 @@ impl<T: Config> sp_runtime::traits::Convert<MultiAsset, Option<AssetId>> for Pal
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-
 	use frame_support::{dispatch::DispatchResultWithPostInfo, fail, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
 
@@ -100,9 +97,17 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
+		/// Adding mapping has been performed
+		/// [Sora AssetId, XCM Multilocation] 
 		MappingCreated(AssetId, MultiLocation),
+		/// Asset mapping change has been performed
+		/// [Sora AssetId, XCM Multilocation] 
 		AssetMappingChanged(AssetId, MultiLocation),
+		/// Multilocation mapping change has been performed
+		/// [Sora AssetId, XCM Multilocation] 
 		MultilocationtMappingChanged(AssetId, MultiLocation),
+		/// Mapping delete has been performed
+		/// [Sora AssetId, XCM Multilocation]
 		MappingDeleted(AssetId, MultiLocation),
 	}
 
@@ -110,7 +115,7 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// Given AssetId or/and Multilocation is/are already used in mapping
 		MappingAlreadyExists,
-		/// No mapping for
+		/// No mapping for AssetId and Multilocation exists
 		MappingNotExist,
 	}
 
@@ -122,6 +127,8 @@ pub mod pallet {
 		/// Perform registration for mapping of an AssetId <-> Multilocation
 		///
 		/// - `origin`: the root account on whose behalf the transaction is being executed,
+		/// - `asset_id`: asset id in Sora Network,
+		/// - `multilocation`: XCM multilocation of an asset,
 		#[pallet::weight(0)]
 		#[frame_support::transactional]
 		pub fn register_mapping(
@@ -144,6 +151,8 @@ pub mod pallet {
 		/// Perform change of mapping of an AssetId -> Multilocation
 		///
 		/// - `origin`: the root account on whose behalf the transaction is being executed,
+		/// - `asset_id`: asset id in Sora Network,
+		/// - `new_multilocation`: new XCM multilocation of an asset,
 		#[pallet::weight(0)]
 		#[frame_support::transactional]
 		pub fn change_asset_mapping(
@@ -178,6 +187,8 @@ pub mod pallet {
 		/// Perform change of mapping of an Multilocation -> AssetId
 		///
 		/// - `origin`: the root account on whose behalf the transaction is being executed,
+		/// - `multilocation`: XCM multilocation of an asset,
+		/// - `new_asset_id`: new asset id in Sora Network,
 		#[pallet::weight(0)]
 		#[frame_support::transactional]
 		pub fn change_multilocation_mapping(
@@ -222,6 +233,7 @@ pub mod pallet {
 		/// Perform delete of mapping of an AssetId -> Multilocation
 		///
 		/// - `origin`: the root account on whose behalf the transaction is being executed,
+		/// - `asset_id`: asset id in Sora Network,
 		#[pallet::weight(0)]
 		#[frame_support::transactional]
 		pub fn delete_mapping(
