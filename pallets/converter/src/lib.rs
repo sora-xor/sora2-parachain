@@ -40,13 +40,42 @@ mod tests;
 // #[cfg(feature = "runtime-benchmarks")]
 // mod benchmarking;
 
+
+use common::primitives::AssetId;
+use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
+use xcm::v1::{MultiAsset, MultiLocation};
+
+
+// IMPLS for p_runtime::traits::Convert trait to allow this pallet be used as Converter in xcm:
+
+impl<T: Config> sp_runtime::traits::Convert<AssetId, Option<MultiLocation>> for Pallet<T> {
+	fn convert(id: AssetId) -> Option<MultiLocation> {
+		Pallet::<T>::get_multilocation_from_asset_id(id)
+	}
+}
+
+impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<AssetId>> for Pallet<T> {
+	fn convert(multilocation: MultiLocation) -> Option<AssetId> {
+		Pallet::<T>::get_asset_id_from_multilocation(multilocation)
+	}
+}
+
+impl<T: Config> sp_runtime::traits::Convert<MultiAsset, Option<AssetId>> for Pallet<T> {
+	fn convert(a: MultiAsset) -> Option<AssetId> {
+		if let MultiAsset { fun: Fungible(_), id: Concrete(id) } = a {
+			Self::convert(id)
+		} else {
+			Option::None
+		}
+	}
+}
+
 #[frame_support::pallet]
 pub mod pallet {
-	use common::primitives::AssetId;
+	use super::*;
+
 	use frame_support::{dispatch::DispatchResultWithPostInfo, fail, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
-	use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
-	use xcm::v1::{MultiAsset, MultiLocation};
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -79,7 +108,9 @@ pub mod pallet {
 
 	#[pallet::error]
 	pub enum Error<T> {
+		/// Given AssetId or/and Multilocation is/are already used in mapping
 		MappingAlreadyExists,
+		/// No mapping for
 		MappingNotExist,
 	}
 
@@ -88,6 +119,9 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+		/// Perform registration for mapping of an AssetId <-> Multilocation
+		///
+		/// - `origin`: the root account on whose behalf the transaction is being executed,
 		#[pallet::weight(0)]
 		#[frame_support::transactional]
 		pub fn register_mapping(
@@ -107,6 +141,9 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		/// Perform change of mapping of an AssetId -> Multilocation
+		///
+		/// - `origin`: the root account on whose behalf the transaction is being executed,
 		#[pallet::weight(0)]
 		#[frame_support::transactional]
 		pub fn change_asset_mapping(
@@ -138,6 +175,9 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		/// Perform change of mapping of an Multilocation -> AssetId
+		///
+		/// - `origin`: the root account on whose behalf the transaction is being executed,
 		#[pallet::weight(0)]
 		#[frame_support::transactional]
 		pub fn change_multilocation_mapping(
@@ -149,8 +189,6 @@ pub mod pallet {
 			MultilocationToAssetId::<T>::try_mutate(
 				multilocation.clone(),
 				|asset_opt| -> DispatchResult {
-					// ensure!(asset_opt.is_some(), Error::<T>::MappingNotExist);
-					// *asset_opt = Some(new_asset_id);
 					match asset_opt {
 						None => fail!(Error::<T>::MappingNotExist),
 						Some(asset_id) => {
@@ -181,6 +219,9 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		/// Perform delete of mapping of an AssetId -> Multilocation
+		///
+		/// - `origin`: the root account on whose behalf the transaction is being executed,
 		#[pallet::weight(0)]
 		#[frame_support::transactional]
 		pub fn delete_mapping(
@@ -197,28 +238,6 @@ pub mod pallet {
 				},
 			};
 			Ok(().into())
-		}
-	}
-
-	impl<T: Config> sp_runtime::traits::Convert<AssetId, Option<MultiLocation>> for Pallet<T> {
-		fn convert(id: AssetId) -> Option<MultiLocation> {
-			Pallet::<T>::get_multilocation_from_asset_id(id)
-		}
-	}
-
-	impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<AssetId>> for Pallet<T> {
-		fn convert(multilocation: MultiLocation) -> Option<AssetId> {
-			Pallet::<T>::get_asset_id_from_multilocation(multilocation)
-		}
-	}
-
-	impl<T: Config> sp_runtime::traits::Convert<MultiAsset, Option<AssetId>> for Pallet<T> {
-		fn convert(a: MultiAsset) -> Option<AssetId> {
-			if let MultiAsset { fun: Fungible(_), id: Concrete(id) } = a {
-				Self::convert(id)
-			} else {
-				Option::None
-			}
 		}
 	}
 }

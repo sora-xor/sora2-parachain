@@ -127,8 +127,11 @@ fn it_fails_create_existing_mapping() {
 		};
 
 		assert_ok!(Converter::register_mapping(Origin::root(), asset_id, multilocation.clone()));
-		assert_ok!(Converter::register_mapping(Origin::root(), new_asset_id, new_multilocation.clone()));
-
+		assert_ok!(Converter::register_mapping(
+			Origin::root(),
+			new_asset_id,
+			new_multilocation.clone()
+		));
 
 		assert_noop!(
 			Converter::register_mapping(Origin::root(), asset_id, multilocation.clone()),
@@ -158,14 +161,24 @@ fn it_fails_change_asset_non_existing_mapping() {
 		];
 		let multilocation = MultiLocation::parent();
 
-		assert_noop!(Converter::change_asset_mapping(Origin::root(), asset_id, multilocation.clone()), Error::<Test>::MappingNotExist);
+		assert_noop!(
+			Converter::change_asset_mapping(Origin::root(), asset_id, multilocation.clone()),
+			Error::<Test>::MappingNotExist
+		);
 
-		assert_ok!(Converter::register_mapping(Origin::root(), new_asset_id, multilocation.clone()));
-		assert_noop!(Converter::change_asset_mapping(Origin::root(), asset_id, multilocation.clone()), Error::<Test>::MappingNotExist);
+		assert_ok!(Converter::register_mapping(
+			Origin::root(),
+			new_asset_id,
+			multilocation.clone()
+		));
+		assert_noop!(
+			Converter::change_asset_mapping(Origin::root(), asset_id, multilocation.clone()),
+			Error::<Test>::MappingNotExist
+		);
 		assert_eq!(
 			Converter::get_asset_id_from_multilocation(multilocation.clone())
 				.expect("it_fails_change_asset_non_existing_mapping: asset id is None"),
-				new_asset_id
+			new_asset_id
 		);
 	});
 }
@@ -177,25 +190,48 @@ fn it_fails_change_multilocation_non_existing_mapping() {
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			1, 1, 1,
 		];
-		let new_asset_id = [
-			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-			2, 2, 2,
-		];
 		let multilocation = MultiLocation::parent();
 		let new_multilocation = MultiLocation {
 			parents: 1,
 			interior: X2(Parachain(666), GeneralKey(b"TEST_ASSET".to_vec())),
 		};
 
+		assert_noop!(
+			Converter::change_asset_mapping(Origin::root(), asset_id, multilocation.clone()),
+			Error::<Test>::MappingNotExist
+		);
 
-		assert_noop!(Converter::change_asset_mapping(Origin::root(), asset_id, multilocation.clone()), Error::<Test>::MappingNotExist);
-
-		assert_ok!(Converter::register_mapping(Origin::root(), asset_id, new_multilocation.clone()));
-		assert_noop!(Converter::change_multilocation_mapping(Origin::root(), multilocation.clone(), asset_id), Error::<Test>::MappingNotExist);
+		assert_ok!(Converter::register_mapping(
+			Origin::root(),
+			asset_id,
+			new_multilocation.clone()
+		));
+		assert_noop!(
+			Converter::change_multilocation_mapping(
+				Origin::root(),
+				multilocation.clone(),
+				asset_id
+			),
+			Error::<Test>::MappingNotExist
+		);
 		assert_eq!(
 			Converter::get_multilocation_from_asset_id(asset_id)
 				.expect("it_fails_change_multilocation_non_existing_mapping: asset id is None"),
-				new_multilocation
+			new_multilocation
+		);
+	});
+}
+
+#[test]
+fn it_fails_delete_mapping_non_existing_mapping() {
+	new_test_ext().execute_with(|| {
+		let asset_id = [
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1,
+		];
+		assert_noop!(
+			Converter::delete_mapping(Origin::root(), asset_id),
+			Error::<Test>::MappingNotExist
 		);
 	});
 }
