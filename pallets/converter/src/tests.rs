@@ -7,10 +7,6 @@ use xcm::v1::MultiLocation;
 #[test]
 fn it_works_register_change_delete() {
 	new_test_ext().execute_with(|| {
-		// // Dispatch a signed extrinsic.
-		// assert_ok!(TemplateModule::do_something(Origin::signed(1), 42));
-		// // Read pallet storage and assert an expected result.
-		// assert_eq!(TemplateModule::something(), Some(42));
 		let asset_id = [
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			1, 1, 1,
@@ -33,7 +29,7 @@ fn it_works_register_change_delete() {
 			multilocation.clone()
 		);
 		assert_eq!(
-			Converter::get_asset_id_from_multilocation(multilocation)
+			Converter::get_asset_id_from_multilocation(multilocation.clone())
 				.expect("it_works_register_change_delete, Create: asset id is None"),
 			asset_id
 		);
@@ -55,19 +51,37 @@ fn it_works_register_change_delete() {
 			),
 			asset_id
 		);
+		assert_eq!(
+			Converter::get_asset_id_from_multilocation(multilocation.clone()),
+			None
+		);
 
-		todo!()
 		// Change Multilocation's Asset
-		// assert_ok!(Converter::change_multilocation_mapping(
-		// 	Origin::root(),
-		// 	new_multilocation.clone(),
-		// 	new_asset_id,
-		// ));
+		assert_ok!(Converter::change_multilocation_mapping(
+			Origin::root(),
+			new_multilocation.clone(),
+			new_asset_id,
+		));
+		assert_eq!(
+			Converter::get_multilocation_from_asset_id(new_asset_id)
+				.expect("it_works_register_change_delete, Change Multilocation's Asset: new_multilocation is None"),
+			new_multilocation.clone()
+		);
+		assert_eq!(
+			Converter::get_asset_id_from_multilocation(new_multilocation.clone()).expect(
+				"it_works_register_change_delete, Change Multilocation's Asset: asset_id is None"
+			),
+			new_asset_id
+		);
+		assert_eq!(
+			Converter::get_multilocation_from_asset_id(asset_id),
+			None
+		);
 
-		// // Delete:
-		// assert_ok!(Converter::delete_mapping(Origin::root(), asset_id, new_multilocation.clone()));
-		// assert_eq!(Converter::get_multilocation_from_asset_id(asset_id), None);
-		// assert_eq!(Converter::get_asset_id_from_multilocation(new_multilocation), None);
+		// Delete:
+		assert_ok!(Converter::delete_mapping(Origin::root(), asset_id, new_multilocation.clone()));
+		assert_eq!(Converter::get_multilocation_from_asset_id(asset_id), None);
+		assert_eq!(Converter::get_asset_id_from_multilocation(new_multilocation), None);
 	});
 }
 

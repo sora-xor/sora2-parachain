@@ -149,8 +149,28 @@ pub mod pallet {
 			MultilocationToAssetId::<T>::try_mutate(
 				multilocation.clone(),
 				|asset_opt| -> DispatchResult {
-					ensure!(asset_opt.is_some(), Error::<T>::MappingNotExist);
-					*asset_opt = Some(new_asset_id);
+					// ensure!(asset_opt.is_some(), Error::<T>::MappingNotExist);
+					// *asset_opt = Some(new_asset_id);
+					match asset_opt {
+						None => fail!(Error::<T>::MappingNotExist),
+						Some(asset_id) => {
+							// ensure that new_assetid mapping does not exist
+							ensure!(
+								AssetIdToMultilocation::<T>::get(new_asset_id.clone()).is_none(),
+								Error::<T>::MappingAlreadyExists
+							);
+
+							AssetIdToMultilocation::<T>::insert(
+								new_asset_id,
+								multilocation.clone(),
+							);
+
+							// remove old assetid
+							AssetIdToMultilocation::<T>::remove(asset_id.clone());
+
+							*asset_id = new_asset_id;
+						},
+					};
 					Ok(())
 				},
 			)?;
