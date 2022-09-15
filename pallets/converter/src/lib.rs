@@ -186,17 +186,16 @@ pub mod pallet {
 		pub fn delete_mapping(
 			origin: OriginFor<T>,
 			asset_id: AssetId,
-			multilocation: MultiLocation,
 		) -> DispatchResultWithPostInfo {
 			let _ = ensure_root(origin)?;
-			ensure!(
-				AssetIdToMultilocation::<T>::get(asset_id).is_some()
-					|| MultilocationToAssetId::<T>::get(multilocation.clone()).is_some(),
-				Error::<T>::MappingNotExist
-			);
-			AssetIdToMultilocation::<T>::remove(asset_id);
-			MultilocationToAssetId::<T>::remove(multilocation.clone());
-			Self::deposit_event(Event::<T>::MappingDeleted(asset_id, multilocation));
+			match AssetIdToMultilocation::<T>::get(asset_id) {
+				None => fail!(Error::<T>::MappingNotExist),
+				Some(multilocation) => {
+					AssetIdToMultilocation::<T>::remove(asset_id);
+					MultilocationToAssetId::<T>::remove(multilocation.clone());
+					Self::deposit_event(Event::<T>::MappingDeleted(asset_id, multilocation));
+				},
+			};
 			Ok(().into())
 		}
 	}
