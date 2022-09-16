@@ -32,9 +32,7 @@ use super::{
 	AccountId, Balances, Call, Event, Origin, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime,
 	WeightToFee, XcmpQueue,
 };
-use crate::currency_id_convert::*;
 use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get;
-use crate::CurrencyId;
 use core::marker::PhantomData;
 use frame_support::{
 	log, match_types, parameter_types,
@@ -57,7 +55,6 @@ use xcm_builder::{
 	UsingComponents,
 };
 use xcm_executor::{traits::ShouldExecute, XcmExecutor};
-// use common::primitives::CurrencyId;
 
 parameter_types! {
 	pub const RelayLocation: MultiLocation = MultiLocation::parent();
@@ -79,31 +76,14 @@ pub type LocationToAccountId = (
 );
 
 /// Means for transacting assets on this chain.
-// pub type LocalAssetTransactor = CurrencyAdapter<
-// 	// Use this currency:
-// 	Balances,
-// 	// Use this currency when it is a fungible asset matching the given location or name:
-// 	IsConcrete<RelayLocation>,
-// 	// Do a simple punn to convert an AccountId32 MultiLocation into a native chain account ID:
-// 	LocationToAccountId,
-// 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
-// 	AccountId,
-// 	// We don't track any teleports.
-// 	(),
-// >;
-
 pub type LocalAssetTransactor = MultiCurrencyAdapter<
 	crate::Tokens,
 	(),
-	// IsNativeConcrete<CurrencyId, CurrencyIdConvert>,
-	IsNativeConcrete<CurrencyId, crate::Converter>,
+	IsNativeConcrete<common::primitives::AssetId, crate::Converter>,
 	AccountId,
 	LocationToAccountId,
-	CurrencyId,
-	// common::primitives::AssetId,
-	// CurrencyIdConvert,
+	common::primitives::AssetId,
 	crate::Converter,
-	// DepositToAlternative<KaruraTreasuryAccount, Currencies, CurrencyId, AccountId, Balance>,
 	(),
 >;
 
@@ -310,8 +290,7 @@ impl sp_runtime::traits::Convert<AccountId, MultiLocation> for AccountIdToMultiL
 impl orml_xtokens::Config for Runtime {
 	type Event = Event;
 	type Balance = crate::Balance;
-	type CurrencyId = CurrencyId;
-	// type CurrencyIdConvert = CurrencyIdConvert;
+	type CurrencyId = common::primitives::AssetId;
 	type CurrencyIdConvert = crate::Converter;
 	type AccountIdToMultiLocation = AccountIdToMultiLocation;
 	type SelfLocation = SelfLocation;

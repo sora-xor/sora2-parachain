@@ -98,13 +98,13 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Adding mapping has been performed
-		/// [Sora AssetId, XCM Multilocation] 
+		/// [Sora AssetId, XCM Multilocation]
 		MappingCreated(AssetId, MultiLocation),
 		/// Asset mapping change has been performed
-		/// [Sora AssetId, XCM Multilocation] 
+		/// [Sora AssetId, XCM Multilocation]
 		AssetMappingChanged(AssetId, MultiLocation),
 		/// Multilocation mapping change has been performed
-		/// [Sora AssetId, XCM Multilocation] 
+		/// [Sora AssetId, XCM Multilocation]
 		MultilocationtMappingChanged(AssetId, MultiLocation),
 		/// Mapping delete has been performed
 		/// [Sora AssetId, XCM Multilocation]

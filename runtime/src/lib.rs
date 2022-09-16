@@ -56,7 +56,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-use common::primitives::CurrencyId;
+use common::primitives::AssetId;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{ConstU128, ConstU32, ConstU64, Everything},
@@ -490,7 +490,7 @@ impl pallet_collator_selection::Config for Runtime {
 }
 
 orml_traits::parameter_type_with_key! {
-	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
+	pub ExistentialDeposits: |_currency_id: AssetId| -> Balance {
 		Default::default()
 	};
 }
@@ -499,7 +499,7 @@ impl orml_tokens::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type Amount = i128;
-	type CurrencyId = CurrencyId;
+	type CurrencyId = AssetId;
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
