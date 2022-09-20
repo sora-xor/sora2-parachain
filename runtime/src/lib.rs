@@ -512,6 +512,7 @@ impl orml_tokens::Config for Runtime {
 
 impl pallet_converter::Config for Runtime {
 	type Event = Event;
+	type WeightInfo = pallet_converter::weights::WeightInfo<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -568,6 +569,7 @@ mod benches {
 		[pallet_timestamp, Timestamp]
 		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
+		[pallet_converter, Converter]
 	);
 }
 
@@ -701,8 +703,10 @@ impl_runtime_apis! {
 			use frame_support::traits::StorageInfoTrait;
 			use frame_system_benchmarking::Pallet as SystemBench;
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+			// use pallet_converter_benchmarking::Pallet as ConverterBench;
 
 			let mut list = Vec::<BenchmarkList>::new();
+			// list_benchmark!(list, extra, pallet_converter, ConverterBench::<Runtime>);
 			list_benchmarks!(list, extra);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
@@ -719,6 +723,9 @@ impl_runtime_apis! {
 
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			impl cumulus_pallet_session_benchmarking::Config for Runtime {}
+
+			// use pallet_converter_benchmarking::Pallet as ConverterBench;
+			// impl pallet_converter_benchmarking::Config for Runtime {}
 
 			let whitelist: Vec<TrackedStorageKey> = vec![
 				// Block Number

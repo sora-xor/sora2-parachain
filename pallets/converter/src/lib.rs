@@ -29,20 +29,21 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #![cfg_attr(not(feature = "std"), no_std)]
 
-pub use pallet::*;
-
 #[cfg(test)]
 mod mock;
-
 #[cfg(test)]
 mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
+pub mod weights;
+
 use common::primitives::AssetId;
+pub use pallet::*;
 use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
 use xcm::v1::{MultiAsset, MultiLocation};
+use frame_support::weights::Weight;
 
 // IMPLS for p_runtime::traits::Convert trait to allow this pallet be used as Converter in XCM localasset transactor:
 
@@ -68,6 +69,16 @@ impl<T: Config> sp_runtime::traits::Convert<MultiAsset, Option<AssetId>> for Pal
 	}
 }
 
+pub trait WeightInfo {
+	fn register_mapping() -> Weight;
+
+	fn change_asset_mapping() -> Weight;
+
+	fn change_multilocation_mapping() -> Weight;
+
+	fn delete_mapping() -> Weight;
+}
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -77,6 +88,7 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::pallet]
@@ -129,7 +141,7 @@ pub mod pallet {
 		/// - `origin`: the root account on whose behalf the transaction is being executed,
 		/// - `asset_id`: asset id in Sora Network,
 		/// - `multilocation`: XCM multilocation of an asset,
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::register_mapping())]
 		#[frame_support::transactional]
 		pub fn register_mapping(
 			origin: OriginFor<T>,
@@ -153,7 +165,7 @@ pub mod pallet {
 		/// - `origin`: the root account on whose behalf the transaction is being executed,
 		/// - `asset_id`: asset id in Sora Network,
 		/// - `new_multilocation`: new XCM multilocation of an asset,
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_asset_mapping())]
 		#[frame_support::transactional]
 		pub fn change_asset_mapping(
 			origin: OriginFor<T>,
@@ -189,7 +201,7 @@ pub mod pallet {
 		/// - `origin`: the root account on whose behalf the transaction is being executed,
 		/// - `multilocation`: XCM multilocation of an asset,
 		/// - `new_asset_id`: new asset id in Sora Network,
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_multilocation_mapping())]
 		#[frame_support::transactional]
 		pub fn change_multilocation_mapping(
 			origin: OriginFor<T>,
@@ -234,7 +246,7 @@ pub mod pallet {
 		///
 		/// - `origin`: the root account on whose behalf the transaction is being executed,
 		/// - `asset_id`: asset id in Sora Network,
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::delete_mapping())]
 		#[frame_support::transactional]
 		pub fn delete_mapping(
 			origin: OriginFor<T>,
