@@ -40,10 +40,10 @@ mod benchmarking;
 pub mod weights;
 
 use common::primitives::AssetId;
+use frame_support::weights::Weight;
 pub use pallet::*;
 use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
 use xcm::v1::{MultiAsset, MultiLocation};
-use frame_support::weights::Weight;
 
 // IMPLS for p_runtime::traits::Convert trait to allow this pallet be used as Converter in XCM localasset transactor:
 

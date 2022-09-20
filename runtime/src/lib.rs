@@ -703,10 +703,8 @@ impl_runtime_apis! {
 			use frame_support::traits::StorageInfoTrait;
 			use frame_system_benchmarking::Pallet as SystemBench;
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
-			// use pallet_converter_benchmarking::Pallet as ConverterBench;
 
 			let mut list = Vec::<BenchmarkList>::new();
-			// list_benchmark!(list, extra, pallet_converter, ConverterBench::<Runtime>);
 			list_benchmarks!(list, extra);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
@@ -723,9 +721,6 @@ impl_runtime_apis! {
 
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			impl cumulus_pallet_session_benchmarking::Config for Runtime {}
-
-			// use pallet_converter_benchmarking::Pallet as ConverterBench;
-			// impl pallet_converter_benchmarking::Config for Runtime {}
 
 			let whitelist: Vec<TrackedStorageKey> = vec![
 				// Block Number
