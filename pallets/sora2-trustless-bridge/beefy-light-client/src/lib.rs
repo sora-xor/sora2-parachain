@@ -58,6 +58,9 @@ pub mod pallet {
 
 	pub const MMR_ROOT_ID: [u8; 2] = [0x6d, 0x68];
 
+
+
+
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -85,6 +88,19 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn latest_random_seed)]
 	pub type LatestRandomSeed<T> = StorageValue<_, u32>;
+
+	// Validator registry storage:
+	#[pallet::storage]
+	#[pallet::getter(fn validator_registry_root)]
+	pub type ValidatorRegistryRoot<T> = StorageValue<_, [u8; 32]>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn validator_registry_num_of_validators)]
+	pub type NumOfValidators<T> = StorageValue<_, u128>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn latest_mmr_root_index)]
+	pub type ValidatorRegistryId<T> = StorageValue<_, u64>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events-and-errors
@@ -229,6 +245,14 @@ pub mod pallet {
 		}
 
 		pub fn hash_mmr_leaf() -> [u8; 32] {
+			todo!()
+		}
+
+		pub fn validator_registry_update(new_root: [u8; 32], new_num_of_validators: u128, new_id: u64){
+			todo!()
+		}
+
+		pub fn check_validator_in_set(addr: T::AccountId, pos: u128, proof: [u8; 32]) -> bool {
 			todo!()
 		}
 	}
