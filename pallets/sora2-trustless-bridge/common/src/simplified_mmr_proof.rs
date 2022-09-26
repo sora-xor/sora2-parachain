@@ -1,6 +1,7 @@
 use ethabi::encode_packed;
 use sp_io::hashing::keccak_256;
 
+#[derive(Clone)]
 pub struct SimplifiedMMRProof {
 	pub merkle_proof_items: Vec<[u8; 32]>,
 	pub merkle_proof_order_bit_field: u64,
@@ -10,17 +11,17 @@ pub fn verify_inclusion_proof(
 	root: [u8; 32],
 	leaf_node_hash: [u8; 32],
 	proof: SimplifiedMMRProof,
-) -> Result<bool, ()> {
+) -> bool {
 	if proof.merkle_proof_items.len() < 64 {
-		return Err(());
+		return false;
 	}
 
-	Ok(root
+	root
 		== calculate_merkle_root(
 			leaf_node_hash,
 			proof.merkle_proof_items,
 			proof.merkle_proof_order_bit_field,
-		))
+		)
 }
 
 pub fn bit(self_val: u64, index: u64) -> bool {

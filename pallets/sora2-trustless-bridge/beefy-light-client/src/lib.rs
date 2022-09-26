@@ -31,6 +31,7 @@ pub struct ValidatorProof<AccountId> {
 	pub public_key_merkle_proofs: Vec<Vec<[u8; 32]>>,
 }
 
+#[derive(Clone)]
 pub struct BeefyMMRLeaf {
 	pub version: u8,
 	pub parent_number: u32,
@@ -47,7 +48,8 @@ pub mod pallet {
 	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
 	use super::{Commitment, ValidatorProof, BeefyMMRLeaf};
-	use common::simplified_mmr_proof::*;
+	use common::{simplified_mmr_proof::*, bitfield};
+	use sp_io::hashing::keccak_256;
 
 	pub const MMR_ROOT_HISTORY_SIZE: u32 = 30;
 
@@ -82,11 +84,11 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn latest_beefy_block)]
-	pub type LatestBeefyBlock<T> = StorageValue<_, u32>;
+	pub type LatestBeefyBlock<T> = StorageValue<_, u32, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn latest_random_seed)]
-	pub type LatestRandomSeed<T> = StorageValue<_, u32>;
+	pub type LatestRandomSeed<T> = StorageValue<_, [u8; 32], ValueQuery>;
 
 	// Validator registry storage:
 	#[pallet::storage]
@@ -99,7 +101,7 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn validator_registry_id)]
-	pub type ValidatorRegistryId<T> = StorageValue<_, u64>;
+	pub type ValidatorRegistryId<T> = StorageValue<_, u64, ValueQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events-and-errors
@@ -112,7 +114,10 @@ pub mod pallet {
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
-	pub enum Error<T> {}
+	pub enum Error<T> {
+		InvalidValidatorSetId,
+		InvalidMMRProof,
+	}
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
@@ -171,15 +176,27 @@ pub mod pallet {
 		}
 
 		pub fn create_initial_bitfield(bits_to_set: Vec<u128>, length: u128) -> Vec<u128> {
-			todo!()
+			bitfield::create_bitfield(bits_to_set, length)
 		}
 
 		pub fn submit_signature_commitment(
+			origin: OriginFor<T>,
 			commitment: Commitment,
 			validator_proof: ValidatorProof<T::AccountId>,
-			latest_mmr_leaf: BeefyMMRLeaf, /* proof: SimplifiedMMRProof*/
-		) {
-			todo!()
+			latest_mmr_leaf: BeefyMMRLeaf, 
+			proof: SimplifiedMMRProof,
+		) -> DispatchResultWithPostInfo {
+			let signer = ensure_signed(origin)?;
+			ensure!(commitment.validator_set_id == Self::validator_registry_id(), Error::<T>::InvalidValidatorSetId);
+			Self::verify_commitment(&commitment, &validator_proof)?;
+			Self::verity_newest_mmr_leaf(&latest_mmr_leaf, &commitment.payload, &proof)?;
+			Self::process_payload(&commitment.payload, commitment.block_number.into());
+
+			LatestRandomSeed::<T>::set(latest_mmr_leaf.random_seed);
+
+			Self::deposit_event(Event::VerificationSuccessful(signer, commitment.block_number));
+			Self::apply_validator_set_changes(latest_mmr_leaf.next_authority_set_id, latest_mmr_leaf.next_authority_set_len, latest_mmr_leaf.next_authority_set_root);
+			Ok(().into())
 		}
 
 		/* Private Functions */
@@ -190,18 +207,23 @@ pub mod pallet {
 		}
 		*/
 
-		pub fn get_seed() -> u128 {
-			todo!()
+		pub fn get_seed() -> [u8; 32] {
+			let concated = common::concat_u8(&Self::latest_random_seed(), &Self::latest_beefy_block().to_be_bytes());
+			keccak_256(&concated)
 		}
 
 		pub fn verity_newest_mmr_leaf(
-			leaf: BeefyMMRLeaf,
-			root: [u8; 32], proof: SimplifiedMMRProof,
-		) {
-			todo!()
+			leaf: &BeefyMMRLeaf,
+			root: &[u8; 32], 
+			proof: &SimplifiedMMRProof,
+		) -> DispatchResultWithPostInfo {
+			let encoded_leaf = Self::encode_mmr_leaf(leaf.clone());
+			let hash_leaf = Self::hash_mmr_leaf(encoded_leaf);
+			ensure!(verify_inclusion_proof(*root, hash_leaf, proof.clone()), Error::<T>::InvalidMMRProof);
+			Ok(().into())
 		}
 
-		pub fn process_payload(payload: [u8; 32], block_number: u64) {
+		pub fn process_payload(payload: &[u8; 32], block_number: u64) {
 			todo!()
 		}
 
@@ -231,7 +253,7 @@ pub mod pallet {
 			todo!()
 		}
 
-		pub fn verify_commitment(commitment: Commitment, proof: ValidatorProof<T::AccountId>) {
+		pub fn verify_commitment(commitment: &Commitment, proof: &ValidatorProof<T::AccountId>) -> DispatchResultWithPostInfo{
 			todo!()
 		}
 
@@ -270,7 +292,7 @@ pub mod pallet {
 			todo!()
 		}
 
-		pub fn hash_mmr_leaf() -> [u8; 32] {
+		pub fn hash_mmr_leaf(leaf: Vec<u8>) -> [u8; 32] {
 			todo!()
 		}
 
