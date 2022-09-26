@@ -46,7 +46,8 @@ pub struct BeefyMMRLeaf {
 pub mod pallet {
 	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
-	use super::*;
+	use super::{Commitment, ValidatorProof, BeefyMMRLeaf};
+	use common::simplified_mmr_proof::*;
 
 	pub const MMR_ROOT_HISTORY_SIZE: u32 = 30;
 
@@ -77,7 +78,7 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn latest_mmr_root_index)]
-	pub type LatestMMRRootIndex<T> = StorageValue<_, u32>;
+	pub type LatestMMRRootIndex<T> = StorageValue<_, u32, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn latest_beefy_block)]
@@ -104,7 +105,10 @@ pub mod pallet {
 	// https://docs.substrate.io/v3/runtime/events-and-errors
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
-	pub enum Event<T: Config> {}
+	pub enum Event<T: Config> {
+		VerificationSuccessful(T::AccountId, u32),
+		NewMMRRoot([u8; 32], u64),
+	}
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
@@ -121,21 +125,45 @@ pub mod pallet {
 
 	impl<T: Config> Pallet<T> {
 		pub fn add_known_mmr_root(root: [u8; 32]) -> u32 {
-			todo!()
+			let latest_mmr_root_index = LatestMMRRootIndex::<T>::get();
+			let new_root_index = (latest_mmr_root_index + 1) % MMR_ROOT_HISTORY_SIZE;
+			LatestMMRRoots::<T>::insert(latest_mmr_root_index as u128, root);
+			LatestMMRRootIndex::<T>::set(latest_mmr_root_index);
+			latest_mmr_root_index
 		}
 
-		pub fn is_known_root() -> bool {
-			todo!()
+		pub fn is_known_root(root: [u8; 32]) -> bool {
+			// if root == 0 {
+			// 	return false;
+			// }
+			let latest_mmr_root_index = LatestMMRRootIndex::<T>::get();
+			let mut i = latest_mmr_root_index;
+			let latest_mmr_roots = LatestMMRRoots::<T>::get(i as u128);
+			loop {
+				if root == LatestMMRRoots::<T>::get(i as u128) {
+					return true;
+				}
+				if i == 0 {
+					i = MMR_ROOT_HISTORY_SIZE
+				}
+				i = i - 1;
+				if i != latest_mmr_root_index {break;}
+			}
+			false
 		}
 
-		pub fn get_latest_mmr_root() {
-			todo!()
+		pub fn get_latest_mmr_root() -> [u8; 32]{
+			LatestMMRRoots::<T>::get(LatestMMRRootIndex::<T>::get() as u128)
 		}
 
 		pub fn verity_beefy_merkle_leaf(
-			beefy_mmr_leaf: [u8; 32], /*SimplifiedMMRProof memory proof*/
+			beefy_mmr_leaf: [u8; 32], proof: SimplifiedMMRProof
 		) -> bool {
-			todo!()
+			let proof_root = calculate_merkle_root(beefy_mmr_leaf,
+				proof.merkle_proof_items,
+				proof.merkle_proof_order_bit_field,
+			);
+			Self::is_known_root(proof_root)
 		}
 
 		pub fn create_random_bit_field(validator_claims_bitfield: Vec<u128>) -> Vec<u128> {
@@ -168,7 +196,7 @@ pub mod pallet {
 
 		pub fn verity_newest_mmr_leaf(
 			leaf: BeefyMMRLeaf,
-			root: [u8; 32], /*proof: SimplifiedMMRProof*/
+			root: [u8; 32], proof: SimplifiedMMRProof,
 		) {
 			todo!()
 		}
