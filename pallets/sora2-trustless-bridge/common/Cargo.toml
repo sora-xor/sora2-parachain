@@ -1,7 +1,7 @@
 [package]
-name = "beefy-light-client"
+name = "common"
 authors = ["Anonymous"]
-description = ""
+description = "FRAME pallet template for defining custom runtime logic."
 version = "0.1.0"
 license = "Unlicense"
 homepage = "https://substrate.io"
@@ -14,25 +14,21 @@ targets = ["x86_64-unknown-linux-gnu"]
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", features = ["derive"], default-features = false }
 scale-info = { version = "2.0.0", default-features = false, features = ["derive"] }
-common = { path = "../common" }
 
 # Substrate
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, optional = true, branch = "polkadot-v0.9.24" }
 frame-support = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.24" }
 frame-system = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.24" }
-
-# ethereum-types = { version = "0.13.1", default-features = false, features = [
-#   "codec",
-#   "rlp",
-#   "serialize",
-# ] }
+sp-io = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.24" }
+ethabi = { git = "https://github.com/sora-xor/ethabi.git", branch = "polkadot-v0.9.25", package = "ethabi", default-features = false, features = [
+    "alloc",
+] }
 
 [dev-dependencies]
 serde = { version = "1.0.132" }
 
 # Substrate
 sp-core = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.24" }
-sp-io = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.24" }
 sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.24" }
 
 [features]

@@ -473,7 +473,7 @@ dependencies = [
 name = "beefy-light-client"
 version = "0.1.0"
 dependencies = [
- "ethereum-types",
+ "common",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
@@ -1121,6 +1121,22 @@ dependencies = [
  "strum 0.23.0",
  "strum_macros 0.23.1",
  "unicode-width",
+]
+
+[[package]]
+name = "common"
+version = "0.1.0"
+dependencies = [
+ "ethabi",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -2238,6 +2254,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "ethabi"
+version = "13.0.0"
+source = "git+https://github.com/sora-xor/ethabi.git?branch=polkadot-v0.9.25#94d0e873c7d22e46f4aa7d6d779caad4d8373e53"
+dependencies = [
+ "anyhow",
+ "ethereum-types",
+ "hex",
+ "serde",
+ "serde_json",
+ "sha3 0.9.1",
+ "uint",
+]
+
+[[package]]
 name = "ethbloom"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2246,7 +2276,6 @@ dependencies = [
  "crunchy",
  "fixed-hash",
  "impl-codec",
- "impl-rlp",
  "impl-serde",
  "scale-info",
  "tiny-keccak",
@@ -2261,7 +2290,6 @@ dependencies = [
  "ethbloom",
  "fixed-hash",
  "impl-codec",
- "impl-rlp",
  "impl-serde",
  "primitive-types",
  "scale-info",
@@ -3247,15 +3275,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba6a270039626615617f3f36d15fc827041df3b78c439da2cadfa47455a77f2f"
 dependencies = [
  "parity-scale-codec",
-]
-
-[[package]]
-name = "impl-rlp"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f28220f89297a075ddc7245cd538076ee98b01f2a9c23a53a4f1105d5a322808"
-dependencies = [
- "rlp",
 ]
 
 [[package]]
@@ -7572,7 +7591,6 @@ checksum = "e28720988bff275df1f51b171e1b2a18c30d194c4d2b61defdacecd625a5d94a"
 dependencies = [
  "fixed-hash",
  "impl-codec",
- "impl-rlp",
  "impl-serde",
  "scale-info",
  "uint",
@@ -8133,16 +8151,6 @@ dependencies = [
  "untrusted",
  "web-sys",
  "winapi",
-]
-
-[[package]]
-name = "rlp"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "999508abb0ae792aabed2460c45b89106d97fe4adac593bdaef433c2605847b5"
-dependencies = [
- "bytes",
- "rustc-hex",
 ]
 
 [[package]]
