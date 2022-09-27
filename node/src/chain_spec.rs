@@ -1,10 +1,10 @@
 use cumulus_primitives_core::ParaId;
 use hex_literal::hex;
-use parachain_template_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
+use parachain_template_runtime::{AccountId, AuraId, Signature};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
-use sp_core::{sr25519, Pair, Public};
+use sp_core::{sr25519, ByteArray, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
@@ -85,7 +85,8 @@ pub fn kusama_config(relay_chain: String) -> ChainSpec {
 						)),
 						AuraId::from_slice(&hex!(
 							"ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"
-						)),
+						))
+						.unwrap(),
 					),
 					(
 						AccountId::from(hex!(
@@ -93,7 +94,8 @@ pub fn kusama_config(relay_chain: String) -> ChainSpec {
 						)),
 						AuraId::from_slice(&hex!(
 							"f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"
-						)),
+						))
+						.unwrap(),
 					),
 				],
 				vec![
@@ -114,10 +116,8 @@ pub fn kusama_config(relay_chain: String) -> ChainSpec {
 		None,
 		Some("sora_ksm"),
 		None,
-		Extensions {
-			relay_chain,
-			para_id: 2011,
-		},
+		Some(properties),
+		Extensions { relay_chain, para_id: 2011 },
 	)
 }
 
@@ -147,7 +147,8 @@ pub fn development_config() -> ChainSpec {
 						)),
 						AuraId::from_slice(&hex!(
 							"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
-						)),
+						))
+						.unwrap(),
 					),
 					(
 						AccountId::from(hex!(
@@ -155,7 +156,8 @@ pub fn development_config() -> ChainSpec {
 						)),
 						AuraId::from_slice(&hex!(
 							"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
-						)),
+						))
+						.unwrap(),
 					),
 				],
 				vec![
@@ -176,6 +178,7 @@ pub fn development_config() -> ChainSpec {
 		None,
 		Some("sora_ksm_dev"),
 		None,
+		Some(properties),
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 2000,
@@ -233,6 +236,8 @@ pub fn local_config() -> ChainSpec {
 		None,
 		// Protocol ID
 		Some("sora_ksm_local"),
+		// Fork ID
+		None,
 		// Properties
 		Some(properties),
 		// Extensions
@@ -256,7 +261,11 @@ fn testnet_genesis(
 				.to_vec(),
 		},
 		balances: parachain_template_runtime::BalancesConfig {
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 1_000_000_000_000_000_000)).collect(),
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, 1_000_000_000_000_000_000))
+				.collect(),
 		},
 		parachain_info: parachain_template_runtime::ParachainInfoConfig { parachain_id: id },
 		collator_selection: parachain_template_runtime::CollatorSelectionConfig {
@@ -281,6 +290,6 @@ fn testnet_genesis(
 		aura: Default::default(),
 		aura_ext: Default::default(),
 		parachain_system: Default::default(),
-		sudo: parachain_template_runtime::SudoConfig { key: root_key },
+		sudo: parachain_template_runtime::SudoConfig { key: Some(root_key) },
 	}
 }
