@@ -233,10 +233,10 @@ pub mod pallet {
 		*/
 
 		pub fn get_seed() -> [u8; 32] {
-			let concated = common::concat_u8(
+			let concated = common::concat_u8(&[
 				&Self::latest_random_seed(),
 				&Self::latest_beefy_block().to_be_bytes(),
-			);
+			]);
 			keccak_256(&concated)
 		}
 

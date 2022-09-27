@@ -1,4 +1,4 @@
-use ethabi::encode_packed;
+use ethabi::{encode_packed, Token};
 use sp_io::hashing::keccak_256;
 
 #[derive(Clone)]
@@ -33,18 +33,15 @@ pub fn calculate_merkle_root(
 	merkle_proof_items: Vec<[u8; 32]>,
 	merkle_proof_order_bit_field: u64,
 ) -> [u8; 32] {
-	let current_hash = leaf_node_hash;
+	let mut current_hash = leaf_node_hash;
 	for current_position in 0..merkle_proof_items.len() {
 		let is_sibling_left = bit(merkle_proof_order_bit_field, current_position as u64);
 		let sibling = merkle_proof_items[current_position as usize];
 		current_hash = if is_sibling_left {
-			// keccak_256(&encode_packed([&sibling, &current_hash]))
-			todo!()
+			keccak_256(&encode_packed(&[Token::Bytes(sibling.into()), Token::Bytes(current_hash.into())]))
 		} else {
-			// keccak_256(&encode_packed([&current_hash, &sibling]))
-			todo!()
+			keccak_256(&encode_packed(&[Token::Bytes(sibling.into()), Token::Bytes(current_hash.into())]))
 		};
 	}
-
 	return current_hash;
 }

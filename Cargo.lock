@@ -474,6 +474,7 @@ name = "beefy-light-client"
 version = "0.1.0"
 dependencies = [
  "common",
+ "ethabi",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
