@@ -1,10 +1,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/v3/runtime/frame>
+use codec::{Decode, Encode};
+use frame_support::RuntimeDebug;
 pub use pallet::*;
-// use ethereum_types::U256;
 
 // #[cfg(test)]
 // mod mock;
@@ -15,6 +13,9 @@ pub use pallet::*;
 // #[cfg(feature = "runtime-benchmarks")]
 // mod benchmarking;
 
+#[derive(
+	Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, PartialOrd, Ord, scale_info::TypeInfo,
+)]
 pub struct Commitment {
 	pub payload_prefix: Vec<u8>,
 	pub payload: [u8; 32],
@@ -23,15 +24,20 @@ pub struct Commitment {
 	pub validator_set_id: u64,
 }
 
+#[derive(
+	Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, PartialOrd, Ord, scale_info::TypeInfo,
+)]
 pub struct ValidatorProof<AccountId> {
 	pub validator_claims_bitfield: Vec<u128>,
 	pub signatures: Vec<Vec<u8>>,
 	pub positions: Vec<u128>,
-	pub public_keys: AccountId,
+	pub public_keys: Vec<AccountId>,
 	pub public_key_merkle_proofs: Vec<Vec<[u8; 32]>>,
 }
 
-#[derive(Clone)]
+#[derive(
+	Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, PartialOrd, Ord, scale_info::TypeInfo,
+)]
 pub struct BeefyMMRLeaf {
 	pub version: u8,
 	pub parent_number: u32,
@@ -45,10 +51,10 @@ pub struct BeefyMMRLeaf {
 
 #[frame_support::pallet]
 pub mod pallet {
+	use super::{BeefyMMRLeaf, Commitment, ValidatorProof};
+	use common::{bitfield, merkle_proof, simplified_mmr_proof::*};
 	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
-	use super::{Commitment, ValidatorProof, BeefyMMRLeaf};
-	use common::{simplified_mmr_proof::*, bitfield};
 	use sp_io::hashing::keccak_256;
 
 	pub const MMR_ROOT_HISTORY_SIZE: u32 = 30;
@@ -93,11 +99,11 @@ pub mod pallet {
 	// Validator registry storage:
 	#[pallet::storage]
 	#[pallet::getter(fn validator_registry_root)]
-	pub type ValidatorRegistryRoot<T> = StorageValue<_, [u8; 32]>;
+	pub type ValidatorRegistryRoot<T> = StorageValue<_, [u8; 32], ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn validator_registry_num_of_validators)]
-	pub type NumOfValidators<T> = StorageValue<_, u128>;
+	pub type NumOfValidators<T> = StorageValue<_, u128, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn validator_registry_id)]
@@ -110,6 +116,7 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		VerificationSuccessful(T::AccountId, u32),
 		NewMMRRoot([u8; 32], u64),
+		ValidatorRegistryUpdated([u8; 32], u128, u64),
 	}
 
 	// Errors inform users that something went wrong.
@@ -117,6 +124,13 @@ pub mod pallet {
 	pub enum Error<T> {
 		InvalidValidatorSetId,
 		InvalidMMRProof,
+		PayloadBlocknumberTooOld,
+		PayloadBlocknumberTooNew,
+		CannotSwitchOldValidatorSet,
+		NotEnoughValidatorSignatures,
+		InvalidNumberOfSignatures,
+		InvalidNumberOfPositions,
+		InvalidNumberOfPublicKeys,
 	}
 
 	#[pallet::hooks]
@@ -138,9 +152,9 @@ pub mod pallet {
 		}
 
 		pub fn is_known_root(root: [u8; 32]) -> bool {
-			// if root == 0 {
-			// 	return false;
-			// }
+			if root == <[u8; 32] as Default>::default() {
+				return false;
+			}
 			let latest_mmr_root_index = LatestMMRRootIndex::<T>::get();
 			let mut i = latest_mmr_root_index;
 			let latest_mmr_roots = LatestMMRRoots::<T>::get(i as u128);
@@ -152,19 +166,23 @@ pub mod pallet {
 					i = MMR_ROOT_HISTORY_SIZE
 				}
 				i = i - 1;
-				if i != latest_mmr_root_index {break;}
+				if i != latest_mmr_root_index {
+					break;
+				}
 			}
 			false
 		}
 
-		pub fn get_latest_mmr_root() -> [u8; 32]{
+		pub fn get_latest_mmr_root() -> [u8; 32] {
 			LatestMMRRoots::<T>::get(LatestMMRRootIndex::<T>::get() as u128)
 		}
 
 		pub fn verity_beefy_merkle_leaf(
-			beefy_mmr_leaf: [u8; 32], proof: SimplifiedMMRProof
+			beefy_mmr_leaf: [u8; 32],
+			proof: SimplifiedMMRProof,
 		) -> bool {
-			let proof_root = calculate_merkle_root(beefy_mmr_leaf,
+			let proof_root = calculate_merkle_root(
+				beefy_mmr_leaf,
 				proof.merkle_proof_items,
 				proof.merkle_proof_order_bit_field,
 			);
@@ -183,19 +201,26 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			commitment: Commitment,
 			validator_proof: ValidatorProof<T::AccountId>,
-			latest_mmr_leaf: BeefyMMRLeaf, 
+			latest_mmr_leaf: BeefyMMRLeaf,
 			proof: SimplifiedMMRProof,
 		) -> DispatchResultWithPostInfo {
 			let signer = ensure_signed(origin)?;
-			ensure!(commitment.validator_set_id == Self::validator_registry_id(), Error::<T>::InvalidValidatorSetId);
+			ensure!(
+				commitment.validator_set_id == Self::validator_registry_id(),
+				Error::<T>::InvalidValidatorSetId
+			);
 			Self::verify_commitment(&commitment, &validator_proof)?;
 			Self::verity_newest_mmr_leaf(&latest_mmr_leaf, &commitment.payload, &proof)?;
-			Self::process_payload(&commitment.payload, commitment.block_number.into());
+			Self::process_payload(&commitment.payload, commitment.block_number.into())?;
 
 			LatestRandomSeed::<T>::set(latest_mmr_leaf.random_seed);
 
 			Self::deposit_event(Event::VerificationSuccessful(signer, commitment.block_number));
-			Self::apply_validator_set_changes(latest_mmr_leaf.next_authority_set_id, latest_mmr_leaf.next_authority_set_len, latest_mmr_leaf.next_authority_set_root);
+			Self::apply_validator_set_changes(
+				latest_mmr_leaf.next_authority_set_id,
+				latest_mmr_leaf.next_authority_set_len,
+				latest_mmr_leaf.next_authority_set_root,
+			)?;
 			Ok(().into())
 		}
 
@@ -208,39 +233,74 @@ pub mod pallet {
 		*/
 
 		pub fn get_seed() -> [u8; 32] {
-			let concated = common::concat_u8(&Self::latest_random_seed(), &Self::latest_beefy_block().to_be_bytes());
+			let concated = common::concat_u8(
+				&Self::latest_random_seed(),
+				&Self::latest_beefy_block().to_be_bytes(),
+			);
 			keccak_256(&concated)
 		}
 
 		pub fn verity_newest_mmr_leaf(
 			leaf: &BeefyMMRLeaf,
-			root: &[u8; 32], 
+			root: &[u8; 32],
 			proof: &SimplifiedMMRProof,
 		) -> DispatchResultWithPostInfo {
 			let encoded_leaf = Self::encode_mmr_leaf(leaf.clone());
 			let hash_leaf = Self::hash_mmr_leaf(encoded_leaf);
-			ensure!(verify_inclusion_proof(*root, hash_leaf, proof.clone()), Error::<T>::InvalidMMRProof);
+			ensure!(
+				verify_inclusion_proof(*root, hash_leaf, proof.clone()),
+				Error::<T>::InvalidMMRProof
+			);
 			Ok(().into())
 		}
 
-		pub fn process_payload(payload: &[u8; 32], block_number: u64) {
-			todo!()
+		// TODO!!!!!
+		// u64 casting to u32!!!!!!!
+		pub fn process_payload(
+			payload: &[u8; 32],
+			block_number: u64,
+		) -> DispatchResultWithPostInfo {
+			ensure!(
+				block_number > Self::latest_beefy_block() as u64,
+				Error::<T>::PayloadBlocknumberTooOld
+			);
+			ensure!(
+				block_number < Self::latest_beefy_block() as u64 + MAXIMUM_BLOCK_GAP,
+				Error::<T>::PayloadBlocknumberTooNew
+			);
+			Self::add_known_mmr_root(*payload);
+			// NOT SAFE!!!!!!!!!
+			LatestBeefyBlock::<T>::set(block_number.try_into().unwrap());
+			Self::deposit_event(Event::NewMMRRoot(*payload, block_number));
+			Ok(().into())
 		}
 
 		pub fn apply_validator_set_changes(
 			next_authority_set_id: u64,
 			next_authority_set_len: u32,
 			next_authority_set_root: [u8; 32],
-		) {
-			todo!()
+		) -> DispatchResultWithPostInfo {
+			if next_authority_set_id > Self::validator_registry_id() {
+				ensure!(
+					next_authority_set_id > Self::validator_registry_id(),
+					Error::<T>::CannotSwitchOldValidatorSet
+				);
+				Self::validator_registry_update(
+					next_authority_set_root,
+					next_authority_set_len as u128,
+					next_authority_set_id,
+				);
+			}
+			Ok(().into())
 		}
 
-		pub fn get_required_number_of_signatures() -> u128 {
-			todo!()
+		pub fn required_number_of_signatures() -> u128 {
+			Self::get_required_number_of_signatures(Self::validator_registry_num_of_validators())
 		}
 
-		pub fn requiredNumberOfSignatures(num_validators: u128) -> u128 {
-			todo!()
+		pub fn get_required_number_of_signatures(num_validators: u128) -> u128 {
+			(num_validators * THRESHOLD_NUMERATOR + THRESHOLD_DENOMINATOR - 1)
+				/ THRESHOLD_DENOMINATOR
 		}
 
 		/**
@@ -249,19 +309,41 @@ pub mod pallet {
 		pub fn check_commitment_signatures_threshold(
 			num_of_validators: u128,
 			validator_claims_bitfield: Vec<u128>,
-		) {
-			todo!()
+		) -> DispatchResultWithPostInfo {
+			let threshold = num_of_validators - (num_of_validators - 1) / 3;
+			todo!("finish");
+			// ensure!(bitgield::count_set_bits(validator_claims_bitfield) >= threshold, Error::<T>::NotEnoughValidatorSignatures);
+			Ok(().into())
 		}
 
-		pub fn verify_commitment(commitment: &Commitment, proof: &ValidatorProof<T::AccountId>) -> DispatchResultWithPostInfo{
+		pub fn verify_commitment(
+			commitment: &Commitment,
+			proof: &ValidatorProof<T::AccountId>,
+		) -> DispatchResultWithPostInfo {
 			todo!()
 		}
 
 		pub fn verify_validator_proof_lengths(
 			required_num_of_signatures: u128,
 			proof: ValidatorProof<T::AccountId>,
-		) {
-			todo!()
+		) -> DispatchResultWithPostInfo {
+			ensure!(
+				proof.signatures.len() as u128 == required_num_of_signatures,
+				Error::<T>::InvalidNumberOfSignatures
+			);
+			ensure!(
+				proof.positions.len() as u128 == required_num_of_signatures,
+				Error::<T>::InvalidNumberOfPositions
+			);
+			ensure!(
+				proof.public_keys.len() as u128 == required_num_of_signatures,
+				Error::<T>::InvalidNumberOfPublicKeys
+			);
+			ensure!(
+				proof.public_key_merkle_proofs.len() as u128 == required_num_of_signatures,
+				Error::<T>::InvalidNumberOfPublicKeys
+			);
+			Ok(().into())
 		}
 
 		pub fn verify_validator_proof_signatures(
@@ -269,8 +351,19 @@ pub mod pallet {
 			proof: ValidatorProof<T::AccountId>,
 			required_num_of_signatures: u128,
 			commitment_hash: [u8; 32],
-		) {
-			todo!()
+		) -> DispatchResultWithPostInfo {
+			let required_num_of_signatures = required_num_of_signatures as usize;
+			for i in 0..required_num_of_signatures {
+				Self::verify_validator_signature(
+					random_bitfield,
+					proof.signatures[i].clone(),
+					proof.positions[i],
+					proof.public_keys[i].clone(),
+					proof.public_key_merkle_proofs[i].clone(),
+					commitment_hash,
+				)?;
+			}
+			Ok(().into())
 		}
 
 		pub fn verify_validator_signature(
@@ -280,7 +373,7 @@ pub mod pallet {
 			public_key: T::AccountId,
 			public_key_merkle_proof: Vec<[u8; 32]>,
 			commitment_hash: [u8; 32],
-		) {
+		) -> DispatchResultWithPostInfo {
 			todo!()
 		}
 
@@ -289,11 +382,11 @@ pub mod pallet {
 		}
 
 		pub fn encode_mmr_leaf(leaf: BeefyMMRLeaf) -> Vec<u8> {
-			todo!()
+			leaf.encode()
 		}
 
 		pub fn hash_mmr_leaf(leaf: Vec<u8>) -> [u8; 32] {
-			todo!()
+			keccak_256(&leaf)
 		}
 
 		pub fn validator_registry_update(
@@ -301,11 +394,25 @@ pub mod pallet {
 			new_num_of_validators: u128,
 			new_id: u64,
 		) {
-			todo!()
+			ValidatorRegistryRoot::<T>::set(new_root);
+			NumOfValidators::<T>::set(new_num_of_validators);
+			ValidatorRegistryId::<T>::set(new_id);
+			Self::deposit_event(Event::<T>::ValidatorRegistryUpdated(
+				new_root,
+				new_num_of_validators,
+				new_id,
+			));
 		}
 
-		pub fn check_validator_in_set(addr: T::AccountId, pos: u128, proof: [u8; 32]) -> bool {
-			todo!()
+		pub fn check_validator_in_set(addr: T::AccountId, pos: u128, proof: Vec<[u8; 32]>) -> bool {
+			let hashed_leaf = keccak_256(&addr.encode());
+			merkle_proof::verify_merkle_leaf_at_position(
+				Self::validator_registry_root(),
+				hashed_leaf,
+				pos,
+				Self::validator_registry_num_of_validators(),
+				proof,
+			)
 		}
 	}
 }
