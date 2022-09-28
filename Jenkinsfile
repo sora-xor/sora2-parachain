@@ -36,9 +36,7 @@ pipeline {
                     docker.withRegistry( 'https://' + registry, dockerRegistryRWUserId) {
                         docker.image(baseImageName).inside() {
                             sh '''
-                                mv /target .
                                 cargo build --release
-                                cp target/release/parachain-collator housekeeping/parachain-collator
                             '''
                         }
                     }
