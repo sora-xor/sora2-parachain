@@ -3,12 +3,13 @@ FROM debian:buster-slim
 ENV RUSTUP_HOME="/opt/rust"
 ENV CARGO_HOME="/opt/rust"
 ENV PATH="$PATH:$RUSTUP_HOME/bin"
-ENV RUST_VERSION=nightly-2022-08-15
+ENV RUST_VERSION=nightly
 # Install dependencies
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
         ca-certificates apt-transport-https gnupg \
         libssl-dev pkg-config \
+        build-essential \
         curl \
         git \
         software-properties-common \
