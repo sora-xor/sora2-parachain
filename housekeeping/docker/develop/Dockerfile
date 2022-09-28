@@ -27,8 +27,4 @@ RUN add-apt-repository \
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path --default-toolchain ${RUST_VERSION} && \
     rustup default ${RUST_VERSION} && \
     rustup target add wasm32-unknown-unknown
-# Build project
-ADD . /app
-WORKDIR /app
-RUN cargo build --release && mv target / && rm -rf /app
 WORKDIR /
