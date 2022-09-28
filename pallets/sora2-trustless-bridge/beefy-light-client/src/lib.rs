@@ -225,13 +225,6 @@ pub mod pallet {
 		}
 
 		/* Private Functions */
-
-		/*
-		pub fn () -> {
-
-		}
-		*/
-
 		pub fn get_seed() -> [u8; 32] {
 			let concated = common::concat_u8(&[
 				&Self::latest_random_seed(),
