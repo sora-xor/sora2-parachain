@@ -37,6 +37,7 @@ pipeline {
                         docker.image(baseImageName).inside() {
                             sh '''
                                 cargo build --release
+                                cp target/release/parachain-collator housekeeping/parachain-collator
                             '''
                         }
                     }
