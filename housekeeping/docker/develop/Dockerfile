@@ -3,17 +3,16 @@ FROM debian:buster-slim
 ENV RUSTUP_HOME="/opt/rust"
 ENV CARGO_HOME="/opt/rust"
 ENV PATH="$PATH:$RUSTUP_HOME/bin"
-ENV RUST_VERSION=nightly
+ENV RUST_VERSION=nightly-2022-08-15
 # Install dependencies
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
         ca-certificates apt-transport-https gnupg \
         libssl-dev pkg-config \
-        build-essential \
         curl \
         git \
         software-properties-common \
-        llvm clang make cmake && \
+        llvm clang &&\
     rm -rf /var/lib/apt/lists/*
 # Install docker
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
