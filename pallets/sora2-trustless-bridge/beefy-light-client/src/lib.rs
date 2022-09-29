@@ -370,8 +370,17 @@ pub mod pallet {
 			todo!()
 		}
 
-		pub fn create_commitment_hash(commitment: Commitment) -> () {
-			todo!()
+		pub fn create_commitment_hash(commitment: Commitment) -> [u8; 32] {
+			let concated = common::concat_u8(&[
+				&commitment.payload_prefix,
+				&MMR_ROOT_ID,
+				&[0x80],
+				&commitment.payload,
+				&commitment.payload_suffix,
+				&commitment.block_number.to_be_bytes(),
+				&commitment.validator_set_id.to_be_bytes(),
+			]);
+			keccak_256(&concated)
 		}
 
 		pub fn encode_mmr_leaf(leaf: BeefyMMRLeaf) -> Vec<u8> {

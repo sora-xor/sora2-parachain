@@ -59,7 +59,7 @@ pub fn compute_root_from_proof_at_position(
         i += 1;
     }
 
-    if i >= proof.len() {
+    if i >= proof.len() as u128 {
         return Err(MerkleProofError::MerkleProofTooHigh)
     }
 
