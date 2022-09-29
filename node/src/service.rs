@@ -25,7 +25,7 @@ use cumulus_relay_chain_interface::{RelayChainError, RelayChainInterface, RelayC
 use cumulus_relay_chain_rpc_interface::{create_client_and_start_worker, RelayChainRpcInterface};
 
 // Substrate Imports
-use sc_client_api::ExecutorProvider;
+use sc_client_api::{BlockBackend, ExecutorProvider};
 use sc_executor::NativeElseWasmExecutor;
 use sc_network::NetworkService;
 use sc_network_common::service::NetworkBlock;
@@ -222,6 +222,8 @@ where
 		> + sp_offchain::OffchainWorkerApi<Block>
 		+ sp_block_builder::BlockBuilder<Block>
 		+ cumulus_primitives_core::CollectCollationInfo<Block>
+		+ beefy_primitives::BeefyApi<Block>
+		+ sp_mmr_primitives::MmrApi<Block, Hash>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
@@ -244,6 +246,7 @@ where
 			sc_service::Error,
 		> + 'static,
 	BIC: FnOnce(
+		beefy_gadget::import::BeefyBlockImport<Block, sc_service::TFullBackend<Block>, TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>, Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>>,
 		Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 		Option<&Registry>,
 		Option<TelemetryHandle>,
@@ -260,10 +263,24 @@ where
 		bool,
 	) -> Result<Box<dyn ParachainConsensus<Block>>, sc_service::Error>,
 {
-	let parachain_config = prepare_node_config(parachain_config);
+	let mut parachain_config = prepare_node_config(parachain_config);
 
 	let params = new_partial::<RuntimeApi, Executor, BIQ>(&parachain_config, build_import_queue)?;
 	let (mut telemetry, telemetry_worker_handle) = params.other;
+
+
+	let beefy_protocol_name = beefy_gadget::protocol_standard_name(
+		&params.client
+			.block_hash(0)
+			.ok()
+			.flatten()
+			.expect("Genesis block exists; qed"),
+		&parachain_config.chain_spec,
+	);
+
+	parachain_config.network
+		.extra_sets
+		.push(beefy_gadget::beefy_peers_set_config(beefy_protocol_name.clone()));
 
 	let client = params.client.clone();
 	let backend = params.backend.clone();
@@ -303,19 +320,43 @@ where
 			warp_sync: None,
 		})?;
 
+		let (beefy_block_import, beefy_voter_links, beefy_rpc_links) =
+		beefy_gadget::beefy_block_import_and_links(
+			client.clone(),
+			backend.clone(),
+			client.clone(),
+		);
+
 	let rpc_builder = {
 		let client = client.clone();
 		let transaction_pool = transaction_pool.clone();
 
-		Box::new(move |deny_unsafe, _| {
+		Box::new(move |deny_unsafe, subscription_executor| {
 			let deps = crate::rpc::FullDeps {
 				client: client.clone(),
 				pool: transaction_pool.clone(),
 				deny_unsafe,
+				beefy: crate::rpc::BeefyDeps {
+					beefy_finality_proof_stream: beefy_rpc_links.from_voter_justif_stream.clone(),
+					beefy_best_block_stream: beefy_rpc_links.from_voter_best_beefy_stream.clone(),
+					subscription_executor,
+				},
 			};
 
 			crate::rpc::create_full(deps).map_err(Into::into)
 		})
+	};
+
+	let beefy_params = beefy_gadget::BeefyParams {
+		protocol_name: beefy_protocol_name,
+		client: client.clone(),
+		runtime: client.clone(),
+		backend: backend.clone(),
+		key_store: Some(params.keystore_container.sync_keystore()),
+		network: network.clone(),
+		links: beefy_voter_links,
+		min_block_delta: 8,
+		prometheus_registry: prometheus_registry.clone(),
 	};
 
 	sc_service::spawn_tasks(sc_service::SpawnTasksParams {
@@ -353,6 +394,7 @@ where
 
 	if validator {
 		let parachain_consensus = build_consensus(
+			beefy_block_import,
 			client.clone(),
 			prometheus_registry.as_ref(),
 			telemetry.as_ref().map(|t| t.handle()),
@@ -363,6 +405,12 @@ where
 			params.keystore_container.sync_keystore(),
 			force_authoring,
 		)?;
+
+		let gadget = beefy_gadget::start_beefy_gadget::<_, _, _, _, _>(beefy_params);
+
+        task_manager
+            .spawn_essential_handle()
+            .spawn_blocking("beefy-gadget", Some("beefy-gadget"), gadget);
 
 		let spawner = task_manager.spawn_handle();
 
@@ -465,7 +513,8 @@ pub async fn start_parachain_node(
 		id,
 		|_| Ok(RpcModule::new(())),
 		parachain_build_import_queue,
-		|client,
+		|block_import,
+		 client,
 		 prometheus_registry,
 		 telemetry,
 		 task_manager,
@@ -513,7 +562,7 @@ pub async fn start_parachain_node(
 							Ok((time, slot, parachain_inherent))
 						}
 					},
-					block_import: client.clone(),
+					block_import,
 					para_client: client,
 					backoff_authoring_blocks: Option::<()>::None,
 					sync_oracle,
