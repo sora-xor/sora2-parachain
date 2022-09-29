@@ -4,12 +4,15 @@ use parachain_template_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOS
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
-use sp_core::{sr25519, Pair, Public};
+use sp_core::{sr25519, ByteArray, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec =
 	sc_service::GenericChainSpec<parachain_template_runtime::GenesisConfig, Extensions>;
+
+/// The default XCM version to set in genesis config.
+const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
 
 /// Helper function to generate a crypto pair from seed
 pub fn get_public_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -37,6 +40,67 @@ impl Extensions {
 
 type AccountPublic = <Signature as Verify>::Signer;
 
+pub enum RelayChain {
+	Kusama,
+	Rococo,
+}
+
+impl RelayChain {
+	pub fn name(&self) -> &'static str {
+		match self {
+			RelayChain::Kusama => "SORA Kusama",
+			RelayChain::Rococo => "SORA Rococo",
+		}
+	}
+
+	pub fn id(&self) -> &'static str {
+		match self {
+			RelayChain::Kusama => "sora_kusama",
+			RelayChain::Rococo => "sora_rococo",
+		}
+	}
+
+	pub fn root_key(&self) -> AccountId {
+		let bytes = match self {
+			RelayChain::Kusama =>
+				hex!("de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058"),
+			RelayChain::Rococo =>
+				hex!("54fd1e1728cd833d21da6f3e36c50884062e35edfc24aec7a70c18a60451255a"),
+		};
+		AccountId::from(bytes)
+	}
+
+	pub fn session_keys(&self) -> Vec<(AccountId, AuraId)> {
+		let public_keys = match self {
+			RelayChain::Kusama => vec![
+				hex!("ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"),
+				hex!("f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"),
+			],
+			RelayChain::Rococo => vec![
+				hex!("caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"),
+				hex!("3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"),
+			],
+		};
+		public_keys
+			.into_iter()
+			.map(|x| (AccountId::from(x), AuraId::from_slice(&x).unwrap()))
+			.collect()
+	}
+
+	pub fn endowed_accounts(&self) -> Vec<AccountId> {
+		std::iter::once(self.root_key())
+			.chain(self.session_keys().into_iter().map(|x| x.0))
+			.collect()
+	}
+
+	pub fn relay_chain(&self) -> &'static str {
+		match self {
+			RelayChain::Kusama => "kusama",
+			RelayChain::Rococo => "rococo",
+		}
+	}
+}
+
 /// Generate collator keys from seed.
 ///
 /// This function's return type must always match the session keys of the chain in tuple format.
@@ -59,143 +123,59 @@ pub fn template_session_keys(keys: AuraId) -> parachain_template_runtime::Sessio
 	parachain_template_runtime::SessionKeys { aura: keys }
 }
 
-pub fn kusama_config(relay_chain: String) -> ChainSpec {
+pub fn kusama_chain_spec() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../res/kusama.json")[..])
+}
+
+pub fn rococo_chain_spec() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../res/rococo.json")[..])
+}
+
+pub fn raw_config(relay_chain: RelayChain) -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "XOR".into());
 	properties.insert("tokenDecimals".into(), 18u64.into());
 	properties.insert("ss58Format".into(), parachain_template_runtime::SS58Prefix::get().into());
-
+	let root_key = relay_chain.root_key();
+	let session_keys = relay_chain.session_keys();
+	let endowed_accounts = relay_chain.endowed_accounts();
 	ChainSpec::from_genesis(
 		// Name
-		"SORA Kusama",
+		relay_chain.name(),
 		// ID
-		"sora_ksm",
+		relay_chain.id(),
 		ChainType::Live,
 		move || {
 			testnet_genesis(
-				AccountId::from(hex!(
-					"de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058"
-				)),
-				// initial collators.
-				vec![
-					(
-						AccountId::from(hex!(
-							"ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"
-						)),
-						AuraId::from_slice(&hex!(
-							"ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"
-						)),
-					),
-					(
-						AccountId::from(hex!(
-							"f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"
-						)),
-						AuraId::from_slice(&hex!(
-							"f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"
-						)),
-					),
-				],
-				vec![
-					AccountId::from(hex!(
-						"de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058"
-					)),
-					AccountId::from(hex!(
-						"ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"
-					)),
-					AccountId::from(hex!(
-						"f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"
-					)),
-				],
+				root_key.clone(),
+				session_keys.clone(),
+				endowed_accounts.clone(),
 				2011u32.into(),
 			)
 		},
 		Vec::new(),
 		None,
-		Some("sora_ksm"),
+		Some(relay_chain.id()),
 		None,
-		Extensions {
-			relay_chain,
-			para_id: 2011,
-		},
+		Some(properties),
+		Extensions { relay_chain: relay_chain.relay_chain().to_owned(), para_id: 2011 },
 	)
 }
 
 pub fn development_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("tokenSymbol".into(), "XOR".into());
-	properties.insert("tokenDecimals".into(), 18u64.into());
-	properties.insert("ss58Format".into(), parachain_template_runtime::SS58Prefix::get().into());
+	properties.insert("tokenSymbol".into(), "UNIT".into());
+	properties.insert("tokenDecimals".into(), 12.into());
+	properties.insert("ss58Format".into(), 42.into());
 
 	ChainSpec::from_genesis(
 		// Name
-		"SORA Kusama",
+		"Development",
 		// ID
-		"sora_ksm_dev",
+		"dev",
 		ChainType::Development,
-		move || {
-			testnet_genesis(
-				AccountId::from(hex!(
-					"e02b00cb5bbf5c0338075237cdbfb7d11dbaf19aafce71744610b6a87b5e0f22"
-				)),
-				// initial collators.
-				vec![
-					(
-						AccountId::from(hex!(
-							"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
-						)),
-						AuraId::from_slice(&hex!(
-							"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
-						)),
-					),
-					(
-						AccountId::from(hex!(
-							"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
-						)),
-						AuraId::from_slice(&hex!(
-							"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
-						)),
-					),
-				],
-				vec![
-					AccountId::from(hex!(
-						"e02b00cb5bbf5c0338075237cdbfb7d11dbaf19aafce71744610b6a87b5e0f22"
-					)),
-					AccountId::from(hex!(
-						"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
-					)),
-					AccountId::from(hex!(
-						"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
-					)),
-				],
-				2000u32.into(),
-			)
-		},
-		Vec::new(),
-		None,
-		Some("sora_ksm_dev"),
-		None,
-		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 2000,
-		},
-	)
-}
-
-pub fn local_config() -> ChainSpec {
-	// Give your base currency a unit name and decimal places
-	let mut properties = sc_chain_spec::Properties::new();
-	properties.insert("tokenSymbol".into(), "XOR".into());
-	properties.insert("tokenDecimals".into(), 18u64.into());
-	properties.insert("ss58Format".into(), parachain_template_runtime::SS58Prefix::get().into());
-
-	ChainSpec::from_genesis(
-		// Name
-		"SORA Kusama",
-		// ID
-		"sora_ksm_local",
-		ChainType::Local,
 		move || {
 			testnet_genesis(
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -224,7 +204,74 @@ pub fn local_config() -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
-				2000u32.into(),
+				1000.into(),
+			)
+		},
+		Vec::new(),
+		None,
+		None,
+		None,
+		None,
+		Extensions {
+			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
+			para_id: 1000,
+		},
+	)
+}
+
+pub fn local_testnet_config() -> ChainSpec {
+	// Give your base currency a unit name and decimal places
+	let mut properties = sc_chain_spec::Properties::new();
+	properties.insert("tokenSymbol".into(), "UNIT".into());
+	properties.insert("tokenDecimals".into(), 12.into());
+	properties.insert("ss58Format".into(), 42.into());
+
+	ChainSpec::from_genesis(
+		// Name
+		"Local Testnet",
+		// ID
+		"local_testnet",
+		ChainType::Local,
+		move || {
+			testnet_genesis(
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				// initial collators.
+				vec![
+					(
+						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						get_collator_keys_from_seed("Alice"),
+					),
+					(
+						AccountId::from(hex!(
+							"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
+						)),
+						AuraId::from_slice(&hex!(
+							"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
+						))
+						.unwrap(),
+					),
+					(
+						AccountId::from(hex!(
+							"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
+						)),
+						AuraId::from_slice(&hex!(
+							"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
+						))
+						.unwrap(),
+					),
+				],
+				vec![
+					AccountId::from(hex!(
+						"e02b00cb5bbf5c0338075237cdbfb7d11dbaf19aafce71744610b6a87b5e0f22"
+					)),
+					AccountId::from(hex!(
+						"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
+					)),
+					AccountId::from(hex!(
+						"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
+					)),
+				],
+				1000.into(),
 			)
 		},
 		// Bootnodes
@@ -232,13 +279,15 @@ pub fn local_config() -> ChainSpec {
 		// Telemetry
 		None,
 		// Protocol ID
-		Some("sora_ksm_local"),
+		Some("template-local"),
+		// Fork ID
+		None,
 		// Properties
 		Some(properties),
 		// Extensions
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 2000,
+			para_id: 1000,
 		},
 	)
 }
@@ -256,13 +305,13 @@ fn testnet_genesis(
 				.to_vec(),
 		},
 		balances: parachain_template_runtime::BalancesConfig {
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 1_000_000_000_000_000_000)).collect(),
+			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
 		parachain_info: parachain_template_runtime::ParachainInfoConfig { parachain_id: id },
 		collator_selection: parachain_template_runtime::CollatorSelectionConfig {
 			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
-			candidacy_bond: 0,
-			desired_candidates: 0,
+			candidacy_bond: EXISTENTIAL_DEPOSIT * 16,
+			..Default::default()
 		},
 		session: parachain_template_runtime::SessionConfig {
 			keys: invulnerables
@@ -281,6 +330,9 @@ fn testnet_genesis(
 		aura: Default::default(),
 		aura_ext: Default::default(),
 		parachain_system: Default::default(),
-		sudo: parachain_template_runtime::SudoConfig { key: root_key },
+		polkadot_xcm: parachain_template_runtime::PolkadotXcmConfig {
+			safe_xcm_version: Some(SAFE_XCM_VERSION),
+		},
+		sudo: parachain_template_runtime::SudoConfig { key: Some(root_key) },
 	}
 }
