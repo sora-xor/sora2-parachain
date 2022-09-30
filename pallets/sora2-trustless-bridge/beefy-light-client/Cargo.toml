@@ -1,0 +1,52 @@
+[package]
+name = "beefy-light-client"
+authors = ["Anonymous"]
+description = ""
+version = "0.1.0"
+license = "Unlicense"
+homepage = "https://substrate.io"
+repository = "https://github.com/paritytech/substrate/"
+edition = "2021"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "3.0.0", features = ["derive"], default-features = false }
+scale-info = { version = "2.0.0", default-features = false, features = ["derive"] }
+common = { path = "../common" }
+
+# Substrate
+frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, optional = true, branch = "polkadot-v0.9.28" }
+frame-support = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.28" }
+frame-system = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.28" }
+sp-io = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.28" }
+ethabi = { git = "https://github.com/sora-xor/ethabi.git", branch = "polkadot-v0.9.25", package = "ethabi", default-features = false, features = [
+    "alloc",
+] }
+
+
+# ethereum-types = { version = "0.13.1", default-features = false, features = [
+#   "codec",
+#   "rlp",
+#   "serialize",
+# ] }
+
+[dev-dependencies]
+serde = { version = "1.0.132" }
+
+# Substrate
+sp-core = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.28" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.28" }
+
+[features]
+default = ["std"]
+runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
+std = [
+	"codec/std",
+	"scale-info/std",
+	"frame-benchmarking/std",
+	"frame-support/std",
+	"frame-system/std",
+]
+try-runtime = [ "frame-support/try-runtime" ]

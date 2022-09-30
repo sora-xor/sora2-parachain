@@ -4,6 +4,8 @@ panic = "unwind"
 [workspace]
 members = [
 	"node",
-	"pallets/*",
+	"pallets/template",
+	"pallets/sora2-trustless-bridge/beefy-light-client",
+	"pallets/sora2-trustless-bridge/common",
 	"runtime",
 ]
