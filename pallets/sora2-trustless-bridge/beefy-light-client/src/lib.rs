@@ -56,6 +56,7 @@ pub mod pallet {
 	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
 	use sp_io::hashing::keccak_256;
+	use frame_support::traits::Randomness;
 
 	pub const MMR_ROOT_HISTORY_SIZE: u32 = 30;
 
@@ -73,6 +74,7 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type Randomness: frame_support::traits::Randomness<Self::Hash, Self::BlockNumber>;
 	}
 
 	#[pallet::pallet]
@@ -146,8 +148,8 @@ pub mod pallet {
 		pub fn add_known_mmr_root(root: [u8; 32]) -> u32 {
 			let latest_mmr_root_index = LatestMMRRootIndex::<T>::get();
 			let new_root_index = (latest_mmr_root_index + 1) % MMR_ROOT_HISTORY_SIZE;
-			LatestMMRRoots::<T>::insert(latest_mmr_root_index as u128, root);
-			LatestMMRRootIndex::<T>::set(latest_mmr_root_index);
+			LatestMMRRoots::<T>::insert(new_root_index as u128, root);
+			LatestMMRRootIndex::<T>::set(new_root_index);
 			latest_mmr_root_index
 		}
 
@@ -157,7 +159,6 @@ pub mod pallet {
 			}
 			let latest_mmr_root_index = LatestMMRRootIndex::<T>::get();
 			let mut i = latest_mmr_root_index;
-			let latest_mmr_roots = LatestMMRRoots::<T>::get(i as u128);
 			loop {
 				if root == LatestMMRRoots::<T>::get(i as u128) {
 					return true;
@@ -415,6 +416,14 @@ pub mod pallet {
 				Self::validator_registry_num_of_validators(),
 				proof,
 			)
+		}
+
+		fn get_random() -> [u8; 32] {
+			let seed = LatestRandomSeed::<T>::get();
+			let rand = T::Randomness::random(&seed);
+			// codec::Encode::using_encoded(&rand, sp_io::hashing::blake2_256)
+			// rand.1
+			todo!()
 		}
 	}
 }
