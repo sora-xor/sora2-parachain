@@ -36,7 +36,6 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-mod currency_id_convert;
 mod trader;
 mod weights;
 pub mod xcm_config;
@@ -56,7 +55,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-use common::primitives::CurrencyId;
+use common::primitives::AssetId;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{ConstU128, ConstU32, ConstU64, Everything},
@@ -490,7 +489,7 @@ impl pallet_collator_selection::Config for Runtime {
 }
 
 orml_traits::parameter_type_with_key! {
-	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
+	pub ExistentialDeposits: |_currency_id: AssetId| -> Balance {
 		Default::default()
 	};
 }
@@ -499,7 +498,7 @@ impl orml_tokens::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type Amount = i128;
-	type CurrencyId = CurrencyId;
+	type CurrencyId = AssetId;
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
 	type OnDust = ();
@@ -509,6 +508,11 @@ impl orml_tokens::Config for Runtime {
 	type DustRemovalWhitelist = Everything;
 	type OnNewTokenAccount = ();
 	type OnKilledTokenAccount = ();
+}
+
+impl pallet_converter::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = pallet_converter::weights::WeightInfo<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -547,6 +551,8 @@ construct_runtime!(
 		// ORML
 		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 41,
 		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>} = 42,
+
+		Converter: pallet_converter::{Pallet, Call, Storage, Event<T>} = 43,
 	}
 );
 
@@ -563,6 +569,7 @@ mod benches {
 		[pallet_timestamp, Timestamp]
 		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
+		[pallet_converter, Converter]
 	);
 }
 
