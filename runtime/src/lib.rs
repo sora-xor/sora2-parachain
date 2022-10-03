@@ -7,6 +7,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 mod weights;
+mod migrations;
 pub mod xcm_config;
 
 use smallvec::smallvec;
@@ -115,6 +116,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	migrations::Migrations,
 >;
 
 /// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
