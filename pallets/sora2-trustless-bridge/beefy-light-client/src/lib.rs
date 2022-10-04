@@ -133,6 +133,9 @@ pub mod pallet {
 		InvalidNumberOfSignatures,
 		InvalidNumberOfPositions,
 		InvalidNumberOfPublicKeys,
+		ValidatorNotOnceInbitfield,
+		ValidatorSetIncorrectPosition,
+		InvalidSignature,
 	}
 
 	#[pallet::hooks]
@@ -341,7 +344,7 @@ pub mod pallet {
 		}
 
 		pub fn verify_validator_proof_signatures(
-			random_bitfield: [u8; 32],
+			random_bitfield: Vec<u128>,
 			proof: ValidatorProof<T::AccountId>,
 			required_num_of_signatures: u128,
 			commitment_hash: [u8; 32],
@@ -349,7 +352,7 @@ pub mod pallet {
 			let required_num_of_signatures = required_num_of_signatures as usize;
 			for i in 0..required_num_of_signatures {
 				Self::verify_validator_signature(
-					random_bitfield,
+					random_bitfield.clone(),
 					proof.signatures[i].clone(),
 					proof.positions[i],
 					proof.public_keys[i].clone(),
@@ -361,13 +364,21 @@ pub mod pallet {
 		}
 
 		pub fn verify_validator_signature(
-			random_bitfield: [u8; 32],
+			mut random_bitfield: Vec<u128>,
 			signature: Vec<u8>,
 			position: u128,
 			public_key: T::AccountId,
 			public_key_merkle_proof: Vec<[u8; 32]>,
 			commitment_hash: [u8; 32],
 		) -> DispatchResultWithPostInfo {
+			// use sp_core::{ecdsa, Pair};
+
+			ensure!(bitfield::is_set(&random_bitfield, position), Error::<T>::ValidatorNotOnceInbitfield);
+			bitfield::clear(&mut random_bitfield, position);
+			ensure!(Self::check_validator_in_set(public_key, position, public_key_merkle_proof), Error::<T>::ValidatorSetIncorrectPosition);
+
+			// let pair = sp_core::ecdsa::Pair::recover();
+			// ensure!(recover(commitment_hash, signature) == public_key);
 			todo!()
 		}
 
