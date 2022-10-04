@@ -3,6 +3,7 @@
 use codec::{Decode, Encode};
 use frame_support::RuntimeDebug;
 pub use pallet::*;
+pub use sp_core::ecdsa::{Signature, Public};
 
 // #[cfg(test)]
 // mod mock;
@@ -25,11 +26,11 @@ pub struct Commitment {
 }
 
 #[derive(
-	Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, PartialOrd, Ord, scale_info::TypeInfo,
+	Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, scale_info::TypeInfo,
 )]
 pub struct ValidatorProof<AccountId> {
 	pub validator_claims_bitfield: Vec<u128>,
-	pub signatures: Vec<Vec<u8>>,
+	pub signatures: Vec<Signature>,
 	pub positions: Vec<u128>,
 	pub public_keys: Vec<AccountId>,
 	pub public_key_merkle_proofs: Vec<Vec<[u8; 32]>>,
@@ -51,12 +52,14 @@ pub struct BeefyMMRLeaf {
 
 #[frame_support::pallet]
 pub mod pallet {
-	use super::{BeefyMMRLeaf, Commitment, ValidatorProof};
+	use super::*;
 	use common::{bitfield, merkle_proof, simplified_mmr_proof::*};
 	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
 	use sp_io::hashing::keccak_256;
 	use frame_support::traits::Randomness;
+	use frame_support::fail;
+	use ethabi::{encode_packed, Token};
 
 	pub const MMR_ROOT_HISTORY_SIZE: u32 = 30;
 
@@ -204,7 +207,7 @@ pub mod pallet {
 		pub fn submit_signature_commitment(
 			origin: OriginFor<T>,
 			commitment: Commitment,
-			validator_proof: ValidatorProof<T::AccountId>,
+			validator_proof: ValidatorProof<sp_core::ecdsa::Public>,
 			latest_mmr_leaf: BeefyMMRLeaf,
 			proof: SimplifiedMMRProof,
 		) -> DispatchResultWithPostInfo {
@@ -302,7 +305,8 @@ pub mod pallet {
 
 		/**
 			* @dev https://github.com/sora-xor/substrate/blob/7d914ce3ed34a27d7bb213caed374d64cde8cfa8/client/beefy/src/round.rs#L62
-			*/
+		*/
+		// ON RELAYER???????
 		pub fn check_commitment_signatures_threshold(
 			num_of_validators: u128,
 			validator_claims_bitfield: Vec<u128>,
@@ -313,9 +317,10 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		// ON RELAYER???????
 		pub fn verify_commitment(
 			commitment: &Commitment,
-			proof: &ValidatorProof<T::AccountId>,
+			proof: &ValidatorProof<Public>,
 		) -> DispatchResultWithPostInfo {
 			todo!()
 		}
@@ -345,7 +350,7 @@ pub mod pallet {
 
 		pub fn verify_validator_proof_signatures(
 			random_bitfield: Vec<u128>,
-			proof: ValidatorProof<T::AccountId>,
+			proof: ValidatorProof<Public>,
 			required_num_of_signatures: u128,
 			commitment_hash: [u8; 32],
 		) -> DispatchResultWithPostInfo {
@@ -365,21 +370,22 @@ pub mod pallet {
 
 		pub fn verify_validator_signature(
 			mut random_bitfield: Vec<u128>,
-			signature: Vec<u8>,
+			signature: Signature,
 			position: u128,
-			public_key: T::AccountId,
+			public_key: Public,
 			public_key_merkle_proof: Vec<[u8; 32]>,
 			commitment_hash: [u8; 32],
 		) -> DispatchResultWithPostInfo {
-			// use sp_core::{ecdsa, Pair};
-
 			ensure!(bitfield::is_set(&random_bitfield, position), Error::<T>::ValidatorNotOnceInbitfield);
 			bitfield::clear(&mut random_bitfield, position);
 			ensure!(Self::check_validator_in_set(public_key, position, public_key_merkle_proof), Error::<T>::ValidatorSetIncorrectPosition);
-
-			// let pair = sp_core::ecdsa::Pair::recover();
-			// ensure!(recover(commitment_hash, signature) == public_key);
-			todo!()
+			let recovered_public = match signature.recover(&commitment_hash) {
+				None => fail!(Error::<T>::InvalidSignature),
+				Some(p) => p,
+			};
+			// TODO: Check if it is correct!
+			ensure!(recovered_public == public_key, Error::<T>::InvalidSignature);
+			Ok(().into())
 		}
 
 		pub fn create_commitment_hash(commitment: Commitment) -> [u8; 32] {
@@ -418,7 +424,7 @@ pub mod pallet {
 			));
 		}
 
-		pub fn check_validator_in_set(addr: T::AccountId, pos: u128, proof: Vec<[u8; 32]>) -> bool {
+		pub fn check_validator_in_set(addr: Public, pos: u128, proof: Vec<[u8; 32]>) -> bool {
 			let hashed_leaf = keccak_256(&addr.encode());
 			merkle_proof::verify_merkle_leaf_at_position(
 				Self::validator_registry_root(),
