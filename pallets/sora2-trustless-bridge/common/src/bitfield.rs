@@ -1,3 +1,5 @@
+use scale_info::prelude::vec::Vec;
+
 pub const SIZE: u128 = core::mem::size_of::<u128>() as u128;
 
 pub fn create_bitfield(bits_to_set: Vec<u128>, length: u128) -> Vec<u128> {

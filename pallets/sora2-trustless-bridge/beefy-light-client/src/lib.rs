@@ -4,6 +4,8 @@ use codec::{Decode, Encode};
 use frame_support::RuntimeDebug;
 pub use pallet::*;
 pub use sp_core::ecdsa::{Signature, Public};
+use frame_support::crypto::ecdsa::ECDSAExt;
+use scale_info::prelude::vec::Vec;
 
 // #[cfg(test)]
 // mod mock;
@@ -13,6 +15,22 @@ pub use sp_core::ecdsa::{Signature, Public};
 
 // #[cfg(feature = "runtime-benchmarks")]
 // mod benchmarking;
+
+type EthAddress = [u8; 20];
+
+fn convert(a: EthAddress) -> Vec<u8> {
+	sp_core::ecdsa::Public::try_from(a.as_ref())
+		.map_err(|_| {
+			// log::error!(target: "runtime::beefy", "Invalid BEEFY PublicKey format!");
+		})
+		.unwrap_or(sp_core::ecdsa::Public::from_raw([0u8; 33]))
+		.to_eth_address()
+		.map(|v| v.to_vec())
+		.map_err(|_| {
+			// log::error!(target: "runtime::beefy", "Failed to convert BEEFY PublicKey to ETH address!");
+		})
+		.unwrap_or_default()
+}
 
 #[derive(
 	Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, PartialOrd, Ord, scale_info::TypeInfo,
@@ -28,11 +46,11 @@ pub struct Commitment {
 #[derive(
 	Encode, Decode, Clone, RuntimeDebug, PartialEq, Eq, scale_info::TypeInfo,
 )]
-pub struct ValidatorProof<AccountId> {
+pub struct ValidatorProof {
 	pub validator_claims_bitfield: Vec<u128>,
 	pub signatures: Vec<Signature>,
 	pub positions: Vec<u128>,
-	pub public_keys: Vec<AccountId>,
+	pub public_keys: Vec<EthAddress>,
 	pub public_key_merkle_proofs: Vec<Vec<[u8; 32]>>,
 }
 
@@ -57,7 +75,7 @@ pub mod pallet {
 	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
 	use sp_io::hashing::keccak_256;
-	use frame_support::traits::Randomness;
+	// use frame_support::traits::Randomness;
 	use frame_support::fail;
 	use ethabi::{encode_packed, Token};
 
@@ -77,7 +95,7 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type Randomness: frame_support::traits::Randomness<Self::Hash, Self::BlockNumber>;
+		// type Randomness: frame_support::traits::Randomness<Self::Hash, Self::BlockNumber>;
 	}
 
 	#[pallet::pallet]
@@ -196,6 +214,7 @@ pub mod pallet {
 			Self::is_known_root(proof_root)
 		}
 
+		// RELAYER? 
 		pub fn create_random_bit_field(validator_claims_bitfield: Vec<u128>) -> Vec<u128> {
 			todo!()
 		}
@@ -207,7 +226,7 @@ pub mod pallet {
 		pub fn submit_signature_commitment(
 			origin: OriginFor<T>,
 			commitment: Commitment,
-			validator_proof: ValidatorProof<sp_core::ecdsa::Public>,
+			validator_proof: ValidatorProof,
 			latest_mmr_leaf: BeefyMMRLeaf,
 			proof: SimplifiedMMRProof,
 		) -> DispatchResultWithPostInfo {
@@ -320,14 +339,14 @@ pub mod pallet {
 		// ON RELAYER???????
 		pub fn verify_commitment(
 			commitment: &Commitment,
-			proof: &ValidatorProof<Public>,
+			proof: &ValidatorProof,
 		) -> DispatchResultWithPostInfo {
 			todo!()
 		}
 
 		pub fn verify_validator_proof_lengths(
 			required_num_of_signatures: u128,
-			proof: ValidatorProof<T::AccountId>,
+			proof: ValidatorProof,
 		) -> DispatchResultWithPostInfo {
 			ensure!(
 				proof.signatures.len() as u128 == required_num_of_signatures,
@@ -350,7 +369,7 @@ pub mod pallet {
 
 		pub fn verify_validator_proof_signatures(
 			random_bitfield: Vec<u128>,
-			proof: ValidatorProof<Public>,
+			proof: ValidatorProof,
 			required_num_of_signatures: u128,
 			commitment_hash: [u8; 32],
 		) -> DispatchResultWithPostInfo {
@@ -372,7 +391,7 @@ pub mod pallet {
 			mut random_bitfield: Vec<u128>,
 			signature: Signature,
 			position: u128,
-			public_key: Public,
+			public_key: EthAddress,
 			public_key_merkle_proof: Vec<[u8; 32]>,
 			commitment_hash: [u8; 32],
 		) -> DispatchResultWithPostInfo {
@@ -383,8 +402,8 @@ pub mod pallet {
 				None => fail!(Error::<T>::InvalidSignature),
 				Some(p) => p,
 			};
-			// TODO: Check if it is correct!
-			ensure!(recovered_public == public_key, Error::<T>::InvalidSignature);
+			// // TODO: Check if it is correct!
+			// ensure!(recovered_public.0.to_vec() == convert(public_key), Error::<T>::InvalidSignature);
 			Ok(().into())
 		}
 
@@ -424,7 +443,7 @@ pub mod pallet {
 			));
 		}
 
-		pub fn check_validator_in_set(addr: Public, pos: u128, proof: Vec<[u8; 32]>) -> bool {
+		pub fn check_validator_in_set(addr: EthAddress, pos: u128, proof: Vec<[u8; 32]>) -> bool {
 			let hashed_leaf = keccak_256(&addr.encode());
 			merkle_proof::verify_merkle_leaf_at_position(
 				Self::validator_registry_root(),
@@ -435,12 +454,12 @@ pub mod pallet {
 			)
 		}
 
-		fn get_random() -> [u8; 32] {
-			let seed = LatestRandomSeed::<T>::get();
-			let rand = T::Randomness::random(&seed);
-			// codec::Encode::using_encoded(&rand, sp_io::hashing::blake2_256)
-			// rand.1
-			todo!()
-		}
+		// fn get_random() -> [u8; 32] {
+		// 	let seed = LatestRandomSeed::<T>::get();
+		// 	let rand = T::Randomness::random(&seed);
+		// 	// codec::Encode::using_encoded(&rand, sp_io::hashing::blake2_256)
+		// 	// rand.1
+		// 	todo!()
+		// }
 	}
 }

@@ -1,5 +1,6 @@
 use ethabi::{encode_packed, Token};
 use sp_io::hashing::keccak_256;
+use scale_info::prelude::vec::Vec;
 
 #[derive(Clone)]
 pub struct SimplifiedMMRProof {

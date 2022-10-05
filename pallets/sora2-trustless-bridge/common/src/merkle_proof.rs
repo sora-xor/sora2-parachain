@@ -1,5 +1,6 @@
 use ethabi::{encode_packed, Token};
 use sp_io::hashing::keccak_256;
+use scale_info::prelude::vec::Vec;
 
 pub fn verify_merkle_leaf_at_position(
     root: [u8; 32],

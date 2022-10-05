@@ -476,10 +476,11 @@ name = "beefy-light-client"
 version = "0.1.0"
 dependencies = [
  "common",
- "ethabi 13.0.0 (git+https://github.com/sora-xor/ethabi.git?branch=polkadot-v0.9.25)",
+ "ethabi",
  "frame-benchmarking 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-system 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "getrandom 0.2.7",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -982,7 +983,7 @@ dependencies = [
 name = "common"
 version = "0.1.0"
 dependencies = [
- "ethabi 13.0.0 (git+https://github.com/sora-xor/ethabi.git?branch=polkadot-v0.9.28)",
+ "ethabi",
  "frame-benchmarking 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-system 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
@@ -2122,20 +2123,6 @@ dependencies = [
 [[package]]
 name = "ethabi"
 version = "13.0.0"
-source = "git+https://github.com/sora-xor/ethabi.git?branch=polkadot-v0.9.25#94d0e873c7d22e46f4aa7d6d779caad4d8373e53"
-dependencies = [
- "anyhow",
- "ethereum-types",
- "hex",
- "serde",
- "serde_json",
- "sha3 0.9.1",
- "uint",
-]
-
-[[package]]
-name = "ethabi"
-version = "13.0.0"
 source = "git+https://github.com/sora-xor/ethabi.git?branch=polkadot-v0.9.28#4838f889d78d86e5fa14af2f24104c268e404cc3"
 dependencies = [
  "anyhow",
@@ -2939,8 +2926,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4eb1a864a501629691edf6c15a593b7a51eebaa1e8468e9ddc623de7c9b58ec6"
 dependencies = [
  "cfg-if 1.0.0",
+ "js-sys",
  "libc",
  "wasi 0.11.0+wasi-snapshot-preview1",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -6001,6 +5990,7 @@ dependencies = [
 name = "parachain-template-runtime"
 version = "0.1.0"
 dependencies = [
+ "beefy-light-client",
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
@@ -11515,7 +11505,7 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "digest 0.10.5",
  "rand 0.8.5",
  "static_assertions",
