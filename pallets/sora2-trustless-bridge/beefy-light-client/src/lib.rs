@@ -2,10 +2,13 @@
 
 use codec::{Decode, Encode};
 use frame_support::RuntimeDebug;
+use libsecp256k1::{Signature, Message, PublicKey,};
 pub use pallet::*;
-pub use sp_core::ecdsa::{Signature, Public};
-use frame_support::crypto::ecdsa::ECDSAExt;
+// pub use sp_core::ecdsa::{Signature, Public};
+use frame_support::crypto::ecdsa::{ECDSAExt};
 use scale_info::prelude::vec::Vec;
+use sp_core::{H160};
+use sp_io::hashing::keccak_256;
 
 // #[cfg(test)]
 // mod mock;
@@ -16,7 +19,8 @@ use scale_info::prelude::vec::Vec;
 // #[cfg(feature = "runtime-benchmarks")]
 // mod benchmarking;
 
-type EthAddress = [u8; 20];
+// type EthAddress = [u8; 20];
+type EthAddress = H160;
 
 fn convert(a: EthAddress) -> Vec<u8> {
 	sp_core::ecdsa::Public::try_from(a.as_ref())
@@ -30,6 +34,19 @@ fn convert(a: EthAddress) -> Vec<u8> {
 			// log::error!(target: "runtime::beefy", "Failed to convert BEEFY PublicKey to ETH address!");
 		})
 		.unwrap_or_default()
+}
+
+pub fn public_key_to_eth_address(pub_key: &PublicKey) -> EthAddress {
+    let hash = keccak_256(&pub_key.serialize()[1..]);
+    EthAddress::from_slice(&hash[12..])
+}
+
+pub fn prepare_message(msg: &[u8]) -> Message {
+    let msg = keccak_256(msg);
+    let mut prefix = b"\x19Ethereum Signed Message:\n32".to_vec();
+    prefix.extend(&msg);
+    let hash = keccak_256(&prefix);
+    Message::parse_slice(&hash).expect("hash size == 256 bits; qed")
 }
 
 #[derive(
@@ -48,7 +65,7 @@ pub struct Commitment {
 )]
 pub struct ValidatorProof {
 	pub validator_claims_bitfield: Vec<u128>,
-	pub signatures: Vec<Signature>,
+	pub signatures: Vec<Vec<u8>>,
 	pub positions: Vec<u128>,
 	pub public_keys: Vec<EthAddress>,
 	pub public_key_merkle_proofs: Vec<Vec<[u8; 32]>>,
@@ -71,10 +88,10 @@ pub struct BeefyMMRLeaf {
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use common::{bitfield, merkle_proof, simplified_mmr_proof::*};
+	use bridge_common::{bitfield, merkle_proof, simplified_mmr_proof::*};
 	use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
-	use sp_io::hashing::keccak_256;
+
 	// use frame_support::traits::Randomness;
 	use frame_support::fail;
 	use ethabi::{encode_packed, Token};
@@ -252,7 +269,7 @@ pub mod pallet {
 
 		/* Private Functions */
 		pub fn get_seed() -> [u8; 32] {
-			let concated = common::concat_u8(&[
+			let concated = bridge_common::concat_u8(&[
 				&Self::latest_random_seed(),
 				&Self::latest_beefy_block().to_be_bytes(),
 			]);
@@ -389,7 +406,7 @@ pub mod pallet {
 
 		pub fn verify_validator_signature(
 			mut random_bitfield: Vec<u128>,
-			signature: Signature,
+			signature: Vec<u8>,
 			position: u128,
 			public_key: EthAddress,
 			public_key_merkle_proof: Vec<[u8; 32]>,
@@ -398,17 +415,24 @@ pub mod pallet {
 			ensure!(bitfield::is_set(&random_bitfield, position), Error::<T>::ValidatorNotOnceInbitfield);
 			bitfield::clear(&mut random_bitfield, position);
 			ensure!(Self::check_validator_in_set(public_key, position, public_key_merkle_proof), Error::<T>::ValidatorSetIncorrectPosition);
-			let recovered_public = match signature.recover(&commitment_hash) {
-				None => fail!(Error::<T>::InvalidSignature),
-				Some(p) => p,
+			let mes = prepare_message(&commitment_hash);
+			let sig = match Signature::parse_standard_slice(&signature){
+				Err(_) => fail!(Error::<T>::InvalidSignature),
+				Ok(p) => p,
 			};
+			let recovered_public = libsecp256k1::recover(&mes, &sig, &libsecp256k1::RecoveryId::parse(0).unwrap()).unwrap();
+			let addr = public_key_to_eth_address(&recovered_public);
+			// let recovered_public = match libsecp256k1::recover(&commitment_hash) {
+			// 	Err(_) => fail!(Error::<T>::InvalidSignature),
+			// 	Ok(p) => p,
+			// };
 			// // TODO: Check if it is correct!
-			// ensure!(recovered_public.0.to_vec() == convert(public_key), Error::<T>::InvalidSignature);
+			ensure!(addr == public_key, Error::<T>::InvalidSignature);
 			Ok(().into())
 		}
 
 		pub fn create_commitment_hash(commitment: Commitment) -> [u8; 32] {
-			let concated = common::concat_u8(&[
+			let concated = bridge_common::concat_u8(&[
 				&commitment.payload_prefix,
 				&MMR_ROOT_ID,
 				&[0x80],
