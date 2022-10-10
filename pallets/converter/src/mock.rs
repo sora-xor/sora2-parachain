@@ -29,7 +29,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate as pallet_converter;
-use frame_support::{parameter_types, traits::Everything};
+use frame_support::{parameter_types, traits::Everything, WeakBoundedVec};
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
@@ -92,4 +92,9 @@ impl pallet_converter::Config for Test {
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
+}
+
+
+pub fn test_general_key() -> WeakBoundedVec<u8, frame_support::traits::ConstU32<32>> {
+	WeakBoundedVec::try_from(b"TEST_ASSET".to_vec()).unwrap()
 }

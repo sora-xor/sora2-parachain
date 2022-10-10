@@ -29,7 +29,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use super::*;
-
+use frame_support::WeakBoundedVec;
 #[allow(unused)]
 use crate::Pallet as Converter;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
@@ -46,7 +46,7 @@ benchmarks! {
 		];
 		let multilocation = MultiLocation {
 			parents: 1,
-			interior: X2(Parachain(666), GeneralKey(b"TEST_ASSET".to_vec())),
+			interior: X2(Parachain(666), GeneralKey(test_general_key())),
 		};
 	}: _(RawOrigin::Root, asset_id, multilocation.clone())
 	verify {
@@ -70,7 +70,7 @@ benchmarks! {
 		let multilocation = MultiLocation::parent();
 		let new_multilocation = MultiLocation {
 			parents: 1,
-			interior: X2(Parachain(666), GeneralKey(b"TEST_ASSET".to_vec())),
+			interior: X2(Parachain(666), GeneralKey(test_general_key())),
 		};
 		Converter::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
 			.expect("change_asset_mapping: failed to create a map");
@@ -101,7 +101,7 @@ benchmarks! {
 		];
 		let multilocation = MultiLocation {
 			parents: 1,
-			interior: X2(Parachain(666), GeneralKey(b"TEST_ASSET".to_vec())),
+			interior: X2(Parachain(666), GeneralKey(test_general_key())),
 		};
 		Converter::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
 		.expect("change_multilocation_mapping: failed to create a map");
@@ -128,7 +128,7 @@ benchmarks! {
 		];
 		let multilocation = MultiLocation {
 			parents: 1,
-			interior: X2(Parachain(666), GeneralKey(b"TEST_ASSET".to_vec())),
+			interior: X2(Parachain(666), GeneralKey(test_general_key())),
 		};
 		Converter::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
 		.expect("change_multilocation_mapping: failed to create a map");
@@ -140,3 +140,7 @@ benchmarks! {
 }
 
 impl_benchmark_test_suite!(Converter, crate::mock::new_test_ext(), crate::mock::Test,);
+
+pub fn test_general_key() -> WeakBoundedVec<u8, frame_support::traits::ConstU32<32>> {
+	WeakBoundedVec::try_from(b"TEST_ASSET".to_vec()).unwrap()
+}

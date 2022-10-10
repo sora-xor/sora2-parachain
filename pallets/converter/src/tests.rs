@@ -48,7 +48,7 @@ fn it_works_register_change_delete() {
 		let multilocation = MultiLocation::parent();
 		let new_multilocation = MultiLocation {
 			parents: 1,
-			interior: X2(Parachain(666), GeneralKey(b"TEST_ASSET".to_vec())),
+			interior: X2(Parachain(666), GeneralKey(test_general_key())),
 		};
 
 		// Create:
@@ -123,7 +123,7 @@ fn it_fails_create_existing_mapping() {
 		let multilocation = MultiLocation::parent();
 		let new_multilocation = MultiLocation {
 			parents: 1,
-			interior: X2(Parachain(666), GeneralKey(b"TEST_ASSET".to_vec())),
+			interior: X2(Parachain(666), GeneralKey(test_general_key())),
 		};
 
 		assert_ok!(Converter::register_mapping(Origin::root(), asset_id, multilocation.clone()));
@@ -193,7 +193,7 @@ fn it_fails_change_multilocation_non_existing_mapping() {
 		let multilocation = MultiLocation::parent();
 		let new_multilocation = MultiLocation {
 			parents: 1,
-			interior: X2(Parachain(666), GeneralKey(b"TEST_ASSET".to_vec())),
+			interior: X2(Parachain(666), GeneralKey(test_general_key())),
 		};
 
 		assert_noop!(
