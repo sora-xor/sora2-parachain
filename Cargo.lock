@@ -5843,6 +5843,9 @@ dependencies = [
 name = "parachain-template-node"
 version = "0.1.0"
 dependencies = [
+ "beefy-gadget",
+ "beefy-gadget-rpc",
+ "beefy-primitives",
  "clap",
  "cumulus-client-cli",
  "cumulus-client-collator",
@@ -5895,6 +5898,7 @@ dependencies = [
  "sp-core 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "sp-inherents 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "sp-keystore 0.12.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "sp-mmr-primitives",
  "sp-offchain",
  "sp-runtime 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "sp-session",
@@ -5911,6 +5915,7 @@ dependencies = [
 name = "parachain-template-runtime"
 version = "0.1.0"
 dependencies = [
+ "beefy-primitives",
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
@@ -5932,7 +5937,10 @@ dependencies = [
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
+ "pallet-beefy",
+ "pallet-beefy-mmr",
  "pallet-collator-selection",
+ "pallet-mmr",
  "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",
@@ -5952,6 +5960,7 @@ dependencies = [
  "sp-core 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "sp-inherents 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "sp-io 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "sp-mmr-primitives",
  "sp-offchain",
  "sp-runtime 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "sp-session",

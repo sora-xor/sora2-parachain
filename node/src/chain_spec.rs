@@ -1,6 +1,6 @@
 use cumulus_primitives_core::ParaId;
 use hex_literal::hex;
-use parachain_template_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
+use parachain_template_runtime::{AccountId, AuraId, BeefyId, Signature, EXISTENTIAL_DEPOSIT};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -62,15 +62,17 @@ impl RelayChain {
 
 	pub fn root_key(&self) -> AccountId {
 		let bytes = match self {
-			RelayChain::Kusama =>
-				hex!("de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058"),
-			RelayChain::Rococo =>
-				hex!("54fd1e1728cd833d21da6f3e36c50884062e35edfc24aec7a70c18a60451255a"),
+			RelayChain::Kusama => {
+				hex!("de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058")
+			},
+			RelayChain::Rococo => {
+				hex!("54fd1e1728cd833d21da6f3e36c50884062e35edfc24aec7a70c18a60451255a")
+			},
 		};
 		AccountId::from(bytes)
 	}
 
-	pub fn session_keys(&self) -> Vec<(AccountId, AuraId)> {
+	pub fn session_keys(&self) -> Vec<(AccountId, (AuraId, BeefyId))> {
 		let public_keys = match self {
 			RelayChain::Kusama => vec![
 				hex!("ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"),
@@ -83,7 +85,12 @@ impl RelayChain {
 		};
 		public_keys
 			.into_iter()
-			.map(|x| (AccountId::from(x), AuraId::from_slice(&x).unwrap()))
+			.map(|x| {
+				(
+					AccountId::from(x),
+					(AuraId::from_slice(&x).unwrap(), BeefyId::from_slice(&x).unwrap()),
+				)
+			})
 			.collect()
 	}
 
@@ -104,8 +111,8 @@ impl RelayChain {
 /// Generate collator keys from seed.
 ///
 /// This function's return type must always match the session keys of the chain in tuple format.
-pub fn get_collator_keys_from_seed(seed: &str) -> AuraId {
-	get_public_from_seed::<AuraId>(seed)
+pub fn get_collator_keys_from_seed(seed: &str) -> (AuraId, BeefyId) {
+	(get_public_from_seed::<AuraId>(seed), get_public_from_seed::<BeefyId>(seed))
 }
 
 /// Helper function to generate an account ID from seed
@@ -119,8 +126,10 @@ where
 /// Generate the session keys from individual elements.
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn template_session_keys(keys: AuraId) -> parachain_template_runtime::SessionKeys {
-	parachain_template_runtime::SessionKeys { aura: keys }
+pub fn template_session_keys(
+	(aura, beefy): (AuraId, BeefyId),
+) -> parachain_template_runtime::SessionKeys {
+	parachain_template_runtime::SessionKeys { aura, beefy }
 }
 
 pub fn kusama_chain_spec() -> Result<ChainSpec, String> {
@@ -245,19 +254,31 @@ pub fn local_testnet_config() -> ChainSpec {
 						AccountId::from(hex!(
 							"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
 						)),
-						AuraId::from_slice(&hex!(
-							"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
-						))
-						.unwrap(),
+						(
+							AuraId::from_slice(&hex!(
+								"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
+							))
+							.unwrap(),
+							BeefyId::from_slice(&hex!(
+								"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
+							))
+							.unwrap(),
+						),
 					),
 					(
 						AccountId::from(hex!(
 							"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
 						)),
-						AuraId::from_slice(&hex!(
-							"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
-						))
-						.unwrap(),
+						(
+							AuraId::from_slice(&hex!(
+								"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
+							))
+							.unwrap(),
+							BeefyId::from_slice(&hex!(
+								"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
+							))
+							.unwrap(),
+						),
 					),
 				],
 				vec![
@@ -294,7 +315,7 @@ pub fn local_testnet_config() -> ChainSpec {
 
 fn testnet_genesis(
 	root_key: AccountId,
-	invulnerables: Vec<(AccountId, AuraId)>,
+	invulnerables: Vec<(AccountId, (AuraId, BeefyId))>,
 	endowed_accounts: Vec<AccountId>,
 	id: ParaId,
 ) -> parachain_template_runtime::GenesisConfig {
@@ -316,11 +337,11 @@ fn testnet_genesis(
 		session: parachain_template_runtime::SessionConfig {
 			keys: invulnerables
 				.into_iter()
-				.map(|(acc, aura)| {
+				.map(|(acc, keys)| {
 					(
 						acc.clone(),                 // account id
 						acc,                         // validator id
-						template_session_keys(aura), // session keys
+						template_session_keys(keys), // session keys
 					)
 				})
 				.collect(),
@@ -329,6 +350,7 @@ fn testnet_genesis(
 		// of this.
 		aura: Default::default(),
 		aura_ext: Default::default(),
+		beefy: Default::default(),
 		parachain_system: Default::default(),
 		polkadot_xcm: parachain_template_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
