@@ -22,6 +22,9 @@ scale-info = { version = "2.1.1", default-features = false, features = ["derive"
 serde = { version = "1.0.119", optional = true, features = ["derive"] }
 smallvec = "1.6.1"
 
+pallet-converter = { path = "../pallets/converter", default-features = false }
+common = { path = "../common", default-features = false }
+
 # Substrate Dependencies
 ## Substrate Primitive Dependencies
 beefy-primitives = { git = "https://github.com/paritytech/substrate", default-features = false , branch = "polkadot-v0.9.28" }
@@ -82,6 +85,12 @@ xcm = { git = "https://github.com/paritytech/polkadot", default-features = false
 xcm-builder = { git = "https://github.com/paritytech/polkadot", default-features = false , branch = "release-v0.9.28" }
 xcm-executor = { git = "https://github.com/paritytech/polkadot", default-features = false , branch = "release-v0.9.28" }
 
+# ORML
+orml-xtokens = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.28"}
+orml-traits = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.28"}
+orml-xcm-support = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.28"}
+orml-tokens = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.28"}
+
 [features]
 default = [
 	"std",
@@ -103,11 +112,16 @@ std = [
 	"frame-system/std",
 	"log/std",
 	"log/std",
+	"orml-xtokens/std",
+	"orml-traits/std",
+	"orml-xcm-support/std",
+	"orml-tokens/std",
 	"pallet-aura/std",
 	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-beefy/std",
 	"pallet-collator-selection/std",
+	"pallet-converter/std",
 	"pallet-mmr/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
