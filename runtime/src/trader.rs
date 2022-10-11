@@ -1,12 +1,10 @@
 use frame_support::{
-	traits::Get,
-	weights::{constants::WEIGHT_PER_SECOND, Weight},
+	weights::{Weight},
 };
-use sp_std::{marker::PhantomData, prelude::*};
+use sp_std::{prelude::*};
 use xcm::latest::prelude::*;
-use xcm_builder::TakeRevenue;
 use xcm_executor::{
-	traits::{DropAssets, WeightTrader},
+	traits::{WeightTrader},
 	Assets,
 };
 

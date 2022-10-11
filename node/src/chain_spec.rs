@@ -260,7 +260,7 @@ pub fn local_testnet_config() -> ChainSpec {
 							))
 							.unwrap(),
 							BeefyId::from_slice(&hex!(
-								"caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
+								"00caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"
 							))
 							.unwrap(),
 						),
@@ -275,7 +275,7 @@ pub fn local_testnet_config() -> ChainSpec {
 							))
 							.unwrap(),
 							BeefyId::from_slice(&hex!(
-								"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
+								"003617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
 							))
 							.unwrap(),
 						),
