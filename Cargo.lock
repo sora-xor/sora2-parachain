@@ -11433,6 +11433,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "transactor"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "frame-benchmarking 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "frame-system 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "orml-traits",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "sp-io 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "sp-runtime 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "xcm",
+]
+
+[[package]]
 name = "trie-db"
 version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
