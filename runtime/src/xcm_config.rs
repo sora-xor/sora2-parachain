@@ -76,7 +76,8 @@ pub type LocationToAccountId = (
 
 /// Means for transacting assets on this chain.
 pub type LocalAssetTransactor = MultiCurrencyAdapter<
-	crate::Tokens,
+	// crate::Tokens,
+	crate::Transactor,
 	(),
 	IsNativeConcrete<common::primitives::AssetId, crate::Converter>,
 	AccountId,

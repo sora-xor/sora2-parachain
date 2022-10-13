@@ -57,19 +57,19 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	type Balance = T::Balance;
 
     fn minimum_balance(currency_id: Self::CurrencyId) -> Self::Balance {
-        todo!()
+        Default::default()
     }
 
     fn total_issuance(currency_id: Self::CurrencyId) -> Self::Balance {
-        todo!()
+        Default::default()
     }
 
     fn total_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
-        todo!()
+        Default::default()
     }
 
     fn free_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
-        todo!()
+        Default::default()
     }
 
     fn ensure_can_withdraw(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> sp_runtime::DispatchResult {
@@ -82,19 +82,35 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		to: &T::AccountId,
 		amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
-        todo!()
+		log::trace!(
+			target: "xcm::transactor",
+			"transfer",
+		);
+		Ok(())
     }
 
     fn deposit(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> sp_runtime::DispatchResult {
-        todo!()
+		log::trace!(
+			target: "xcm::transactor",
+			"deposit",
+		);
+		Ok(())
     }
 
     fn withdraw(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> sp_runtime::DispatchResult {
-        todo!()
+		log::trace!(
+			target: "xcm::transactor",
+			"withdraw",
+		);
+		Ok(())
     }
 
     fn can_slash(currency_id: Self::CurrencyId, who: &T::AccountId, value: Self::Balance) -> bool {
-        todo!()
+		log::trace!(
+			target: "xcm::transactor",
+			"can_slash",
+		);
+		false
     }
 
     fn slash(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> Self::Balance {
@@ -114,7 +130,7 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type WeightInfo: WeightInfo;
+		// type WeightInfo: WeightInfo;
 		/// The balance type
 		type Balance: Parameter
 		+ Member

@@ -529,6 +529,12 @@ impl pallet_converter::Config for Runtime {
 	type WeightInfo = pallet_converter::weights::WeightInfo<Runtime>;
 }
 
+impl transactor::Config for Runtime {
+	type Event = Event;
+	type Balance = Balance;
+	type CurrencyId = common::primitives::AssetId;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -571,6 +577,7 @@ construct_runtime!(
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
 		Converter: pallet_converter::{Pallet, Call, Storage, Event<T>} = 101,
+		Transactor: transactor::{Pallet, Storage, Event<T>} = 102,
 	}
 );
 
