@@ -38,6 +38,7 @@
 // mod benchmarking;
 
 // pub mod weights;
+pub mod impls;
 
 use common::primitives::AssetId;
 use frame_support::weights::Weight;
@@ -50,73 +51,6 @@ use orml_traits::{
 	BalanceStatus, GetByKey, Happened, LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency,
 	MultiReservableCurrency, NamedMultiReservableCurrency, OnDust,
 };
-
-// IMPLS 
-impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
-	type CurrencyId = T::CurrencyId;
-	type Balance = T::Balance;
-
-    fn minimum_balance(currency_id: Self::CurrencyId) -> Self::Balance {
-        Default::default()
-    }
-
-    fn total_issuance(currency_id: Self::CurrencyId) -> Self::Balance {
-        Default::default()
-    }
-
-    fn total_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
-        Default::default()
-    }
-
-    fn free_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
-        Default::default()
-    }
-
-    fn ensure_can_withdraw(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> sp_runtime::DispatchResult {
-        todo!()
-    }
-
-    fn transfer(
-		currency_id: Self::CurrencyId,
-		from: &T::AccountId,
-		to: &T::AccountId,
-		amount: Self::Balance,
-	) -> sp_runtime::DispatchResult {
-		log::trace!(
-			target: "xcm::transactor",
-			"transfer",
-		);
-		Ok(())
-    }
-
-    fn deposit(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> sp_runtime::DispatchResult {
-		log::trace!(
-			target: "xcm::transactor",
-			"deposit",
-		);
-		Ok(())
-    }
-
-    fn withdraw(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> sp_runtime::DispatchResult {
-		log::trace!(
-			target: "xcm::transactor",
-			"withdraw",
-		);
-		Ok(())
-    }
-
-    fn can_slash(currency_id: Self::CurrencyId, who: &T::AccountId, value: Self::Balance) -> bool {
-		log::trace!(
-			target: "xcm::transactor",
-			"can_slash",
-		);
-		false
-    }
-
-    fn slash(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> Self::Balance {
-        todo!()
-    }
-}
 
 pub trait WeightInfo {
 }
@@ -162,6 +96,7 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
+		AssetAddedToChannel(T::CurrencyId, T::Balance)
 	}
 
 	#[pallet::error]
@@ -172,6 +107,8 @@ pub mod pallet {
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
 
 	impl<T: Config> Pallet<T> {
-
+		pub fn add_to_channel(currency_id: T::CurrencyId, amount: T::Balance){
+			Self::deposit_event(Event::<T>::AssetAddedToChannel(currency_id, amount));
+		}
 	}
 }
