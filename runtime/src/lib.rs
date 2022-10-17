@@ -6,9 +6,9 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-mod weights;
-mod trader;
 mod migrations;
+mod trader;
+mod weights;
 pub mod xcm_config;
 
 use smallvec::smallvec;
@@ -16,7 +16,9 @@ use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify, Keccak256, ConstU32,},
+	traits::{
+		AccountIdLookup, BlakeTwo256, Block as BlockT, ConstU32, IdentifyAccount, Keccak256, Verify,
+	},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
@@ -26,7 +28,8 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-use beefy_primitives::{mmr::MmrLeafVersion};
+pub use beefy_primitives::crypto::AuthorityId as BeefyId;
+use beefy_primitives::mmr::MmrLeafVersion;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::Everything,
@@ -42,7 +45,6 @@ use frame_system::{
 	EnsureRoot,
 };
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-pub use beefy_primitives::crypto::AuthorityId as BeefyId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 

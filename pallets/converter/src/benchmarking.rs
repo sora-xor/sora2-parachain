@@ -29,10 +29,10 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use super::*;
-use frame_support::WeakBoundedVec;
 #[allow(unused)]
 use crate::Pallet as Converter;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
+use frame_support::WeakBoundedVec;
 use frame_system::RawOrigin;
 use xcm::opaque::latest::Junction::{GeneralKey, Parachain};
 use xcm::opaque::latest::Junctions::X2;

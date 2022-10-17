@@ -1,12 +1,7 @@
-use frame_support::{
-	weights::{Weight},
-};
-use sp_std::{prelude::*};
+use frame_support::weights::Weight;
+use sp_std::prelude::*;
 use xcm::latest::prelude::*;
-use xcm_executor::{
-	traits::{WeightTrader},
-	Assets,
-};
+use xcm_executor::{traits::WeightTrader, Assets};
 
 pub struct ParachainTrader {
 	pub weight: Weight,

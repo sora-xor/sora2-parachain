@@ -30,52 +30,56 @@
 
 use crate::*;
 
-// IMPLS 
+// IMPLS
 impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	type CurrencyId = T::CurrencyId;
 	type Balance = T::Balance;
 
-    fn minimum_balance(currency_id: Self::CurrencyId) -> Self::Balance {
+	fn minimum_balance(currency_id: Self::CurrencyId) -> Self::Balance {
 		log::trace!(
 			target: "xcm::transactor",
 			"minimum_balance",
 		);
-        Default::default()
-    }
+		Default::default()
+	}
 
-    fn total_issuance(currency_id: Self::CurrencyId) -> Self::Balance {
+	fn total_issuance(currency_id: Self::CurrencyId) -> Self::Balance {
 		log::trace!(
 			target: "xcm::transactor",
 			"total_issuance",
 		);
-        Default::default()
-    }
+		Default::default()
+	}
 
-    fn total_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
+	fn total_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
 		log::trace!(
 			target: "xcm::transactor",
 			"total_balance",
 		);
-        Default::default()
-    }
+		Default::default()
+	}
 
-    fn free_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
+	fn free_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
 		log::trace!(
 			target: "xcm::transactor",
 			"free_balance",
 		);
-        Default::default()
-    }
+		Default::default()
+	}
 
-    fn ensure_can_withdraw(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> sp_runtime::DispatchResult {
+	fn ensure_can_withdraw(
+		currency_id: Self::CurrencyId,
+		who: &T::AccountId,
+		amount: Self::Balance,
+	) -> sp_runtime::DispatchResult {
 		log::trace!(
 			target: "xcm::transactor",
 			"ensure_can_withdraw",
 		);
-        Ok(())
-    }
+		Ok(())
+	}
 
-    fn transfer(
+	fn transfer(
 		currency_id: Self::CurrencyId,
 		from: &T::AccountId,
 		to: &T::AccountId,
@@ -86,34 +90,46 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 			"transfer",
 		);
 		Ok(())
-    }
+	}
 
 	/// THIS
-    fn deposit(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> sp_runtime::DispatchResult {
+	fn deposit(
+		currency_id: Self::CurrencyId,
+		who: &T::AccountId,
+		amount: Self::Balance,
+	) -> sp_runtime::DispatchResult {
 		log::trace!(
 			target: "xcm::transactor",
 			"deposit",
 		);
 		Ok(())
-    }
+	}
 
-    fn withdraw(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> sp_runtime::DispatchResult {
+	fn withdraw(
+		currency_id: Self::CurrencyId,
+		who: &T::AccountId,
+		amount: Self::Balance,
+	) -> sp_runtime::DispatchResult {
 		log::trace!(
 			target: "xcm::transactor",
 			"withdraw",
 		);
 		Ok(())
-    }
+	}
 
-    fn can_slash(currency_id: Self::CurrencyId, who: &T::AccountId, value: Self::Balance) -> bool {
+	fn can_slash(currency_id: Self::CurrencyId, who: &T::AccountId, value: Self::Balance) -> bool {
 		log::trace!(
 			target: "xcm::transactor",
 			"can_slash",
 		);
 		false
-    }
+	}
 
-    fn slash(currency_id: Self::CurrencyId, who: &T::AccountId, amount: Self::Balance) -> Self::Balance {
-        todo!()
-    }
+	fn slash(
+		currency_id: Self::CurrencyId,
+		who: &T::AccountId,
+		amount: Self::Balance,
+	) -> Self::Balance {
+		todo!()
+	}
 }

@@ -41,41 +41,36 @@
 pub mod impls;
 
 use common::primitives::AssetId;
-use frame_support::weights::Weight;
+use orml_traits::MultiCurrency;
 pub use pallet::*;
-use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
-use xcm::v1::{MultiAsset, MultiLocation};
-use orml_traits::{
-	arithmetic::{self, Signed},
-	currency::TransferAll,
-	BalanceStatus, GetByKey, Happened, LockIdentifier, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency,
-	MultiReservableCurrency, NamedMultiReservableCurrency, OnDust,
-};
-
-pub trait WeightInfo {
-}
+use xcm::v1::MultiLocation;
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::{dispatch::DispatchResultWithPostInfo, fail, pallet_prelude::*};
+	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		// type WeightInfo: WeightInfo;
 		/// The balance type
 		type Balance: Parameter
-		+ Member
-		+ sp_runtime::traits::AtLeast32BitUnsigned
-		+ Default
-		+ Copy
-		+ MaybeSerializeDeserialize
-		+ MaxEncodedLen;
+			+ Member
+			+ sp_runtime::traits::AtLeast32BitUnsigned
+			+ Default
+			+ Copy
+			+ MaybeSerializeDeserialize
+			+ MaxEncodedLen;
 
 		/// The currency ID type
-		type CurrencyId: Parameter + Member + Copy + MaybeSerializeDeserialize + Ord + TypeInfo + MaxEncodedLen;
+		type CurrencyId: Parameter
+			+ Member
+			+ Copy
+			+ MaybeSerializeDeserialize
+			+ Ord
+			+ TypeInfo
+			+ MaxEncodedLen;
 	}
 
 	#[pallet::pallet]
@@ -96,18 +91,17 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		AssetAddedToChannel(T::CurrencyId, T::Balance)
+		AssetAddedToChannel(T::CurrencyId, T::Balance),
 	}
 
 	#[pallet::error]
-	pub enum Error<T> {
-	}
+	pub enum Error<T> {}
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
 
 	impl<T: Config> Pallet<T> {
-		pub fn add_to_channel(currency_id: T::CurrencyId, amount: T::Balance){
+		pub fn add_to_channel(currency_id: T::CurrencyId, amount: T::Balance) {
 			Self::deposit_event(Event::<T>::AssetAddedToChannel(currency_id, amount));
 		}
 	}

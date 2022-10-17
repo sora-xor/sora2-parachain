@@ -29,29 +29,22 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use super::{
-	AccountId, Call, Event, Origin, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime,
-	XcmpQueue,
+	AccountId, Call, Event, Origin, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, XcmpQueue,
 };
 use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get;
 use core::marker::PhantomData;
-use frame_support::{
-	log, match_types, parameter_types,
-	traits::{Everything},
-	weights::Weight,
-};
+use frame_support::{log, match_types, parameter_types, traits::Everything, weights::Weight};
 use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
-use orml_xcm_support::{
-	IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset,
-};
+use orml_xcm_support::{IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset};
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain::primitives::Sibling;
 use xcm::latest::prelude::*;
 use xcm_builder::{
 	AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
-	AllowTopLevelPaidExecutionFrom, EnsureXcmOrigin,
-	FixedWeightBounds, LocationInverter, NativeAsset, ParentIsPreset,
-	RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
-	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
+	AllowTopLevelPaidExecutionFrom, EnsureXcmOrigin, FixedWeightBounds, LocationInverter,
+	NativeAsset, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
+	SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
+	SovereignSignedViaLocation, TakeWeightCredit,
 };
 use xcm_executor::{traits::ShouldExecute, XcmExecutor};
 

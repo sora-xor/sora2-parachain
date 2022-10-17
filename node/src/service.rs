@@ -246,7 +246,12 @@ where
 			sc_service::Error,
 		> + 'static,
 	BIC: FnOnce(
-		beefy_gadget::import::BeefyBlockImport<Block, sc_service::TFullBackend<Block>, TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>, Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>>,
+		beefy_gadget::import::BeefyBlockImport<
+			Block,
+			sc_service::TFullBackend<Block>,
+			TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+			Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+		>,
 		Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 		Option<&Registry>,
 		Option<TelemetryHandle>,
@@ -268,17 +273,13 @@ where
 	let params = new_partial::<RuntimeApi, Executor, BIQ>(&parachain_config, build_import_queue)?;
 	let (mut telemetry, telemetry_worker_handle) = params.other;
 
-
 	let beefy_protocol_name = beefy_gadget::protocol_standard_name(
-		&params.client
-			.block_hash(0)
-			.ok()
-			.flatten()
-			.expect("Genesis block exists; qed"),
+		&params.client.block_hash(0).ok().flatten().expect("Genesis block exists; qed"),
 		&parachain_config.chain_spec,
 	);
 
-	parachain_config.network
+	parachain_config
+		.network
 		.extra_sets
 		.push(beefy_gadget::beefy_peers_set_config(beefy_protocol_name.clone()));
 
@@ -320,12 +321,8 @@ where
 			warp_sync: None,
 		})?;
 
-		let (beefy_block_import, beefy_voter_links, beefy_rpc_links) =
-		beefy_gadget::beefy_block_import_and_links(
-			client.clone(),
-			backend.clone(),
-			client.clone(),
-		);
+	let (beefy_block_import, beefy_voter_links, beefy_rpc_links) =
+		beefy_gadget::beefy_block_import_and_links(client.clone(), backend.clone(), client.clone());
 
 	let rpc_builder = {
 		let client = client.clone();
@@ -408,9 +405,11 @@ where
 
 		let gadget = beefy_gadget::start_beefy_gadget::<_, _, _, _, _>(beefy_params);
 
-        task_manager
-            .spawn_essential_handle()
-            .spawn_blocking("beefy-gadget", Some("beefy-gadget"), gadget);
+		task_manager.spawn_essential_handle().spawn_blocking(
+			"beefy-gadget",
+			Some("beefy-gadget"),
+			gadget,
+		);
 
 		let spawner = task_manager.spawn_handle();
 

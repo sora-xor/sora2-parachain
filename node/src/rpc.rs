@@ -22,7 +22,8 @@ pub type RpcExtension = jsonrpsee::RpcModule<()>;
 /// Dependencies for BEEFY
 pub struct BeefyDeps {
 	/// Receives notifications about finality proof events from BEEFY.
-	pub beefy_finality_proof_stream: beefy_gadget::notification::BeefyVersionedFinalityProofStream<Block>,
+	pub beefy_finality_proof_stream:
+		beefy_gadget::notification::BeefyVersionedFinalityProofStream<Block>,
 	/// Receives notifications about best block events from BEEFY.
 	pub beefy_best_block_stream: beefy_gadget::notification::BeefyBestBlockStream<Block>,
 	/// Executor to drive the subscription manager in the BEEFY RPC handler.
@@ -59,9 +60,9 @@ where
 	C::Api: BlockBuilder<Block>,
 	P: TransactionPool + Sync + Send + 'static,
 {
+	use beefy_gadget_rpc::{Beefy, BeefyApiServer};
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
-	use beefy_gadget_rpc::{Beefy, BeefyApiServer};
 
 	let mut module = RpcExtension::new(());
 	let FullDeps { client, pool, deny_unsafe, beefy } = deps;
