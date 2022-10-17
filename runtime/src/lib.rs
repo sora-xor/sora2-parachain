@@ -17,7 +17,7 @@ use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		AccountIdLookup, BlakeTwo256, Block as BlockT, ConstU32, IdentifyAccount, Keccak256, Verify,
+		AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Keccak256, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
@@ -510,22 +510,6 @@ orml_traits::parameter_type_with_key! {
 	};
 }
 
-impl orml_tokens::Config for Runtime {
-	type Event = Event;
-	type Balance = Balance;
-	type Amount = i128;
-	type CurrencyId = common::primitives::AssetId;
-	type WeightInfo = ();
-	type ExistentialDeposits = ExistentialDeposits;
-	type OnDust = ();
-	type MaxLocks = ConstU32<50>;
-	type MaxReserves = ConstU32<50>;
-	type ReserveIdentifier = [u8; 8];
-	type DustRemovalWhitelist = Everything;
-	type OnNewTokenAccount = ();
-	type OnKilledTokenAccount = ();
-}
-
 impl pallet_converter::Config for Runtime {
 	type Event = Event;
 	type WeightInfo = pallet_converter::weights::WeightInfo<Runtime>;
@@ -574,7 +558,6 @@ construct_runtime!(
 
 		// ORML
 		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 41,
-		Tokens: orml_tokens::{Pallet, Call, Storage, Event<T>} = 42,
 
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 

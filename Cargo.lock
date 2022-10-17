@@ -4944,21 +4944,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "orml-tokens"
-version = "0.4.1-dev"
-source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.28#20969f385bf77e41386e8d8aa9626b003a306204"
-dependencies = [
- "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
- "frame-system 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
- "orml-traits",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-runtime 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
- "sp-std 4.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
-]
-
-[[package]]
 name = "orml-traits"
 version = "0.4.1-dev"
 source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.28#20969f385bf77e41386e8d8aa9626b003a306204"
@@ -6044,7 +6029,6 @@ dependencies = [
  "frame-try-runtime",
  "hex-literal",
  "log",
- "orml-tokens",
  "orml-traits",
  "orml-xcm-support",
  "orml-xtokens",
