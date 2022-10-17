@@ -37,7 +37,6 @@
 // #[cfg(feature = "runtime-benchmarks")]
 // mod benchmarking;
 
-// pub mod weights;
 pub mod impls;
 
 use common::primitives::AssetId;
@@ -95,7 +94,9 @@ pub mod pallet {
 	}
 
 	#[pallet::error]
-	pub enum Error<T> {}
+	pub enum Error<T> {
+		MethodNotAvailible,
+	}
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}

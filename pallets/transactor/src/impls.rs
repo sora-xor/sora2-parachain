@@ -29,13 +29,14 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::*;
+use frame_support::fail;
 
 // IMPLS
 impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	type CurrencyId = T::CurrencyId;
 	type Balance = T::Balance;
 
-	fn minimum_balance(currency_id: Self::CurrencyId) -> Self::Balance {
+	fn minimum_balance(_currency_id: Self::CurrencyId) -> Self::Balance {
 		log::trace!(
 			target: "xcm::transactor",
 			"minimum_balance",
@@ -43,7 +44,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		Default::default()
 	}
 
-	fn total_issuance(currency_id: Self::CurrencyId) -> Self::Balance {
+	fn total_issuance(_currency_id: Self::CurrencyId) -> Self::Balance {
 		log::trace!(
 			target: "xcm::transactor",
 			"total_issuance",
@@ -51,7 +52,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		Default::default()
 	}
 
-	fn total_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
+	fn total_balance(_currency_id: Self::CurrencyId, _who: &T::AccountId) -> Self::Balance {
 		log::trace!(
 			target: "xcm::transactor",
 			"total_balance",
@@ -59,7 +60,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		Default::default()
 	}
 
-	fn free_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
+	fn free_balance(_currency_id: Self::CurrencyId, _who: &T::AccountId) -> Self::Balance {
 		log::trace!(
 			target: "xcm::transactor",
 			"free_balance",
@@ -68,56 +69,61 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	}
 
 	fn ensure_can_withdraw(
-		currency_id: Self::CurrencyId,
-		who: &T::AccountId,
-		amount: Self::Balance,
+		_currency_id: Self::CurrencyId,
+		_who: &T::AccountId,
+		_amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
 			target: "xcm::transactor",
 			"ensure_can_withdraw",
 		);
-		Ok(())
+		fail!(Error::<T>::MethodNotAvailible)
 	}
 
 	fn transfer(
-		currency_id: Self::CurrencyId,
-		from: &T::AccountId,
-		to: &T::AccountId,
-		amount: Self::Balance,
+		_currency_id: Self::CurrencyId,
+		_from: &T::AccountId,
+		_to: &T::AccountId,
+		_amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
 			target: "xcm::transactor",
 			"transfer",
 		);
-		Ok(())
+		fail!(Error::<T>::MethodNotAvailible)
 	}
 
 	/// THIS
 	fn deposit(
 		currency_id: Self::CurrencyId,
-		who: &T::AccountId,
+		_who: &T::AccountId,
 		amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
 			target: "xcm::transactor",
 			"deposit",
 		);
+		Pallet::<T>::add_to_channel(currency_id, amount);
 		Ok(())
 	}
 
 	fn withdraw(
-		currency_id: Self::CurrencyId,
-		who: &T::AccountId,
-		amount: Self::Balance,
+		_currency_id: Self::CurrencyId,
+		_who: &T::AccountId,
+		_amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
 			target: "xcm::transactor",
 			"withdraw",
 		);
-		Ok(())
+		fail!(Error::<T>::MethodNotAvailible)
 	}
 
-	fn can_slash(currency_id: Self::CurrencyId, who: &T::AccountId, value: Self::Balance) -> bool {
+	fn can_slash(
+		_currency_id: Self::CurrencyId,
+		_who: &T::AccountId,
+		_value: Self::Balance,
+	) -> bool {
 		log::trace!(
 			target: "xcm::transactor",
 			"can_slash",
@@ -126,10 +132,10 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	}
 
 	fn slash(
-		currency_id: Self::CurrencyId,
-		who: &T::AccountId,
-		amount: Self::Balance,
+		_currency_id: Self::CurrencyId,
+		_who: &T::AccountId,
+		_amount: Self::Balance,
 	) -> Self::Balance {
-		todo!()
+		Default::default()
 	}
 }

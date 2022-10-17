@@ -177,17 +177,6 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 	}
 }
 
-// pub type Barrier = DenyThenTry<
-// 	DenyReserveTransferToRelayChain,
-// 	(
-// 		TakeWeightCredit,
-// 		AllowTopLevelPaidExecutionFrom<Everything>,
-// 		AllowUnpaidExecutionFrom<ParentOrParentsExecutivePlurality>,
-// 		// ^^^ Parent and its exec plurality get free execution
-// 	),
-// >;
-
-// pub type Barrier = (TakeWeightCredit, AllowTopLevelPaidExecutionFrom<Everything>);
 pub type Barrier = (
 	TakeWeightCredit,
 	AllowTopLevelPaidExecutionFrom<Everything>,
@@ -204,17 +193,12 @@ impl xcm_executor::Config for XcmConfig {
 	// How to withdraw and deposit an asset.
 	type AssetTransactor = LocalAssetTransactor;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
-	// type IsReserve = NativeAsset;
 	type IsReserve = MultiNativeAsset<AbsoluteReserveProvider>;
 	// type IsTeleporter = (); // Teleporting is disabled.
 	type IsTeleporter = NativeAsset; // Teleporting is disabled.
 	type LocationInverter = LocationInverter<Ancestry>;
 	type Barrier = Barrier;
-	// type Barrier = ();
 	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
-	// type Trader =
-	// 	UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToAuthor<Runtime>>;
-	// type Trader = AllTokensAreCreatedEqualToWeight;
 	type Trader = crate::trader::ParachainTrader;
 	type ResponseHandler = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
