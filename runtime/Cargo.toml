@@ -22,7 +22,7 @@ scale-info = { version = "2.1.1", default-features = false, features = ["derive"
 serde = { version = "1.0.119", optional = true, features = ["derive"] }
 smallvec = "1.6.1"
 
-pallet-converter = { path = "../pallets/converter", default-features = false }
+converter = { path = "../pallets/converter", default-features = false }
 transactor = { path = "../pallets/transactor", default-features = false }
 common = { path = "../common", default-features = false }
 
@@ -98,6 +98,7 @@ default = [
 std = [
 	"beefy-primitives/std",
 	"codec/std",
+	"converter/std",
 	"cumulus-pallet-aura-ext/std",
 	"cumulus-pallet-dmp-queue/std",
 	"cumulus-pallet-parachain-system/std",
@@ -120,7 +121,6 @@ std = [
 	"pallet-balances/std",
 	"pallet-beefy/std",
 	"pallet-collator-selection/std",
-	"pallet-converter/std",
 	"pallet-mmr/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
@@ -153,6 +153,7 @@ std = [
 ]
 
 runtime-benchmarks = [
+	"converter/runtime-benchmarks",
 	"hex-literal",
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
@@ -160,7 +161,6 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-collator-selection/runtime-benchmarks",
-	"pallet-converter/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",

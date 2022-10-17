@@ -93,16 +93,16 @@ impl transactor::Config for Test {
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	let t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
-    let mut ext = sp_io::TestExternalities::new(t);
+	let mut ext = sp_io::TestExternalities::new(t);
 	ext.execute_with(|| System::set_block_number(1));
 	ext
 }
 
 // get and cut last event
-#[allow(clippy::result_unit_err)] 
+#[allow(clippy::result_unit_err)]
 pub fn last_event() -> Result<Event, ()> {
 	match System::events().pop() {
 		Some(ev) => Ok(ev.event),
-		None => Err(())
+		None => Err(()),
 	}
 }

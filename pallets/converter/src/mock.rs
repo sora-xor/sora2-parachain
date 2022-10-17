@@ -28,7 +28,7 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate as pallet_converter;
+use crate as converter;
 use frame_support::{parameter_types, traits::Everything, WeakBoundedVec};
 use frame_system as system;
 use sp_core::H256;
@@ -48,7 +48,7 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		Converter: pallet_converter::{Pallet, Call, Storage, Event<T>},
+		Converter: converter::{Pallet, Call, Storage, Event<T>},
 	}
 );
 
@@ -84,7 +84,7 @@ impl system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-impl pallet_converter::Config for Test {
+impl converter::Config for Test {
 	type Event = Event;
 	type WeightInfo = ();
 }

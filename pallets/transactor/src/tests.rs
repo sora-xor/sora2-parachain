@@ -35,6 +35,9 @@ fn it_works_transact() {
 		let currency_id = 666;
 		let amount = 100500;
 		assert_ok!(Transactor::add_to_channel(currency_id, amount));
-		assert_eq!(Event::Transactor(crate::Event::AssetAddedToChannel(currency_id, amount)), last_event().unwrap());
+		assert_eq!(
+			Event::Transactor(crate::Event::AssetAddedToChannel(currency_id, amount)),
+			last_event().unwrap()
+		);
 	});
 }

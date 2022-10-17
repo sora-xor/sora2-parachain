@@ -16,9 +16,7 @@ use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{
-		AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Keccak256, Verify,
-	},
+	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Keccak256, Verify},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
@@ -510,9 +508,9 @@ orml_traits::parameter_type_with_key! {
 	};
 }
 
-impl pallet_converter::Config for Runtime {
+impl converter::Config for Runtime {
 	type Event = Event;
-	type WeightInfo = pallet_converter::weights::WeightInfo<Runtime>;
+	type WeightInfo = converter::weights::WeightInfo<Runtime>;
 }
 
 impl transactor::Config for Runtime {
@@ -561,7 +559,7 @@ construct_runtime!(
 
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
-		Converter: pallet_converter::{Pallet, Call, Storage, Event<T>} = 101,
+		Converter: converter::{Pallet, Call, Storage, Event<T>} = 101,
 		Transactor: transactor::{Pallet, Storage, Event<T>} = 102,
 	}
 );
