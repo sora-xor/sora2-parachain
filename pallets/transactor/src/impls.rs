@@ -103,7 +103,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 			target: "xcm::transactor",
 			"deposit",
 		);
-		Pallet::<T>::add_to_channel(currency_id, amount);
+		Pallet::<T>::add_to_channel(currency_id, amount)?;
 		Ok(())
 	}
 

@@ -29,14 +29,10 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// #[cfg(test)]
-// mod mock;
-// #[cfg(test)]
-// mod tests;
-
-// #[cfg(feature = "runtime-benchmarks")]
-// mod benchmarking;
-
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
 pub mod impls;
 
 use common::primitives::AssetId;
@@ -102,8 +98,9 @@ pub mod pallet {
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
 
 	impl<T: Config> Pallet<T> {
-		pub fn add_to_channel(currency_id: T::CurrencyId, amount: T::Balance) {
+		pub fn add_to_channel(currency_id: T::CurrencyId, amount: T::Balance) -> sp_runtime::DispatchResult {
 			Self::deposit_event(Event::<T>::AssetAddedToChannel(currency_id, amount));
+			Ok(())
 		}
 	}
 }

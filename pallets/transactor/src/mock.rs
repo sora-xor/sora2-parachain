@@ -28,8 +28,8 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate as pallet_converter;
-use frame_support::{parameter_types, traits::Everything, WeakBoundedVec};
+use crate as transactor;
+use frame_support::{parameter_types, traits::Everything};
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
@@ -48,7 +48,7 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		Converter: pallet_converter::{Pallet, Call, Storage, Event<T>},
+		Transactor: transactor::{Pallet, Storage, Event<T>},
 	}
 );
 
@@ -84,17 +84,25 @@ impl system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-impl pallet_converter::Config for Test {
+impl transactor::Config for Test {
 	type Event = Event;
-	type WeightInfo = ();
+	type Balance = u128;
+	type CurrencyId = u128;
 }
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
+	let t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+    let mut ext = sp_io::TestExternalities::new(t);
+	ext.execute_with(|| System::set_block_number(1));
+	ext
 }
 
-
-pub fn test_general_key() -> WeakBoundedVec<u8, frame_support::traits::ConstU32<32>> {
-	WeakBoundedVec::try_from(b"TEST_ASSET".to_vec()).unwrap()
+// get and cut last event
+#[allow(clippy::result_unit_err)] 
+pub fn last_event() -> Result<Event, ()> {
+	match System::events().pop() {
+		Some(ev) => Ok(ev.event),
+		None => Err(())
+	}
 }
