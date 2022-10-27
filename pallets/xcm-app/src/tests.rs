@@ -52,60 +52,60 @@ fn it_works_register_change_delete() {
 		};
 
 		// Create:
-		assert_ok!(Converter::register_mapping(Origin::root(), asset_id, multilocation.clone()));
+		assert_ok!(XCMApp::register_mapping(Origin::root(), asset_id, multilocation.clone()));
 		assert_eq!(
-			Converter::get_multilocation_from_asset_id(asset_id)
+			XCMApp::get_multilocation_from_asset_id(asset_id)
 				.expect("it_works_register_change_delete, Create: multilocation is None"),
 			multilocation.clone()
 		);
 		assert_eq!(
-			Converter::get_asset_id_from_multilocation(multilocation.clone())
+			XCMApp::get_asset_id_from_multilocation(multilocation.clone())
 				.expect("it_works_register_change_delete, Create: asset id is None"),
 			asset_id
 		);
 
 		// Change Asset's Multilocation:
-		assert_ok!(Converter::change_asset_mapping(
+		assert_ok!(XCMApp::change_asset_mapping(
 			Origin::root(),
 			asset_id,
 			new_multilocation.clone()
 		));
 		assert_eq!(
-			Converter::get_multilocation_from_asset_id(asset_id)
+			XCMApp::get_multilocation_from_asset_id(asset_id)
 				.expect("it_works_register_change_delete, Change Asset's Multilocation: new_multilocation is None"),
 			new_multilocation.clone()
 		);
 		assert_eq!(
-			Converter::get_asset_id_from_multilocation(new_multilocation.clone()).expect(
+			XCMApp::get_asset_id_from_multilocation(new_multilocation.clone()).expect(
 				"it_works_register_change_delete, Change Asset's Multilocation: asset_id is None"
 			),
 			asset_id
 		);
-		assert_eq!(Converter::get_asset_id_from_multilocation(multilocation.clone()), None);
+		assert_eq!(XCMApp::get_asset_id_from_multilocation(multilocation.clone()), None);
 
 		// Change Multilocation's Asset
-		assert_ok!(Converter::change_multilocation_mapping(
+		assert_ok!(XCMApp::change_multilocation_mapping(
 			Origin::root(),
 			new_multilocation.clone(),
 			new_asset_id,
 		));
 		assert_eq!(
-			Converter::get_multilocation_from_asset_id(new_asset_id)
+			XCMApp::get_multilocation_from_asset_id(new_asset_id)
 				.expect("it_works_register_change_delete, Change Multilocation's Asset: new_multilocation is None"),
 			new_multilocation.clone()
 		);
 		assert_eq!(
-			Converter::get_asset_id_from_multilocation(new_multilocation.clone()).expect(
+			XCMApp::get_asset_id_from_multilocation(new_multilocation.clone()).expect(
 				"it_works_register_change_delete, Change Multilocation's Asset: asset_id is None"
 			),
 			new_asset_id
 		);
-		assert_eq!(Converter::get_multilocation_from_asset_id(asset_id), None);
+		assert_eq!(XCMApp::get_multilocation_from_asset_id(asset_id), None);
 
 		// Delete:
-		assert_ok!(Converter::delete_mapping(Origin::root(), new_asset_id));
-		assert_eq!(Converter::get_multilocation_from_asset_id(new_asset_id), None);
-		assert_eq!(Converter::get_asset_id_from_multilocation(new_multilocation), None);
+		assert_ok!(XCMApp::delete_mapping(Origin::root(), new_asset_id));
+		assert_eq!(XCMApp::get_multilocation_from_asset_id(new_asset_id), None);
+		assert_eq!(XCMApp::get_asset_id_from_multilocation(new_multilocation), None);
 	});
 }
 
@@ -126,23 +126,23 @@ fn it_fails_create_existing_mapping() {
 			interior: X2(Parachain(666), GeneralKey(test_general_key())),
 		};
 
-		assert_ok!(Converter::register_mapping(Origin::root(), asset_id, multilocation.clone()));
-		assert_ok!(Converter::register_mapping(
+		assert_ok!(XCMApp::register_mapping(Origin::root(), asset_id, multilocation.clone()));
+		assert_ok!(XCMApp::register_mapping(
 			Origin::root(),
 			new_asset_id,
 			new_multilocation.clone()
 		));
 
 		assert_noop!(
-			Converter::register_mapping(Origin::root(), asset_id, multilocation.clone()),
+			XCMApp::register_mapping(Origin::root(), asset_id, multilocation.clone()),
 			Error::<Test>::MappingAlreadyExists
 		);
 		assert_noop!(
-			Converter::register_mapping(Origin::root(), asset_id, new_multilocation.clone()),
+			XCMApp::register_mapping(Origin::root(), asset_id, new_multilocation.clone()),
 			Error::<Test>::MappingAlreadyExists
 		);
 		assert_noop!(
-			Converter::register_mapping(Origin::root(), new_asset_id, multilocation.clone()),
+			XCMApp::register_mapping(Origin::root(), new_asset_id, multilocation.clone()),
 			Error::<Test>::MappingAlreadyExists
 		);
 	});
@@ -162,21 +162,21 @@ fn it_fails_change_asset_non_existing_mapping() {
 		let multilocation = MultiLocation::parent();
 
 		assert_noop!(
-			Converter::change_asset_mapping(Origin::root(), asset_id, multilocation.clone()),
+			XCMApp::change_asset_mapping(Origin::root(), asset_id, multilocation.clone()),
 			Error::<Test>::MappingNotExist
 		);
 
-		assert_ok!(Converter::register_mapping(
+		assert_ok!(XCMApp::register_mapping(
 			Origin::root(),
 			new_asset_id,
 			multilocation.clone()
 		));
 		assert_noop!(
-			Converter::change_asset_mapping(Origin::root(), asset_id, multilocation.clone()),
+			XCMApp::change_asset_mapping(Origin::root(), asset_id, multilocation.clone()),
 			Error::<Test>::MappingNotExist
 		);
 		assert_eq!(
-			Converter::get_asset_id_from_multilocation(multilocation.clone())
+			XCMApp::get_asset_id_from_multilocation(multilocation.clone())
 				.expect("it_fails_change_asset_non_existing_mapping: asset id is None"),
 			new_asset_id
 		);
@@ -197,17 +197,17 @@ fn it_fails_change_multilocation_non_existing_mapping() {
 		};
 
 		assert_noop!(
-			Converter::change_asset_mapping(Origin::root(), asset_id, multilocation.clone()),
+			XCMApp::change_asset_mapping(Origin::root(), asset_id, multilocation.clone()),
 			Error::<Test>::MappingNotExist
 		);
 
-		assert_ok!(Converter::register_mapping(
+		assert_ok!(XCMApp::register_mapping(
 			Origin::root(),
 			asset_id,
 			new_multilocation.clone()
 		));
 		assert_noop!(
-			Converter::change_multilocation_mapping(
+			XCMApp::change_multilocation_mapping(
 				Origin::root(),
 				multilocation.clone(),
 				asset_id
@@ -215,7 +215,7 @@ fn it_fails_change_multilocation_non_existing_mapping() {
 			Error::<Test>::MappingNotExist
 		);
 		assert_eq!(
-			Converter::get_multilocation_from_asset_id(asset_id)
+			XCMApp::get_multilocation_from_asset_id(asset_id)
 				.expect("it_fails_change_multilocation_non_existing_mapping: asset id is None"),
 			new_multilocation
 		);
@@ -230,7 +230,7 @@ fn it_fails_delete_mapping_non_existing_mapping() {
 			1, 1, 1,
 		];
 		assert_noop!(
-			Converter::delete_mapping(Origin::root(), asset_id),
+			XCMApp::delete_mapping(Origin::root(), asset_id),
 			Error::<Test>::MappingNotExist
 		);
 	});

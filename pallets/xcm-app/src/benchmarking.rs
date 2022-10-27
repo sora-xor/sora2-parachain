@@ -30,7 +30,7 @@
 
 use super::*;
 #[allow(unused)]
-use crate::Pallet as Converter;
+use crate::Pallet as XCMApp;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
 use frame_support::WeakBoundedVec;
 use frame_system::RawOrigin;
@@ -51,12 +51,12 @@ benchmarks! {
 	}: _(RawOrigin::Root, asset_id, multilocation.clone())
 	verify {
 		assert_eq!(
-			Converter::<T>::get_multilocation_from_asset_id(asset_id)
+			XCMApp::<T>::get_multilocation_from_asset_id(asset_id)
 				.expect("register_mapping: multilocation is None"),
 			multilocation.clone()
 		);
 		assert_eq!(
-			Converter::<T>::get_asset_id_from_multilocation(multilocation)
+			XCMApp::<T>::get_asset_id_from_multilocation(multilocation)
 				.expect("register_mapping: asset id is None"),
 			asset_id
 		);
@@ -72,22 +72,22 @@ benchmarks! {
 			parents: 1,
 			interior: X2(Parachain(666), GeneralKey(test_general_key())),
 		};
-		Converter::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
+		XCMApp::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
 			.expect("change_asset_mapping: failed to create a map");
 	}: _(RawOrigin::Root, asset_id, new_multilocation.clone())
 	verify {
 		assert_eq!(
-			Converter::<T>::get_multilocation_from_asset_id(asset_id)
+			XCMApp::<T>::get_multilocation_from_asset_id(asset_id)
 				.expect("change_asset_mapping: new_multilocation is None"),
 			new_multilocation.clone()
 		);
 		assert_eq!(
-			Converter::<T>::get_asset_id_from_multilocation(new_multilocation).expect(
+			XCMApp::<T>::get_asset_id_from_multilocation(new_multilocation).expect(
 				"change_asset_mapping: asset_id is None"
 			),
 			asset_id
 		);
-		assert_eq!(Converter::<T>::get_asset_id_from_multilocation(multilocation), None);
+		assert_eq!(XCMApp::<T>::get_asset_id_from_multilocation(multilocation), None);
 	}
 
 	change_multilocation_mapping {
@@ -103,22 +103,22 @@ benchmarks! {
 			parents: 1,
 			interior: X2(Parachain(666), GeneralKey(test_general_key())),
 		};
-		Converter::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
+		XCMApp::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
 		.expect("change_multilocation_mapping: failed to create a map");
 	}: _(RawOrigin::Root, multilocation.clone(), new_asset_id)
 	verify {
 		assert_eq!(
-			Converter::<T>::get_multilocation_from_asset_id(new_asset_id)
+			XCMApp::<T>::get_multilocation_from_asset_id(new_asset_id)
 				.expect("change_multilocation_mapping: new_multilocation is None"),
 				multilocation.clone()
 		);
 		assert_eq!(
-			Converter::<T>::get_asset_id_from_multilocation(multilocation).expect(
+			XCMApp::<T>::get_asset_id_from_multilocation(multilocation).expect(
 				"change_multilocation_mapping: asset_id is None"
 			),
 			new_asset_id
 		);
-		assert_eq!(Converter::<T>::get_multilocation_from_asset_id(asset_id), None);
+		assert_eq!(XCMApp::<T>::get_multilocation_from_asset_id(asset_id), None);
 	}
 
 	delete_mapping {
@@ -130,16 +130,16 @@ benchmarks! {
 			parents: 1,
 			interior: X2(Parachain(666), GeneralKey(test_general_key())),
 		};
-		Converter::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
+		XCMApp::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
 		.expect("change_multilocation_mapping: failed to create a map");
 	}: _(RawOrigin::Root, asset_id)
 	verify {
-		assert_eq!(Converter::<T>::get_multilocation_from_asset_id(asset_id), None);
-		assert_eq!(Converter::<T>::get_asset_id_from_multilocation(multilocation), None);
+		assert_eq!(XCMApp::<T>::get_multilocation_from_asset_id(asset_id), None);
+		assert_eq!(XCMApp::<T>::get_asset_id_from_multilocation(multilocation), None);
 	}
 }
 
-impl_benchmark_test_suite!(Converter, crate::mock::new_test_ext(), crate::mock::Test,);
+impl_benchmark_test_suite!(XCMApp, crate::mock::new_test_ext(), crate::mock::Test,);
 
 pub fn test_general_key() -> WeakBoundedVec<u8, frame_support::traits::ConstU32<32>> {
 	WeakBoundedVec::try_from(b"TEST_ASSET".to_vec()).unwrap()

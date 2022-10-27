@@ -508,9 +508,9 @@ orml_traits::parameter_type_with_key! {
 	};
 }
 
-impl converter::Config for Runtime {
+impl xcm_app::Config for Runtime {
 	type Event = Event;
-	type WeightInfo = converter::weights::WeightInfo<Runtime>;
+	type WeightInfo = xcm_app::weights::WeightInfo<Runtime>;
 }
 
 impl transactor::Config for Runtime {
@@ -559,7 +559,7 @@ construct_runtime!(
 
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
-		Converter: converter::{Pallet, Call, Storage, Event<T>} = 101,
+		XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
 		Transactor: transactor::{Pallet, Storage, Event<T>} = 102,
 	}
 );
@@ -577,7 +577,7 @@ mod benches {
 		[pallet_timestamp, Timestamp]
 		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
-		[pallet_converter, Converter]
+		[xcp_app, XCMApp]
 	);
 }
 
