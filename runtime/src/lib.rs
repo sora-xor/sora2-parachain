@@ -519,6 +519,13 @@ impl transactor::Config for Runtime {
 	type CurrencyId = common::primitives::AssetId;
 }
 
+impl beefy_light_client::Config for Runtime {
+    type Event = Event;
+    type Randomness = RandomnessCollectiveFlip;
+}
+
+impl pallet_randomness_collective_flip::Config for Runtime {}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -555,12 +562,15 @@ construct_runtime!(
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 
 		// ORML
-		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 41,
+		XTokens: orml_xtokens::{Storage, Event<T>} = 41,
 
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
 		XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
 		Transactor: transactor::{Pallet, Storage, Event<T>} = 102,
+		BeefyLightClient: beefy_light_client::{Pallet, Call, Storage, Event<T>} = 103,
+		// Just for testing purposes
+		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 104,
 	}
 );
 
@@ -729,6 +739,13 @@ impl_runtime_apis! {
 			pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(root, nodes, proof)
 		}
 	}
+
+	impl beefy_light_client_runtime_api::BeefyLightClientAPI<Block, beefy_light_client::BitField> for Runtime {
+        fn get_random_bitfield(prior: beefy_light_client::BitField, num_of_validators: u128) -> beefy_light_client::BitField {
+            let len = prior.len() as usize;
+            BeefyLightClient::create_random_bit_field(prior, num_of_validators).unwrap_or(beefy_light_client::BitField::with_capacity(len))
+        }
+    }
 
 	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Index> for Runtime {
 		fn account_nonce(account: AccountId) -> Index {
