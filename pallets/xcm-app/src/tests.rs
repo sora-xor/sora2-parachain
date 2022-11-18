@@ -166,11 +166,7 @@ fn it_fails_change_asset_non_existing_mapping() {
 			Error::<Test>::MappingNotExist
 		);
 
-		assert_ok!(XCMApp::register_mapping(
-			Origin::root(),
-			new_asset_id,
-			multilocation.clone()
-		));
+		assert_ok!(XCMApp::register_mapping(Origin::root(), new_asset_id, multilocation.clone()));
 		assert_noop!(
 			XCMApp::change_asset_mapping(Origin::root(), asset_id, multilocation.clone()),
 			Error::<Test>::MappingNotExist
@@ -201,17 +197,9 @@ fn it_fails_change_multilocation_non_existing_mapping() {
 			Error::<Test>::MappingNotExist
 		);
 
-		assert_ok!(XCMApp::register_mapping(
-			Origin::root(),
-			asset_id,
-			new_multilocation.clone()
-		));
+		assert_ok!(XCMApp::register_mapping(Origin::root(), asset_id, new_multilocation.clone()));
 		assert_noop!(
-			XCMApp::change_multilocation_mapping(
-				Origin::root(),
-				multilocation.clone(),
-				asset_id
-			),
+			XCMApp::change_multilocation_mapping(Origin::root(), multilocation.clone(), asset_id),
 			Error::<Test>::MappingNotExist
 		);
 		assert_eq!(

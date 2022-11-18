@@ -474,7 +474,7 @@ dependencies = [
 [[package]]
 name = "beefy-light-client"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#b20396f7912c752e46e7676b4d151aed9111f585"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#3914e848272653895f39f7dbe15a588b500926fb"
 dependencies = [
  "bridge-common",
  "ethabi",
@@ -493,7 +493,7 @@ dependencies = [
 [[package]]
 name = "beefy-light-client-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#b20396f7912c752e46e7676b4d151aed9111f585"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#3914e848272653895f39f7dbe15a588b500926fb"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -706,7 +706,7 @@ dependencies = [
 [[package]]
 name = "bridge-common"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#b20396f7912c752e46e7676b4d151aed9111f585"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#3914e848272653895f39f7dbe15a588b500926fb"
 dependencies = [
  "bitvec",
  "ethabi",
@@ -11683,7 +11683,7 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "digest 0.10.5",
  "rand 0.8.5",
  "static_assertions",
