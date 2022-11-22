@@ -477,7 +477,7 @@ version = "0.1.0"
 source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#3914e848272653895f39f7dbe15a588b500926fb"
 dependencies = [
  "bridge-common",
- "ethabi",
+ "ethabi 13.0.0",
  "frame-benchmarking 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-system 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
@@ -709,7 +709,7 @@ version = "0.1.0"
 source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#3914e848272653895f39f7dbe15a588b500926fb"
 dependencies = [
  "bitvec",
- "ethabi",
+ "ethabi 13.0.0",
  "frame-benchmarking 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-system 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
@@ -718,6 +718,35 @@ dependencies = [
  "serde",
  "sp-core 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "sp-io 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+]
+
+[[package]]
+name = "bridge-types"
+version = "0.1.0"
+source = "git+https://github.com/sora-xor/sora2-common?branch=generalize-pallets#5a4675143af15348589d7e0e70284007baf1db31"
+dependencies = [
+ "beefy-primitives",
+ "enum-iterator",
+ "ethabi 17.2.0",
+ "ethash",
+ "ethbloom",
+ "ethereum-types",
+ "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "frame-system 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "getrandom 0.2.7",
+ "hex-literal",
+ "libsecp256k1",
+ "parity-bytes",
+ "parity-scale-codec",
+ "rlp",
+ "rustc-hex",
+ "scale-info",
+ "serde",
+ "sp-core 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "sp-io 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "sp-runtime 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "sp-std 4.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "xcm",
 ]
 
 [[package]]
@@ -1956,6 +1985,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "dispatch"
+version = "0.1.1"
+source = "git+https://github.com/sora-xor/sora2-common?branch=generalize-pallets#5a4675143af15348589d7e0e70284007baf1db31"
+dependencies = [
+ "bridge-types",
+ "frame-benchmarking 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "frame-system 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "sp-io 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "sp-runtime 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "sp-std 4.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+]
+
+[[package]]
 name = "dns-parser"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2076,6 +2123,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "enum-iterator"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c79a6321a1197d7730510c7e3f6cb80432dfefecb32426de8cea0aa19b4bb8d7"
+dependencies = [
+ "enum-iterator-derive",
+]
+
+[[package]]
+name = "enum-iterator-derive"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e94aa31f7c0dc764f57896dc615ddd76fc13b0d5dca7eb6cc5e018a5a09ec06"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "enumflags2"
 version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2161,6 +2228,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "ethabi"
+version = "17.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4966fba78396ff92db3b817ee71143eccd98acf0f876b8d600e585a670c5d1b"
+dependencies = [
+ "ethereum-types",
+ "hex",
+ "sha3 0.10.5",
+ "thiserror",
+ "uint",
+]
+
+[[package]]
+name = "ethash"
+version = "0.6.0"
+source = "git+https://github.com/sora-xor/ethash?branch=polkadot-v0.9.28#407387953bc3ad3a28186254354610f1919e10be"
+dependencies = [
+ "byteorder",
+ "ethereum-types",
+ "rlp",
+ "sha3 0.10.5",
+]
+
+[[package]]
 name = "ethbloom"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2169,6 +2260,7 @@ dependencies = [
  "crunchy",
  "fixed-hash",
  "impl-codec",
+ "impl-rlp",
  "impl-serde",
  "scale-info",
  "tiny-keccak",
@@ -2183,6 +2275,7 @@ dependencies = [
  "ethbloom",
  "fixed-hash",
  "impl-codec",
+ "impl-rlp",
  "impl-serde",
  "primitive-types",
  "scale-info",
@@ -3310,6 +3403,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba6a270039626615617f3f36d15fc827041df3b78c439da2cadfa47455a77f2f"
 dependencies = [
  "parity-scale-codec",
+]
+
+[[package]]
+name = "impl-rlp"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f28220f89297a075ddc7245cd538076ee98b01f2a9c23a53a4f1105d5a322808"
+dependencies = [
+ "rlp",
 ]
 
 [[package]]
@@ -6112,6 +6214,7 @@ dependencies = [
  "beefy-light-client",
  "beefy-light-client-runtime-api",
  "beefy-primitives",
+ "bridge-types",
  "common",
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
@@ -6122,6 +6225,7 @@ dependencies = [
  "cumulus-primitives-core",
  "cumulus-primitives-timestamp",
  "cumulus-primitives-utility",
+ "dispatch",
  "frame-benchmarking 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-executive",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
@@ -6168,6 +6272,7 @@ dependencies = [
  "sp-std 4.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "sp-transaction-pool",
  "sp-version 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "substrate-bridge-channel",
  "substrate-wasm-builder",
  "transactor",
  "xcm",
@@ -6175,6 +6280,12 @@ dependencies = [
  "xcm-builder",
  "xcm-executor",
 ]
+
+[[package]]
+name = "parity-bytes"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16b56e3a2420138bdb970f84dfb9c774aea80fa0e7371549eedec0d80c209c67"
 
 [[package]]
 name = "parity-db"
@@ -7637,6 +7748,7 @@ checksum = "e28720988bff275df1f51b171e1b2a18c30d194c4d2b61defdacecd625a5d94a"
 dependencies = [
  "fixed-hash",
  "impl-codec",
+ "impl-rlp",
  "impl-serde",
  "scale-info",
  "uint",
@@ -8140,6 +8252,16 @@ dependencies = [
  "untrusted",
  "web-sys",
  "winapi",
+]
+
+[[package]]
+name = "rlp"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb919243f34364b6bd2fc10ef797edbfa75f33c252e7998527479c6d6b47e1ec"
+dependencies = [
+ "bytes",
+ "rustc-hex",
 ]
 
 [[package]]
@@ -11068,6 +11190,27 @@ dependencies = [
  "schnorrkel",
  "sha2 0.9.9",
  "zeroize",
+]
+
+[[package]]
+name = "substrate-bridge-channel"
+version = "0.1.1"
+source = "git+https://github.com/sora-xor/sora2-common?branch=generalize-pallets#5a4675143af15348589d7e0e70284007baf1db31"
+dependencies = [
+ "bridge-types",
+ "ethabi 17.2.0",
+ "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "frame-system 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "once_cell",
+ "orml-traits",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "sp-io 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "sp-runtime 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "sp-std 4.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
 ]
 
 [[package]]

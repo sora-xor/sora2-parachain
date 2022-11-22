@@ -320,6 +320,8 @@ fn testnet_genesis(
 	id: ParaId,
 ) -> parachain_template_runtime::GenesisConfig {
 	parachain_template_runtime::GenesisConfig {
+		substrate_bridge_inbound_channel: Default::default(),
+		substrate_bridge_outbound_channel: Default::default(),
 		system: parachain_template_runtime::SystemConfig {
 			code: parachain_template_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
