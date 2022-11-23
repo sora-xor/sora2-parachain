@@ -474,14 +474,13 @@ dependencies = [
 [[package]]
 name = "beefy-light-client"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#3914e848272653895f39f7dbe15a588b500926fb"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#cdb172ac1c150afdecf4e71a428bdac7914a6c3a"
 dependencies = [
  "bridge-common",
  "ethabi 13.0.0",
  "frame-benchmarking 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-system 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
- "getrandom 0.2.7",
  "libsecp256k1",
  "parity-scale-codec",
  "scale-info",
@@ -493,7 +492,7 @@ dependencies = [
 [[package]]
 name = "beefy-light-client-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#3914e848272653895f39f7dbe15a588b500926fb"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#cdb172ac1c150afdecf4e71a428bdac7914a6c3a"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -706,7 +705,7 @@ dependencies = [
 [[package]]
 name = "bridge-common"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#3914e848272653895f39f7dbe15a588b500926fb"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet#cdb172ac1c150afdecf4e71a428bdac7914a6c3a"
 dependencies = [
  "bitvec",
  "ethabi 13.0.0",
@@ -11826,7 +11825,7 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "digest 0.10.5",
  "rand 0.8.5",
  "static_assertions",
