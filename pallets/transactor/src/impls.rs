@@ -96,14 +96,14 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	/// THIS
 	fn deposit(
 		currency_id: Self::CurrencyId,
-		_who: &T::AccountId,
+		who: &T::AccountId,
 		amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
 			target: "xcm::transactor",
 			"deposit",
 		);
-		Pallet::<T>::add_to_channel(currency_id, amount)?;
+		Pallet::<T>::add_to_channel(who.clone(), currency_id, amount)?;
 		Ok(())
 	}
 

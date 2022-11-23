@@ -52,6 +52,7 @@ use frame_support::traits::Contains;
 use frame_support::traits::Currency;
 use frame_support::traits::ExistenceRequirement;
 use frame_support::weights::{DispatchInfo, PostDispatchInfo};
+use orml_traits::MultiCurrency;
 use scale_info::TypeInfo;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -67,7 +68,6 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
-use orml_traits::MultiCurrency;
 
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -565,6 +565,7 @@ impl transactor::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
 	type CurrencyId = common::primitives::AssetId;
+	type OutboundChannel = SubstrateBridgeOutboundChannel;
 }
 
 impl beefy_light_client::Config for Runtime {

@@ -36,9 +36,14 @@ use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 };
+use bridge_types::{traits::OutboundChannel, SubNetworkId};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
+
+type AccountId = u64;
+type CurrencyId = u128;
+type Balance = u128;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -68,7 +73,7 @@ impl system::Config for Test {
 	type BlockNumber = u64;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = u64;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
 	type Event = Event;
@@ -86,8 +91,9 @@ impl system::Config for Test {
 
 impl transactor::Config for Test {
 	type Event = Event;
-	type Balance = u128;
-	type CurrencyId = u128;
+	type Balance = Balance;
+	type CurrencyId = CurrencyId;
+	type OutboundChannel = TestOutboundChannel;
 }
 
 // Build genesis storage according to the mock runtime.
@@ -105,4 +111,16 @@ pub fn last_event() -> Result<Event, ()> {
 		Some(ev) => Ok(ev.event),
 		None => Err(()),
 	}
+}
+
+pub struct TestOutboundChannel;
+impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
+    fn submit(
+        _network_id: SubNetworkId,
+        _who: &system::RawOrigin<AccountId>,
+        _payload: &[u8],
+        _additional: (),
+    ) -> Result<H256, sp_runtime::DispatchError> {
+        todo!()
+    }
 }

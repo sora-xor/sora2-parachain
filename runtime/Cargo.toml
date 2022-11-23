@@ -98,7 +98,6 @@ xcm-executor = { git = "https://github.com/paritytech/polkadot", default-feature
 orml-xtokens = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.28"}
 orml-traits = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.28"}
 orml-xcm-support = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.28"}
-# traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", branch = "polkadot-v0.9.28", package = "orml-traits", default-features = false }
 
 # SORA
 substrate-bridge-channel = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }

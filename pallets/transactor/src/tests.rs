@@ -33,9 +33,10 @@ use frame_support::assert_ok;
 #[test]
 fn it_works_transact() {
 	new_test_ext().execute_with(|| {
+		let acc = 1;
 		let currency_id = 666;
 		let amount = 100500;
-		assert_ok!(Transactor::add_to_channel(currency_id, amount));
+		assert_ok!(Transactor::add_to_channel(acc, currency_id, amount));
 		assert_eq!(
 			Event::Transactor(crate::Event::AssetAddedToChannel(currency_id, amount)),
 			last_event().unwrap()

@@ -29,8 +29,12 @@ orml-traits = {git = "https://github.com/open-web3-stack/open-runtime-module-lib
 # Local
 common = { path = "../../common", default-features = false }
 
+# Sora
+bridge-types = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }
+
 [dev-dependencies]
 serde = { version = "1.0.132" }
+substrate-bridge-channel = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }
 
 # Substrate
 sp-core = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.28" }

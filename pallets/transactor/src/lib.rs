@@ -35,16 +35,16 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-use common::primitives::AssetId;
 use orml_traits::MultiCurrency;
 pub use pallet::*;
-use xcm::v1::MultiLocation;
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
+	use bridge_types::{traits::OutboundChannel, SubNetworkId};
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
+	use scale_info::prelude::vec::Vec;
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -66,22 +66,14 @@ pub mod pallet {
 			+ Ord
 			+ TypeInfo
 			+ MaxEncodedLen;
+
+		type OutboundChannel: OutboundChannel<SubNetworkId, Self::AccountId, ()>;
 	}
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
-
-	#[pallet::storage]
-	#[pallet::getter(fn get_multilocation_from_asset_id)]
-	pub type AssetIdToMultilocation<T: Config> =
-		StorageMap<_, Blake2_256, AssetId, MultiLocation, OptionQuery>;
-
-	#[pallet::storage]
-	#[pallet::getter(fn get_asset_id_from_multilocation)]
-	pub type MultilocationToAssetId<T: Config> =
-		StorageMap<_, Blake2_256, MultiLocation, AssetId, OptionQuery>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -99,11 +91,24 @@ pub mod pallet {
 
 	impl<T: Config> Pallet<T> {
 		pub fn add_to_channel(
+			account_id: T::AccountId,
 			currency_id: T::CurrencyId,
 			amount: T::Balance,
 		) -> sp_runtime::DispatchResult {
+			let payload = Self::convert_to_outbound_payload(account_id.clone(), currency_id, amount);
+			let raw_origin = Some(account_id).into();
+			<T as Config>::OutboundChannel::submit(SubNetworkId::Mainnet, &raw_origin, &payload, ())?;
 			Self::deposit_event(Event::<T>::AssetAddedToChannel(currency_id, amount));
 			Ok(())
+		}
+
+		fn convert_to_outbound_payload(
+			account_id: T::AccountId,
+			currency_id: T::CurrencyId,
+			amount: T::Balance,
+		) -> Vec<u8> {
+			let a = account_id.encode();
+			todo!()
 		}
 	}
 }
