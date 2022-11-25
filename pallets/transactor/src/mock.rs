@@ -37,11 +37,12 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 };
 use bridge_types::{traits::OutboundChannel, SubNetworkId};
+use xcm::latest::prelude::*;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
-type AccountId = u64;
+type AccountId = u128;
 type CurrencyId = u128;
 type Balance = u128;
 
@@ -94,6 +95,7 @@ impl transactor::Config for Test {
 	type Balance = Balance;
 	type CurrencyId = CurrencyId;
 	type OutboundChannel = TestOutboundChannel;
+	type AccountIdToMultiLocation = ();
 }
 
 // Build genesis storage according to the mock runtime.
@@ -123,4 +125,13 @@ impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
     ) -> Result<H256, sp_runtime::DispatchError> {
         todo!()
     }
+}
+
+pub struct TestAccountIdToMultiLocation;
+impl sp_runtime::traits::Convert<AccountId, MultiLocation> for TestAccountIdToMultiLocation {
+	fn convert(account: AccountId) -> MultiLocation {
+		let arr: [u8; 16] = account.to_be_bytes();
+		let arrarr:[u8; 32] = [arr, arr].concat().try_into().expect("Failed to convert account if to xcm multilocaton");
+		X1(AccountId32 { network: xcm::v1::NetworkId::Any, id: arrarr.into() }).into()
+	}
 }

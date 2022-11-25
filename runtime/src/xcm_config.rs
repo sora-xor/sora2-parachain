@@ -47,7 +47,9 @@ use xcm_builder::{
 	SovereignSignedViaLocation, TakeWeightCredit,
 };
 use xcm_executor::{traits::ShouldExecute, XcmExecutor};
-use parachain_common::{primitives::AssetId, xcm::LocationToAccountId};
+use parachain_common::{primitives::AssetId, 
+	// xcm::{LocationToAccountId, AccountIdToMultiLocation}
+};
 
 parameter_types! {
 	pub const RelayLocation: MultiLocation = MultiLocation::parent();
@@ -56,17 +58,17 @@ parameter_types! {
 	pub Ancestry: MultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
 }
 
-// /// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
-// /// when determining ownership of accounts for asset transacting and when attempting to use XCM
-// /// `Transact` in order to determine the dispatch Origin.
-// pub type LocationToAccountId = (
-// 	// The parent (Relay-chain) origin converts to the parent `AccountId`.
-// 	ParentIsPreset<AccountId>,
-// 	// Sibling parachain origins convert to AccountId via the `ParaId::into`.
-// 	SiblingParachainConvertsVia<Sibling, AccountId>,
-// 	// Straight up local `AccountId32` origins just alias directly to `AccountId`.
-// 	AccountId32Aliases<RelayNetwork, AccountId>,
-// );
+/// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
+/// when determining ownership of accounts for asset transacting and when attempting to use XCM
+/// `Transact` in order to determine the dispatch Origin.
+pub type LocationToAccountId = (
+	// The parent (Relay-chain) origin converts to the parent `AccountId`.
+	ParentIsPreset<AccountId>,
+	// Sibling parachain origins convert to AccountId via the `ParaId::into`.
+	SiblingParachainConvertsVia<Sibling, AccountId>,
+	// Straight up local `AccountId32` origins just alias directly to `AccountId`.
+	AccountId32Aliases<RelayNetwork, AccountId>,
+);
 
 /// Means for transacting assets on this chain.
 pub type LocalAssetTransactor = MultiCurrencyAdapter<
@@ -74,7 +76,7 @@ pub type LocalAssetTransactor = MultiCurrencyAdapter<
 	(),
 	IsNativeConcrete<AssetId, crate::XCMApp>,
 	AccountId,
-	LocationToAccountId<AccountId, RelayNetwork>,
+	LocationToAccountId,
 	AssetId,
 	crate::XCMApp,
 	(),
@@ -87,7 +89,7 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	// Sovereign account converter; this attempts to derive an `AccountId` from the origin location
 	// using `LocationToAccountId` and then turn that into the usual `Signed` origin. Useful for
 	// foreign chains who want to have a local sovereign account on this chain which they control.
-	SovereignSignedViaLocation<LocationToAccountId<AccountId, RelayNetwork>, Origin>,
+	SovereignSignedViaLocation<LocationToAccountId, Origin>,
 	// Native converter for Relay-chain (Parent) location; will converts to a `Relay` origin when
 	// recognized.
 	RelayChainAsNative<RelayChainOrigin, Origin>,

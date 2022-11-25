@@ -566,6 +566,7 @@ impl transactor::Config for Runtime {
 	type Balance = Balance;
 	type CurrencyId = parachain_common::primitives::AssetId;
 	type OutboundChannel = SubstrateBridgeOutboundChannel;
+	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
 }
 
 impl beefy_light_client::Config for Runtime {

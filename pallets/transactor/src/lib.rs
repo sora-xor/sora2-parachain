@@ -45,6 +45,8 @@ pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 	use scale_info::prelude::vec::Vec;
+	use sp_runtime::traits::Convert;
+	use xcm::latest::prelude::*;
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -68,6 +70,8 @@ pub mod pallet {
 			+ MaxEncodedLen;
 
 		type OutboundChannel: OutboundChannel<SubNetworkId, Self::AccountId, ()>;
+
+		type AccountIdToMultiLocation: Convert<Self::AccountId, MultiLocation>;
 	}
 
 	#[pallet::pallet]
@@ -95,15 +99,15 @@ pub mod pallet {
 			currency_id: T::CurrencyId,
 			amount: T::Balance,
 		) -> sp_runtime::DispatchResult {
-			// let raw_origin = Some(account_id).into();
-			// let xcm_mes = XCMAppMessage::Transfer {
-			// 	asset_id: currency_id,
-			// 	sender: account_id,
-			// 	// TODO CHANGE!!!!
-			// 	recipient: ParachainAccountId::V1(xcm::v1::MultiLocation),
-			// 	amount,
-			// }.prepare_message();
-			// let message = <T as Config>::OutboundChannel::submit(SubNetworkId::Mainnet, &raw_origin, &xcm_mes, ())?;
+			let raw_origin = Some(account_id.clone()).into();
+			let multilocation = <T as Config>::AccountIdToMultiLocation::convert(account_id.clone());
+			let xcm_mes = XCMAppMessage::Transfer {
+				asset_id: currency_id,
+				sender: account_id.clone(),
+				recipient: xcm::VersionedMultiLocation::V1(multilocation),
+				amount,
+			}.prepare_message();
+			let message = <T as Config>::OutboundChannel::submit(SubNetworkId::Mainnet, &raw_origin, &xcm_mes, ())?;
 			Self::deposit_event(Event::<T>::AssetAddedToChannel(currency_id, amount));
 			Ok(())
 		}
