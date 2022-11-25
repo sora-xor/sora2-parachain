@@ -41,7 +41,7 @@ pub use pallet::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use bridge_types::{traits::OutboundChannel, SubNetworkId};
+	use bridge_types::{traits::OutboundChannel, SubNetworkId, substrate::{XCMAppMessage, SubstrateBridgeMessageEncode, ParachainAccountId}};
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 	use scale_info::prelude::vec::Vec;
@@ -95,20 +95,17 @@ pub mod pallet {
 			currency_id: T::CurrencyId,
 			amount: T::Balance,
 		) -> sp_runtime::DispatchResult {
-			let payload = Self::convert_to_outbound_payload(account_id.clone(), currency_id, amount);
-			let raw_origin = Some(account_id).into();
-			<T as Config>::OutboundChannel::submit(SubNetworkId::Mainnet, &raw_origin, &payload, ())?;
+			// let raw_origin = Some(account_id).into();
+			// let xcm_mes = XCMAppMessage::Transfer {
+			// 	asset_id: currency_id,
+			// 	sender: account_id,
+			// 	// TODO CHANGE!!!!
+			// 	recipient: ParachainAccountId::V1(xcm::v1::MultiLocation),
+			// 	amount,
+			// }.prepare_message();
+			// let message = <T as Config>::OutboundChannel::submit(SubNetworkId::Mainnet, &raw_origin, &xcm_mes, ())?;
 			Self::deposit_event(Event::<T>::AssetAddedToChannel(currency_id, amount));
 			Ok(())
-		}
-
-		fn convert_to_outbound_payload(
-			account_id: T::AccountId,
-			currency_id: T::CurrencyId,
-			amount: T::Balance,
-		) -> Vec<u8> {
-			let a = account_id.encode();
-			todo!()
 		}
 	}
 }

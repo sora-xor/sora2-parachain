@@ -27,7 +27,7 @@ xcm = { git = "https://github.com/paritytech/polkadot", default-features = false
 orml-traits = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.28"}
 
 # Local
-common = { path = "../../common", default-features = false }
+parachain-common = { path = "../../parachain-common", default-features = false }
 
 # Sora
 bridge-types = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }

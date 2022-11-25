@@ -25,7 +25,7 @@ sp-runtime = { git = "https://github.com/paritytech/substrate", default-features
 xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.28" }
 
 # Local
-common = { path = "../../common", default-features = false }
+parachain-common = { path = "../../parachain-common", default-features = false }
 
 [dev-dependencies]
 serde = { version = "1.0.132" }

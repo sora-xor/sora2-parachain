@@ -30,7 +30,7 @@
 
 use frame_support::{traits::Get, weights::Weight};
 use core::marker::PhantomData;
-use common::primitives::EXTRINSIC_FIXED_WEIGHT;
+use parachain_common::primitives::EXTRINSIC_FIXED_WEIGHT;
 
 /// Weight functions for `pallet_converter`.
 pub struct WeightInfo<T>(PhantomData<T>);

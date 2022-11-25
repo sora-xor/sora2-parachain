@@ -551,7 +551,7 @@ impl pallet_collator_selection::Config for Runtime {
 }
 
 orml_traits::parameter_type_with_key! {
-	pub ExistentialDeposits: |_currency_id: common::primitives::AssetId| -> Balance {
+	pub ExistentialDeposits: |_currency_id: parachain_common::primitives::AssetId| -> Balance {
 		Default::default()
 	};
 }
@@ -564,7 +564,7 @@ impl xcm_app::Config for Runtime {
 impl transactor::Config for Runtime {
 	type Event = Event;
 	type Balance = Balance;
-	type CurrencyId = common::primitives::AssetId;
+	type CurrencyId = parachain_common::primitives::AssetId;
 	type OutboundChannel = SubstrateBridgeOutboundChannel;
 }
 

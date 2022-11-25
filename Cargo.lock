@@ -1040,16 +1040,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "common"
-version = "0.1.0"
-dependencies = [
- "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
- "parity-scale-codec",
- "scale-info",
- "serde",
-]
-
-[[package]]
 name = "concurrent-queue"
 version = "1.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6114,6 +6104,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "parachain-common"
+version = "0.1.0"
+dependencies = [
+ "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "parity-scale-codec",
+ "polkadot-parachain",
+ "scale-info",
+ "serde",
+ "xcm-builder",
+]
+
+[[package]]
 name = "parachain-gen"
 version = "0.1.0"
 dependencies = [
@@ -6214,7 +6216,6 @@ dependencies = [
  "beefy-light-client-runtime-api",
  "beefy-primitives",
  "bridge-types",
- "common",
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
@@ -6251,6 +6252,7 @@ dependencies = [
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-xcm",
+ "parachain-common",
  "parachain-info",
  "parity-scale-codec",
  "polkadot-parachain",
@@ -11703,12 +11705,12 @@ name = "transactor"
 version = "0.1.0"
 dependencies = [
  "bridge-types",
- "common",
  "frame-benchmarking 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-system 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "log",
  "orml-traits",
+ "parachain-common",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -12640,10 +12642,10 @@ dependencies = [
 name = "xcm-app"
 version = "0.1.0"
 dependencies = [
- "common",
  "frame-benchmarking 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-system 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "parachain-common",
  "parity-scale-codec",
  "scale-info",
  "serde",

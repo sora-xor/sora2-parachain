@@ -39,7 +39,7 @@ mod benchmarking;
 
 pub mod weights;
 
-use common::primitives::AssetId;
+use parachain_common::primitives::AssetId;
 use frame_support::weights::Weight;
 pub use pallet::*;
 use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};

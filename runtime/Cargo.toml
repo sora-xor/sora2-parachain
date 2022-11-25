@@ -28,7 +28,7 @@ smallvec = "1.6.1"
 
 xcm-app = { path = "../pallets/xcm-app", default-features = false }
 transactor = { path = "../pallets/transactor", default-features = false }
-common = { path = "../common", default-features = false }
+parachain-common = { path = "../parachain-common", default-features = false }
 beefy-light-client = {git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy_light_client_pallet", default-features = false }
 beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy_light_client_pallet", default-features = false }
 
