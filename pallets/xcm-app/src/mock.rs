@@ -29,6 +29,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate as xcm_app;
+use bridge_types::{traits::OutboundChannel, SubNetworkId};
 use frame_support::{parameter_types, traits::Everything, WeakBoundedVec};
 use frame_system as system;
 use sp_core::H256;
@@ -36,7 +37,6 @@ use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 };
-use bridge_types::{traits::OutboundChannel, SubNetworkId};
 use xcm::latest::prelude::*;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
@@ -108,21 +108,24 @@ pub fn test_general_key() -> WeakBoundedVec<u8, frame_support::traits::ConstU32<
 
 pub struct TestOutboundChannel;
 impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
-    fn submit(
-        _network_id: SubNetworkId,
-        _who: &system::RawOrigin<AccountId>,
-        _payload: &[u8],
-        _additional: (),
-    ) -> Result<H256, sp_runtime::DispatchError> {
-        todo!()
-    }
+	fn submit(
+		_network_id: SubNetworkId,
+		_who: &system::RawOrigin<AccountId>,
+		_payload: &[u8],
+		_additional: (),
+	) -> Result<H256, sp_runtime::DispatchError> {
+		todo!()
+	}
 }
 
 pub struct TestAccountIdToMultiLocation;
 impl sp_runtime::traits::Convert<AccountId, MultiLocation> for TestAccountIdToMultiLocation {
 	fn convert(account: AccountId) -> MultiLocation {
 		let arr: [u8; 16] = account.to_be_bytes();
-		let arrarr:[u8; 32] = [arr, arr].concat().try_into().expect("Failed to convert account if to xcm multilocaton");
+		let arrarr: [u8; 32] = [arr, arr]
+			.concat()
+			.try_into()
+			.expect("Failed to convert account if to xcm multilocaton");
 		X1(AccountId32 { network: xcm::v1::NetworkId::Any, id: arrarr.into() }).into()
 	}
 }

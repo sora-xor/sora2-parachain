@@ -564,13 +564,13 @@ impl xcm_app::Config for Runtime {
 	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
 }
 
-impl transactor::Config for Runtime {
-	type Event = Event;
-	type Balance = Balance;
-	type CurrencyId = parachain_common::primitives::AssetId;
-	type OutboundChannel = SubstrateBridgeOutboundChannel;
-	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
-}
+// impl transactor::Config for Runtime {
+// 	type Event = Event;
+// 	type Balance = Balance;
+// 	type CurrencyId = parachain_common::primitives::AssetId;
+// 	type OutboundChannel = SubstrateBridgeOutboundChannel;
+// 	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
+// }
 
 impl beefy_light_client::Config for Runtime {
 	type Event = Event;
@@ -792,7 +792,6 @@ construct_runtime!(
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
 		XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
-		Transactor: transactor::{Pallet, Storage, Event<T>} = 102,
 		BeefyLightClient: beefy_light_client::{Pallet, Call, Storage, Event<T>} = 103,
 		// Just for testing purposes
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 104,

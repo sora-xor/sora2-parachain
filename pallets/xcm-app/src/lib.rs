@@ -29,12 +29,12 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
 mod tests;
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
 
 mod impls;
 
@@ -42,11 +42,11 @@ pub mod weights;
 
 pub use pallet::*;
 
-use parachain_common::primitives::AssetId;
 use frame_support::weights::Weight;
+use orml_traits::MultiCurrency;
+use parachain_common::primitives::AssetId;
 use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
 use xcm::v1::{MultiAsset, MultiLocation};
-use orml_traits::MultiCurrency;
 
 pub trait WeightInfo {
 	fn register_mapping() -> Weight;
@@ -61,10 +61,14 @@ pub trait WeightInfo {
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
+	use bridge_types::{
+		substrate::{SubstrateBridgeMessageEncode, XCMAppMessage},
+		traits::OutboundChannel,
+		SubNetworkId,
+	};
 	use frame_support::{dispatch::DispatchResultWithPostInfo, fail, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
 	use parachain_common::primitives::AssetId;
-	use bridge_types::{traits::OutboundChannel, SubNetworkId, substrate::{XCMAppMessage, SubstrateBridgeMessageEncode, ParachainAccountId}};
 	use sp_runtime::traits::Convert;
 
 	#[pallet::config]
@@ -272,14 +276,21 @@ pub mod pallet {
 			amount: T::Balance,
 		) -> sp_runtime::DispatchResult {
 			let raw_origin = Some(account_id.clone()).into();
-			let multilocation = <T as Config>::AccountIdToMultiLocation::convert(account_id.clone());
+			let multilocation =
+				<T as Config>::AccountIdToMultiLocation::convert(account_id.clone());
 			let xcm_mes = XCMAppMessage::Transfer {
 				asset_id,
 				sender: account_id.clone(),
 				recipient: xcm::VersionedMultiLocation::V1(multilocation),
 				amount,
-			}.prepare_message();
-			let message = <T as Config>::OutboundChannel::submit(SubNetworkId::Mainnet, &raw_origin, &xcm_mes, ())?;
+			}
+			.prepare_message();
+			let message = <T as Config>::OutboundChannel::submit(
+				SubNetworkId::Mainnet,
+				&raw_origin,
+				&xcm_mes,
+				(),
+			)?;
 			Self::deposit_event(Event::<T>::AssetAddedToChannel(asset_id, amount));
 			Ok(())
 		}

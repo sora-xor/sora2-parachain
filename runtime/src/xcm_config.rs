@@ -37,6 +37,7 @@ use frame_support::{log, match_types, parameter_types, traits::Everything, weigh
 use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
 use orml_xcm_support::{IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset};
 use pallet_xcm::XcmPassthrough;
+use parachain_common::primitives::AssetId;
 use polkadot_parachain::primitives::Sibling;
 use xcm::latest::prelude::*;
 use xcm_builder::{
@@ -47,9 +48,6 @@ use xcm_builder::{
 	SovereignSignedViaLocation, TakeWeightCredit,
 };
 use xcm_executor::{traits::ShouldExecute, XcmExecutor};
-use parachain_common::{primitives::AssetId, 
-	// xcm::{LocationToAccountId, AccountIdToMultiLocation}
-};
 
 parameter_types! {
 	pub const RelayLocation: MultiLocation = MultiLocation::parent();
@@ -72,7 +70,7 @@ pub type LocationToAccountId = (
 
 /// Means for transacting assets on this chain.
 pub type LocalAssetTransactor = MultiCurrencyAdapter<
-	crate::Transactor,
+	crate::XCMApp,
 	(),
 	IsNativeConcrete<AssetId, crate::XCMApp>,
 	AccountId,
