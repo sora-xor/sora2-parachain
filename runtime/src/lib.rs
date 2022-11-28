@@ -559,6 +559,9 @@ orml_traits::parameter_type_with_key! {
 impl xcm_app::Config for Runtime {
 	type Event = Event;
 	type WeightInfo = xcm_app::weights::WeightInfo<Runtime>;
+	type Balance = Balance;
+	type OutboundChannel = SubstrateBridgeOutboundChannel;
+	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
 }
 
 impl transactor::Config for Runtime {

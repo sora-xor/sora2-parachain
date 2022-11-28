@@ -33,41 +33,20 @@
 mod mock;
 #[cfg(test)]
 mod tests;
-
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
+mod impls;
+
 pub mod weights;
+
+pub use pallet::*;
 
 use parachain_common::primitives::AssetId;
 use frame_support::weights::Weight;
-pub use pallet::*;
 use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
 use xcm::v1::{MultiAsset, MultiLocation};
-
-// IMPLS for p_runtime::traits::Convert trait to allow this pallet be used as Converter in XCM localasset transactor:
-
-impl<T: Config> sp_runtime::traits::Convert<AssetId, Option<MultiLocation>> for Pallet<T> {
-	fn convert(id: AssetId) -> Option<MultiLocation> {
-		Pallet::<T>::get_multilocation_from_asset_id(id)
-	}
-}
-
-impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<AssetId>> for Pallet<T> {
-	fn convert(multilocation: MultiLocation) -> Option<AssetId> {
-		Pallet::<T>::get_asset_id_from_multilocation(multilocation)
-	}
-}
-
-impl<T: Config> sp_runtime::traits::Convert<MultiAsset, Option<AssetId>> for Pallet<T> {
-	fn convert(a: MultiAsset) -> Option<AssetId> {
-		if let MultiAsset { fun: Fungible(_), id: Concrete(id) } = a {
-			Self::convert(id)
-		} else {
-			Option::None
-		}
-	}
-}
+use orml_traits::MultiCurrency;
 
 pub trait WeightInfo {
 	fn register_mapping() -> Weight;
@@ -84,11 +63,27 @@ pub mod pallet {
 	use super::*;
 	use frame_support::{dispatch::DispatchResultWithPostInfo, fail, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
+	use parachain_common::primitives::AssetId;
+	use bridge_types::{traits::OutboundChannel, SubNetworkId, substrate::{XCMAppMessage, SubstrateBridgeMessageEncode, ParachainAccountId}};
+	use sp_runtime::traits::Convert;
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
+
+		/// The balance type
+		type Balance: Parameter
+			+ Member
+			+ sp_runtime::traits::AtLeast32BitUnsigned
+			+ Default
+			+ Copy
+			+ MaybeSerializeDeserialize
+			+ MaxEncodedLen;
+
+		type OutboundChannel: OutboundChannel<SubNetworkId, Self::AccountId, ()>;
+
+		type AccountIdToMultiLocation: Convert<Self::AccountId, MultiLocation>;
 	}
 
 	#[pallet::pallet]
@@ -121,6 +116,9 @@ pub mod pallet {
 		/// Mapping delete has been performed
 		/// [Sora AssetId, XCM Multilocation]
 		MappingDeleted(AssetId, MultiLocation),
+		/// Asset Added to channel
+		/// [Currency Id, amount]
+		AssetAddedToChannel(AssetId, T::Balance),
 	}
 
 	#[pallet::error]
@@ -129,6 +127,8 @@ pub mod pallet {
 		MappingAlreadyExists,
 		/// No mapping for AssetId and Multilocation exists
 		MappingNotExist,
+		/// Method not availible
+		MethodNotAvailible,
 	}
 
 	#[pallet::hooks]
@@ -262,6 +262,26 @@ pub mod pallet {
 				},
 			};
 			Ok(().into())
+		}
+	}
+
+	impl<T: Config> Pallet<T> {
+		pub fn add_to_channel(
+			account_id: T::AccountId,
+			asset_id: AssetId,
+			amount: T::Balance,
+		) -> sp_runtime::DispatchResult {
+			let raw_origin = Some(account_id.clone()).into();
+			let multilocation = <T as Config>::AccountIdToMultiLocation::convert(account_id.clone());
+			let xcm_mes = XCMAppMessage::Transfer {
+				asset_id,
+				sender: account_id.clone(),
+				recipient: xcm::VersionedMultiLocation::V1(multilocation),
+				amount,
+			}.prepare_message();
+			let message = <T as Config>::OutboundChannel::submit(SubNetworkId::Mainnet, &raw_origin, &xcm_mes, ())?;
+			Self::deposit_event(Event::<T>::AssetAddedToChannel(asset_id, amount));
+			Ok(())
 		}
 	}
 }

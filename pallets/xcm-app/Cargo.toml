@@ -14,6 +14,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", features = ["derive"], default-features = false }
 scale-info = { version = "2.0.0", default-features = false, features = ["derive"] }
+log = { version = "0.4.14", default-features = false }
 
 # Substrate
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, optional = true, branch = "polkadot-v0.9.28" }
@@ -26,6 +27,12 @@ xcm = { git = "https://github.com/paritytech/polkadot", default-features = false
 
 # Local
 parachain-common = { path = "../../parachain-common", default-features = false }
+
+# Sora
+bridge-types = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }
+
+# ORML
+orml-traits = {git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false,  branch = "polkadot-v0.9.28"}
 
 [dev-dependencies]
 serde = { version = "1.0.132" }

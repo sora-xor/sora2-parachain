@@ -12643,9 +12643,12 @@ dependencies = [
 name = "xcm-app"
 version = "0.1.0"
 dependencies = [
+ "bridge-types",
  "frame-benchmarking 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-support 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
  "frame-system 4.0.0-dev (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.28)",
+ "log",
+ "orml-traits",
  "parachain-common",
  "parity-scale-codec",
  "scale-info",

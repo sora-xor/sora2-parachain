@@ -36,9 +36,14 @@ use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 };
+use bridge_types::{traits::OutboundChannel, SubNetworkId};
+use xcm::latest::prelude::*;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
+
+type AccountId = u128;
+type Balance = u128;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -68,7 +73,7 @@ impl system::Config for Test {
 	type BlockNumber = u64;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = u64;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
 	type Event = Event;
@@ -87,6 +92,9 @@ impl system::Config for Test {
 impl xcm_app::Config for Test {
 	type Event = Event;
 	type WeightInfo = ();
+	type Balance = Balance;
+	type OutboundChannel = TestOutboundChannel;
+	type AccountIdToMultiLocation = TestAccountIdToMultiLocation;
 }
 
 // Build genesis storage according to the mock runtime.
@@ -96,4 +104,25 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 
 pub fn test_general_key() -> WeakBoundedVec<u8, frame_support::traits::ConstU32<32>> {
 	WeakBoundedVec::try_from(b"TEST_ASSET".to_vec()).unwrap()
+}
+
+pub struct TestOutboundChannel;
+impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
+    fn submit(
+        _network_id: SubNetworkId,
+        _who: &system::RawOrigin<AccountId>,
+        _payload: &[u8],
+        _additional: (),
+    ) -> Result<H256, sp_runtime::DispatchError> {
+        todo!()
+    }
+}
+
+pub struct TestAccountIdToMultiLocation;
+impl sp_runtime::traits::Convert<AccountId, MultiLocation> for TestAccountIdToMultiLocation {
+	fn convert(account: AccountId) -> MultiLocation {
+		let arr: [u8; 16] = account.to_be_bytes();
+		let arrarr:[u8; 32] = [arr, arr].concat().try_into().expect("Failed to convert account if to xcm multilocaton");
+		X1(AccountId32 { network: xcm::v1::NetworkId::Any, id: arrarr.into() }).into()
+	}
 }
