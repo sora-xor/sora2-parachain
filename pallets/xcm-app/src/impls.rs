@@ -38,7 +38,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 
 	fn minimum_balance(_currency_id: Self::CurrencyId) -> Self::Balance {
 		log::trace!(
-			target: "xcm::transactor",
+			target: "xcm::XCMApp",
 			"minimum_balance",
 		);
 		Default::default()
@@ -46,7 +46,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 
 	fn total_issuance(_currency_id: Self::CurrencyId) -> Self::Balance {
 		log::trace!(
-			target: "xcm::transactor",
+			target: "xcm::XCMApp",
 			"total_issuance",
 		);
 		Default::default()
@@ -54,7 +54,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 
 	fn total_balance(_currency_id: Self::CurrencyId, _who: &T::AccountId) -> Self::Balance {
 		log::trace!(
-			target: "xcm::transactor",
+			target: "xcm::XCMApp",
 			"total_balance",
 		);
 		Default::default()
@@ -62,7 +62,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 
 	fn free_balance(_currency_id: Self::CurrencyId, _who: &T::AccountId) -> Self::Balance {
 		log::trace!(
-			target: "xcm::transactor",
+			target: "xcm::XCMApp",
 			"free_balance",
 		);
 		Default::default()
@@ -74,7 +74,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		_amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
-			target: "xcm::transactor",
+			target: "xcm::XCMApp",
 			"ensure_can_withdraw",
 		);
 		fail!(Error::<T>::MethodNotAvailible)
@@ -87,7 +87,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		_amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
-			target: "xcm::transactor",
+			target: "xcm::XCMApp",
 			"transfer",
 		);
 		fail!(Error::<T>::MethodNotAvailible)
@@ -100,7 +100,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
-			target: "xcm::transactor",
+			target: "xcm::XCMApp",
 			"deposit",
 		);
 		Pallet::<T>::add_to_channel(who.clone(), currency_id, amount)?;
@@ -113,7 +113,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		_amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
-			target: "xcm::transactor",
+			target: "xcm::XCMApp",
 			"withdraw",
 		);
 		fail!(Error::<T>::MethodNotAvailible)
@@ -125,7 +125,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		_value: Self::Balance,
 	) -> bool {
 		log::trace!(
-			target: "xcm::transactor",
+			target: "xcm::XCMApp",
 			"can_slash",
 		);
 		false
@@ -155,9 +155,9 @@ impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<AssetId>> for 
 }
 
 impl<T: Config> sp_runtime::traits::Convert<MultiAsset, Option<AssetId>> for Pallet<T> {
-	fn convert(a: MultiAsset) -> Option<AssetId> {
-		if let MultiAsset { fun: Fungible(_), id: Concrete(id) } = a {
-			Self::convert(id)
+	fn convert(ma: MultiAsset) -> Option<AssetId> {
+		if let MultiAsset { fun: Fungible(_), id: Concrete(ml) } = ma {
+			Self::convert(ml)
 		} else {
 			Option::None
 		}

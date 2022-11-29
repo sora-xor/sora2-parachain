@@ -48,6 +48,8 @@ use parachain_common::primitives::AssetId;
 use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
 use xcm::v1::{MultiAsset, MultiLocation};
 
+pub type ParachainAssetId = xcm::VersionedMultiAsset;
+
 pub trait WeightInfo {
 	fn register_mapping() -> Weight;
 
@@ -285,7 +287,7 @@ pub mod pallet {
 				amount,
 			}
 			.prepare_message();
-			let message = <T as Config>::OutboundChannel::submit(
+			<T as Config>::OutboundChannel::submit(
 				SubNetworkId::Mainnet,
 				&raw_origin,
 				&xcm_mes,
