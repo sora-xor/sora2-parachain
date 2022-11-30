@@ -54,6 +54,7 @@ where
 		+ Send
 		+ Sync
 		+ 'static,
+	C::Api: beefy_light_client_rpc::BeefyLightClientRuntimeAPI<Block, beefy_light_client::BitField>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: pallet_mmr_rpc::MmrRuntimeApi<Block, <Block as sp_runtime::traits::Block>::Hash>,
@@ -61,6 +62,7 @@ where
 	P: TransactionPool + Sync + Send + 'static,
 {
 	use beefy_gadget_rpc::{Beefy, BeefyApiServer};
+	use beefy_light_client_rpc::{BeefyLightClientAPIServer, BeefyLightClientClient};
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
 
@@ -68,7 +70,7 @@ where
 	let FullDeps { client, pool, deny_unsafe, beefy } = deps;
 
 	module.merge(System::new(client.clone(), pool, deny_unsafe).into_rpc())?;
-	module.merge(TransactionPayment::new(client).into_rpc())?;
+	module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 	module.merge(
 		Beefy::<Block>::new(
 			beefy.beefy_finality_proof_stream,
@@ -77,5 +79,6 @@ where
 		)?
 		.into_rpc(),
 	)?;
+	module.merge(BeefyLightClientClient::new(client).into_rpc())?;
 	Ok(module)
 }

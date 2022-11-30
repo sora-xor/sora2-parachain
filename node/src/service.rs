@@ -225,6 +225,7 @@ where
 		+ beefy_primitives::BeefyApi<Block>
 		+ sp_mmr_primitives::MmrApi<Block, Hash>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
+		+ beefy_light_client_runtime_api::BeefyLightClientAPI<Block, beefy_light_client::BitField>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
 	Executor: sc_executor::NativeExecutionDispatch + 'static,

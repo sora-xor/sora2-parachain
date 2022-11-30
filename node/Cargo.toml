@@ -28,6 +28,11 @@ serde = { version = "1.0.119", features = ["derive"] }
 hex-literal = "0.3.1"
 jsonrpsee = { version = "0.15.1", features = ["server"] }
 
+# Sora common 
+beefy-light-client= { git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy_light_client_pallet" }
+beefy-light-client-rpc= { git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy_light_client_pallet" }
+beefy-light-client-runtime-api= { git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy_light_client_pallet" }
+
 # Local
 parachain-template-runtime = { path = "../runtime" }
 
