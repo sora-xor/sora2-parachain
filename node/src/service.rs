@@ -3,6 +3,9 @@
 // std
 use std::{sync::Arc, time::Duration};
 
+// runtime
+use parachain_template_runtime::BlockNumber;
+
 // rpc
 use jsonrpsee::RpcModule;
 
@@ -223,7 +226,7 @@ where
 		+ sp_block_builder::BlockBuilder<Block>
 		+ cumulus_primitives_core::CollectCollationInfo<Block>
 		+ beefy_primitives::BeefyApi<Block>
-		+ sp_mmr_primitives::MmrApi<Block, Hash>
+		+ sp_mmr_primitives::MmrApi<Block, Hash, BlockNumber>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
@@ -246,7 +249,12 @@ where
 			sc_service::Error,
 		> + 'static,
 	BIC: FnOnce(
-		beefy_gadget::import::BeefyBlockImport<Block, sc_service::TFullBackend<Block>, TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>, Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>>,
+		beefy_gadget::import::BeefyBlockImport<
+			Block,
+			sc_service::TFullBackend<Block>,
+			TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+			Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+		>,
 		Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 		Option<&Registry>,
 		Option<TelemetryHandle>,
@@ -268,19 +276,20 @@ where
 	let params = new_partial::<RuntimeApi, Executor, BIQ>(&parachain_config, build_import_queue)?;
 	let (mut telemetry, telemetry_worker_handle) = params.other;
 
-
-	let beefy_protocol_name = beefy_gadget::protocol_standard_name(
-		&params.client
-			.block_hash(0)
-			.ok()
-			.flatten()
-			.expect("Genesis block exists; qed"),
-		&parachain_config.chain_spec,
+	let gossip_protocol_name = beefy_gadget::gossip_protocol_name(
+		&params.client.block_hash(0).ok().flatten().expect("Genesis block exists; qed"),
+		None, // todo change to fork id
 	);
 
-	parachain_config.network
+	let justifications_protocol_name = beefy_gadget::justifs_protocol_name(
+		&params.client.block_hash(0).ok().flatten().expect("Genesis block exists; qed"),
+		None, // todo change to fork id
+	);
+
+	parachain_config
+		.network
 		.extra_sets
-		.push(beefy_gadget::beefy_peers_set_config(beefy_protocol_name.clone()));
+		.push(beefy_gadget::communication::beefy_peers_set_config(gossip_protocol_name.clone()));
 
 	let client = params.client.clone();
 	let backend = params.backend.clone();
@@ -307,7 +316,7 @@ where
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let transaction_pool = params.transaction_pool.clone();
 	let import_queue = cumulus_client_service::SharedImportQueue::new(params.import_queue);
-	let (network, system_rpc_tx, start_network) =
+	let (network, system_rpc_tx, tx_handler_controller, start_network) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &parachain_config,
 			client: client.clone(),
@@ -320,12 +329,8 @@ where
 			warp_sync: None,
 		})?;
 
-		let (beefy_block_import, beefy_voter_links, beefy_rpc_links) =
-		beefy_gadget::beefy_block_import_and_links(
-			client.clone(),
-			backend.clone(),
-			client.clone(),
-		);
+	let (beefy_block_import, beefy_voter_links, beefy_rpc_links) =
+		beefy_gadget::beefy_block_import_and_links(client.clone(), backend.clone(), client.clone());
 
 	let rpc_builder = {
 		let client = client.clone();
@@ -348,15 +353,20 @@ where
 	};
 
 	let beefy_params = beefy_gadget::BeefyParams {
-		protocol_name: beefy_protocol_name,
 		client: client.clone(),
 		runtime: client.clone(),
 		backend: backend.clone(),
+		payload_provider: None, // todo payload provider
 		key_store: Some(params.keystore_container.sync_keystore()),
-		network: network.clone(),
+		network_params: beefy_gadget::BeefyNetworkParams {
+			network: network.clone(),
+			gossip_protocol_name,
+			justifications_protocol_name,
+		},
 		links: beefy_voter_links,
 		min_block_delta: 8,
 		prometheus_registry: prometheus_registry.clone(),
+		on_demand_justifications_handler: None, // todo BeefyJustifsRequestHandler
 	};
 
 	sc_service::spawn_tasks(sc_service::SpawnTasksParams {
@@ -370,6 +380,7 @@ where
 		network: network.clone(),
 		system_rpc_tx,
 		telemetry: telemetry.as_mut(),
+		tx_handler_controller: &tx_handler_controller,
 	})?;
 
 	if let Some(hwbench) = hwbench {
@@ -406,11 +417,13 @@ where
 			force_authoring,
 		)?;
 
-		let gadget = beefy_gadget::start_beefy_gadget::<_, _, _, _, _>(beefy_params);
+		let gadget = beefy_gadget::start_beefy_gadget::<_, _, _, _, _, _>(beefy_params);
 
-        task_manager
-            .spawn_essential_handle()
-            .spawn_blocking("beefy-gadget", Some("beefy-gadget"), gadget);
+		task_manager.spawn_essential_handle().spawn_blocking(
+			"beefy-gadget",
+			Some("beefy-gadget"),
+			gadget,
+		);
 
 		let spawner = task_manager.spawn_handle();
 
