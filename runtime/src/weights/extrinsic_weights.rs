@@ -16,12 +16,14 @@
 // limitations under the License.
 
 pub mod constants {
-	use frame_support::{parameter_types, weights::constants};
-	use xcm::latest::Weight as XcmWeight;
+	use frame_support::{
+		parameter_types,
+		weights::{constants, Weight},
+	};
 
 	parameter_types! {
 		/// Executing a NO-OP `System::remarks` Extrinsic.
-		pub const ExtrinsicBaseWeight: XcmWeight = 125_000 * constants::WEIGHT_PER_NANOS.ref_time();
+		pub const ExtrinsicBaseWeight: Weight = constants::WEIGHT_PER_NANOS.saturating_mul(125_000);
 	}
 
 	#[cfg(test)]
@@ -33,12 +35,15 @@ pub mod constants {
 		// you can delete it.
 		#[test]
 		fn sane() {
-			let w = super::constants::ExtrinsicBaseWeight::get();
+			let w = super::constants::ExtrinsicBaseWeight::get().ref_time();
 
 			// At least 10 µs.
-			assert!(w >= 10 * constants::WEIGHT_PER_MICROS, "Weight should be at least 10 µs.");
+			assert!(
+				w >= 10 * constants::WEIGHT_PER_MICROS.ref_time(),
+				"Weight should be at least 10 µs."
+			);
 			// At most 1 ms.
-			assert!(w <= constants::WEIGHT_PER_MILLIS, "Weight should be at most 1 ms.");
+			assert!(w <= constants::WEIGHT_PER_MILLIS.ref_time(), "Weight should be at most 1 ms.");
 		}
 	}
 }
