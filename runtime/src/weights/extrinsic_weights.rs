@@ -16,14 +16,12 @@
 // limitations under the License.
 
 pub mod constants {
-	use frame_support::{
-		parameter_types,
-		weights::{constants, Weight},
-	};
+	use frame_support::{parameter_types, weights::constants};
+	use xcm::latest::Weight as XcmWeight;
 
 	parameter_types! {
 		/// Executing a NO-OP `System::remarks` Extrinsic.
-		pub const ExtrinsicBaseWeight: Weight = 125_000 * constants::WEIGHT_PER_NANOS;
+		pub const ExtrinsicBaseWeight: XcmWeight = 125_000 * constants::WEIGHT_PER_NANOS.ref_time();
 	}
 
 	#[cfg(test)]

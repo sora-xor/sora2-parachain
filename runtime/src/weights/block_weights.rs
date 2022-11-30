@@ -16,14 +16,12 @@
 // limitations under the License.
 
 pub mod constants {
-	use frame_support::{
-		parameter_types,
-		weights::{constants, Weight},
-	};
+	use frame_support::{parameter_types, weights::constants};
+	use xcm::latest::Weight as XcmWeight;
 
 	parameter_types! {
 		/// Importing a block with 0 Extrinsics.
-		pub const BlockExecutionWeight: Weight = 5_000_000 * constants::WEIGHT_PER_NANOS;
+		pub const BlockExecutionWeight: XcmWeight = 5_000_000 * constants::WEIGHT_PER_NANOS.ref_time();
 	}
 
 	#[cfg(test)]
