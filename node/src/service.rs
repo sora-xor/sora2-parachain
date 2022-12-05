@@ -25,10 +25,9 @@ use cumulus_client_service::{
 use cumulus_primitives_core::ParaId;
 use cumulus_relay_chain_inprocess_interface::build_inprocess_relay_chain;
 use cumulus_relay_chain_interface::{RelayChainError, RelayChainInterface, RelayChainResult};
-use cumulus_relay_chain_rpc_interface::{create_client_and_start_worker, RelayChainRpcInterface};
 
 // Substrate Imports
-use sc_client_api::{BlockBackend, ExecutorProvider};
+use sc_client_api::BlockBackend;
 use sc_executor::NativeElseWasmExecutor;
 use sc_network::NetworkService;
 use sc_network_common::service::NetworkBlock;
@@ -181,8 +180,12 @@ async fn build_relay_chain_interface(
 ) -> RelayChainResult<(Arc<(dyn RelayChainInterface + 'static)>, Option<CollatorPair>)> {
 	match collator_options.relay_chain_rpc_url {
 		Some(relay_chain_url) => {
-			let client = create_client_and_start_worker(relay_chain_url, task_manager).await?;
-			Ok((Arc::new(RelayChainRpcInterface::new(client)) as Arc<_>, None))
+			cumulus_relay_chain_minimal_node::build_minimal_relay_chain_node(
+				polkadot_config,
+				task_manager,
+				relay_chain_url,
+			)
+			.await
 		},
 		None => build_inprocess_relay_chain(
 			polkadot_config,
@@ -276,13 +279,11 @@ where
 	let params = new_partial::<RuntimeApi, Executor, BIQ>(&parachain_config, build_import_queue)?;
 	let (mut telemetry, telemetry_worker_handle) = params.other;
 
-	let gossip_protocol_name = beefy_gadget::gossip_protocol_name(
-		&params.client.block_hash(0).ok().flatten().expect("Genesis block exists; qed"),
-		None, // todo change to fork id
-	);
+	let genesis_hash =
+		params.client.block_hash(0).ok().flatten().expect("Genesis block exists; qed");
 
-	let justifications_protocol_name = beefy_gadget::justifs_protocol_name(
-		&params.client.block_hash(0).ok().flatten().expect("Genesis block exists; qed"),
+	let gossip_protocol_name = beefy_gadget::gossip_protocol_name(
+		&genesis_hash,
 		None, // todo change to fork id
 	);
 
@@ -294,6 +295,16 @@ where
 	let client = params.client.clone();
 	let backend = params.backend.clone();
 	let mut task_manager = params.task_manager;
+
+	let (beefy_on_demand_justifications_handler, beefy_req_resp_cfg) =
+		beefy_gadget::communication::request_response::BeefyJustifsRequestHandler::new(
+			&genesis_hash,
+			parachain_config.chain_spec.fork_id(),
+			client.clone(),
+		);
+	parachain_config.network.request_response_protocols.push(beefy_req_resp_cfg);
+
+	let justifications_protocol_name = beefy_on_demand_justifications_handler.protocol_name();
 
 	let (relay_chain_interface, collator_key) = build_relay_chain_interface(
 		polkadot_config,
@@ -352,21 +363,24 @@ where
 		})
 	};
 
+	let payload_provider = beefy_primitives::mmr::MmrRootProvider::new(client.clone());
+
 	let beefy_params = beefy_gadget::BeefyParams {
 		client: client.clone(),
 		runtime: client.clone(),
 		backend: backend.clone(),
-		payload_provider: None, // todo payload provider
+		payload_provider,
 		key_store: Some(params.keystore_container.sync_keystore()),
 		network_params: beefy_gadget::BeefyNetworkParams {
 			network: network.clone(),
 			gossip_protocol_name,
 			justifications_protocol_name,
+			_phantom: core::marker::PhantomData::<Block>,
 		},
 		links: beefy_voter_links,
 		min_block_delta: 8,
 		prometheus_registry: prometheus_registry.clone(),
-		on_demand_justifications_handler: None, // todo BeefyJustifsRequestHandler
+		on_demand_justifications_handler: beefy_on_demand_justifications_handler, // todo BeefyJustifsRequestHandler
 	};
 
 	sc_service::spawn_tasks(sc_service::SpawnTasksParams {
@@ -380,7 +394,7 @@ where
 		network: network.clone(),
 		system_rpc_tx,
 		telemetry: telemetry.as_mut(),
-		tx_handler_controller: &tx_handler_controller,
+		tx_handler_controller,
 	})?;
 
 	if let Some(hwbench) = hwbench {
@@ -451,7 +465,6 @@ where
 			relay_chain_interface,
 			relay_chain_slot_duration,
 			import_queue,
-			collator_options,
 		};
 
 		start_full_node(params)?;
@@ -485,7 +498,6 @@ pub fn parachain_build_import_queue(
 		_,
 		_,
 		_,
-		_,
 	>(cumulus_client_consensus_aura::ImportQueueParams {
 		block_import: client.clone(),
 		client: client.clone(),
@@ -498,10 +510,9 @@ pub fn parachain_build_import_queue(
 					slot_duration,
 				);
 
-			Ok((time, slot))
+			Ok((slot, time))
 		},
 		registry: config.prometheus_registry(),
-		can_author_with: sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone()),
 		spawner: &task_manager.spawn_essential_handle(),
 		telemetry,
 	})
@@ -572,7 +583,7 @@ pub async fn start_parachain_node(
 									"Failed to create parachain inherent",
 								)
 							})?;
-							Ok((time, slot, parachain_inherent))
+							Ok((slot, time, parachain_inherent))
 						}
 					},
 					block_import,
