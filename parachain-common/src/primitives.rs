@@ -31,4 +31,4 @@
 use frame_support::weights::Weight;
 
 pub type AssetId = [u8; 32];
-pub const EXTRINSIC_FIXED_WEIGHT: Weight = 100_000_000;
+pub const EXTRINSIC_FIXED_WEIGHT: Weight = Weight::from_ref_time(100_000_000);

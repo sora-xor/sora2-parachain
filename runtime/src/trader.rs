@@ -28,13 +28,12 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use frame_support::weights::Weight;
 use sp_std::prelude::*;
-use xcm::latest::prelude::*;
+use xcm::{latest::Weight as XcmWeight, prelude::*};
 use xcm_executor::{traits::WeightTrader, Assets};
 
 pub struct ParachainTrader {
-	pub weight: Weight,
+	pub weight: XcmWeight,
 	multi_location: Option<MultiLocation>,
 }
 
@@ -44,7 +43,7 @@ impl WeightTrader for ParachainTrader {
 		Self { weight: 0, multi_location: None }
 	}
 
-	fn buy_weight(&mut self, weight: Weight, payment: Assets) -> Result<Assets, XcmError> {
+	fn buy_weight(&mut self, weight: XcmWeight, payment: Assets) -> Result<Assets, XcmError> {
 		log::trace!(target: "xcm::weight", "buy_weight weight: {:?}, payment: {:?}", weight, payment);
 		let asset_id = payment
 			.fungible
@@ -63,20 +62,19 @@ impl WeightTrader for ParachainTrader {
 		Ok(unused)
 	}
 
-	fn refund_weight(&mut self, weight: Weight) -> Option<MultiAsset> {
+	fn refund_weight(&mut self, weight: XcmWeight) -> Option<MultiAsset> {
 		log::trace!(
 			target: "xcm::weight", "refund_weight weight: {:?} ",
 			weight
 		);
 		match &self.multi_location {
 			None => None,
-			Some(ml) => {
+			Some(ml) =>
 				if weight == 0 {
 					None
 				} else {
 					Some((ml.clone(), weight as u128).into())
-				}
-			},
+				},
 		}
 	}
 }

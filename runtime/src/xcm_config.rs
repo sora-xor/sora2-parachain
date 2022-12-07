@@ -29,11 +29,12 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use super::{
-	AccountId, RuntimeCall, RuntimeEvent, RuntimeOrigin, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, XcmpQueue,
+	AccountId, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent,
+	RuntimeOrigin, XcmpQueue,
 };
 use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get;
 use core::marker::PhantomData;
-use frame_support::{log, match_types, parameter_types, traits::Everything, weights::Weight};
+use frame_support::{log, match_types, parameter_types, traits::Everything};
 use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
 use orml_xcm_support::{IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset};
 use pallet_xcm::XcmPassthrough;
@@ -153,19 +154,19 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 				InitiateReserveWithdraw {
 					reserve: MultiLocation { parents: 1, interior: Here },
 					..
-				} | DepositReserveAsset { dest: MultiLocation { parents: 1, interior: Here }, .. }
-					| TransferReserveAsset {
+				} | DepositReserveAsset { dest: MultiLocation { parents: 1, interior: Here }, .. } |
+					TransferReserveAsset {
 						dest: MultiLocation { parents: 1, interior: Here },
 						..
 					}
 			)
 		}) {
-			return Err(()); // Deny
+			return Err(()) // Deny
 		}
 
 		// allow reserve transfers to arrive from relay chain
-		if matches!(origin, MultiLocation { parents: 1, interior: Here })
-			&& message.0.iter().any(|inst| matches!(inst, ReserveAssetDeposited { .. }))
+		if matches!(origin, MultiLocation { parents: 1, interior: Here }) &&
+			message.0.iter().any(|inst| matches!(inst, ReserveAssetDeposited { .. }))
 		{
 			log::warn!(
 				target: "xcm::barriers",
@@ -251,7 +252,7 @@ parameter_types! {
 }
 
 parameter_types! {
-	pub const BaseXcmWeight: Weight = 100_000_000; // TODO: recheck this
+	pub const BaseXcmWeight: XcmWeight = 100_000_000; // TODO: recheck this
 	pub const MaxAssetsForTransfer: usize = 2;
 }
 
@@ -273,14 +274,14 @@ impl sp_runtime::traits::Convert<AccountId, MultiLocation> for AccountIdToMultiL
 }
 
 impl orml_xtokens::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Balance = crate::Balance;
 	type CurrencyId = AssetId;
 	type CurrencyIdConvert = crate::XCMApp;
 	type AccountIdToMultiLocation = AccountIdToMultiLocation;
 	type SelfLocation = SelfLocation;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
+	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type BaseXcmWeight = BaseXcmWeight;
 	type LocationInverter = LocationInverter<Ancestry>;
 	type MaxAssetsForTransfer = MaxAssetsForTransfer;

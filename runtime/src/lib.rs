@@ -36,6 +36,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 mod migrations;
+mod trader;
 mod weights;
 pub mod xcm_config;
 
@@ -48,6 +49,7 @@ use frame_support::{
 	dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
 	traits::{Contains, Currency, ExistenceRequirement},
 };
+use orml_traits::MultiCurrency;
 use scale_info::TypeInfo;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -60,7 +62,6 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, DispatchError, DispatchResult, MultiSignature, RuntimeDebug,
 };
-use traits::MultiCurrency;
 
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -551,7 +552,7 @@ orml_traits::parameter_type_with_key! {
 }
 
 impl xcm_app::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = xcm_app::weights::WeightInfo<Runtime>;
 	type Balance = Balance;
 	type OutboundChannel = SubstrateBridgeOutboundChannel;
@@ -559,7 +560,7 @@ impl xcm_app::Config for Runtime {
 }
 
 // impl transactor::Config for Runtime {
-// 	type Event = Event;
+// 	type RuntimeEvent = RuntimeEvent;
 // 	type Balance = Balance;
 // 	type CurrencyId = parachain_common::primitives::AssetId;
 // 	type OutboundChannel = SubstrateBridgeOutboundChannel;
@@ -567,7 +568,7 @@ impl xcm_app::Config for Runtime {
 // }
 
 impl beefy_light_client::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Randomness = RandomnessCollectiveFlip;
 }
 

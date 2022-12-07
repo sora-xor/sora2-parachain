@@ -102,7 +102,6 @@ orml-xcm-support = {git = "https://github.com/open-web3-stack/open-runtime-modul
 substrate-bridge-channel = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }
 dispatch = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }
 bridge-types = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }
-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", branch = "polkadot-v0.9.31", package = "orml-traits", default-features = false }
 
 [features]
 default = ["std"]
@@ -163,7 +162,6 @@ std = [
 	"xcm-builder/std",
 	"xcm-executor/std",
 	"xcm/std",
-	"traits/std",
 	"substrate-bridge-channel/std",
 	"dispatch/std",
 ]

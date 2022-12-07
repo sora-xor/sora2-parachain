@@ -38,30 +38,30 @@ impl<T: frame_system::Config> crate::WeightInfo for WeightInfo<T> {
 	// Storage: Converter AssetIdToMultilocation (r:1 w:1)
 	// Storage: Converter MultilocationToAssetId (r:0 w:1)
 	fn register_mapping() -> Weight {
-		(25_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(1 as Weight))
-			.saturating_add(T::DbWeight::get().writes(2 as Weight))
+		Weight::from_ref_time(25_000_000)
+			.saturating_add(T::DbWeight::get().reads(1))
+			.saturating_add(T::DbWeight::get().writes(2))
 	}
 	// Storage: Converter AssetIdToMultilocation (r:1 w:1)
 	// Storage: Converter MultilocationToAssetId (r:1 w:2)
 	fn change_asset_mapping() -> Weight {
-		(22_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(2 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+		Weight::from_ref_time(22_000_000)
+			.saturating_add(T::DbWeight::get().reads(2))
+			.saturating_add(T::DbWeight::get().writes(3))
 	}
 	// Storage: Converter MultilocationToAssetId (r:1 w:1)
 	// Storage: Converter AssetIdToMultilocation (r:1 w:2)
 	fn change_multilocation_mapping() -> Weight {
-		(21_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(2 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+		Weight::from_ref_time(21_000_000)
+			.saturating_add(T::DbWeight::get().reads(2))
+			.saturating_add(T::DbWeight::get().writes(3))
 	}
 	// Storage: Converter AssetIdToMultilocation (r:1 w:1)
 	// Storage: Converter MultilocationToAssetId (r:0 w:1)
 	fn delete_mapping() -> Weight {
-		(17_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(1 as Weight))
-			.saturating_add(T::DbWeight::get().writes(2 as Weight))
+		Weight::from_ref_time(17_000_000)
+			.saturating_add(T::DbWeight::get().reads(1))
+			.saturating_add(T::DbWeight::get().writes(2))
 	}
 }
 

@@ -9,6 +9,7 @@ use std::sync::Arc;
 
 use parachain_template_runtime::{opaque::Block, AccountId, Balance, BlockNumber, Index as Nonce};
 
+use beefy_light_client_rpc::{BeefyLightClientAPIServer, BeefyLightClientClient};
 use sc_client_api::AuxStore;
 pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 use sc_transaction_pool_api::TransactionPool;
