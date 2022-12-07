@@ -10,7 +10,7 @@ ARG POLKADOT_COMMIT
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
         curl ca-certificates \
-        build-essential git clang libclang-dev pkg-config libssl-dev && \
+        build-essential git clang libclang-dev pkg-config libssl-dev protobuf-compiler && \
     rm -rf /var/lib/apt/lists/*
 # Install rust
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path --default-toolchain ${RUST_VERSION} && \

@@ -33,8 +33,7 @@ use sp_core::ecdsa;
 use sp_runtime::impl_opaque_keys;
 use sp_std::vec::Vec;
 
-use crate::RuntimeBlockWeights;
-use crate::{AccountId, Aura, BeefyId, Session};
+use crate::{AccountId, Aura, BeefyId, RuntimeBlockWeights, Session};
 
 pub type Migrations = SessionKeysMigration;
 

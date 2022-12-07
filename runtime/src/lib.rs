@@ -36,38 +36,31 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 mod migrations;
-mod trader;
 mod weights;
 pub mod xcm_config;
 
-use bridge_types::substrate::SubstrateBridgeMessage;
-use bridge_types::traits::Verifier;
-use bridge_types::types::ParachainMessage;
-use bridge_types::SubNetworkId;
-use bridge_types::CHANNEL_INDEXING_PREFIX;
-use bridge_types::U256;
+use bridge_types::{
+	substrate::SubstrateBridgeMessage, traits::Verifier, types::ParachainMessage, SubNetworkId,
+	CHANNEL_INDEXING_PREFIX, U256,
+};
 use codec::{Decode, Encode};
-use frame_support::dispatch::Dispatchable;
-use frame_support::traits::Contains;
-use frame_support::traits::Currency;
-use frame_support::traits::ExistenceRequirement;
-use frame_support::weights::{DispatchInfo, PostDispatchInfo};
-use orml_traits::MultiCurrency;
+use frame_support::{
+	dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
+	traits::{Contains, Currency, ExistenceRequirement},
+};
 use scale_info::TypeInfo;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
-use sp_core::H256;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
-use sp_runtime::traits::Convert;
-use sp_runtime::DispatchError;
-use sp_runtime::DispatchResult;
-use sp_runtime::RuntimeDebug;
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H256};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Keccak256, Verify},
+	traits::{
+		AccountIdLookup, BlakeTwo256, Block as BlockT, Convert, IdentifyAccount, Keccak256, Verify,
+	},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, MultiSignature,
+	ApplyExtrinsicResult, DispatchError, DispatchResult, MultiSignature, RuntimeDebug,
 };
+use traits::MultiCurrency;
 
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -81,7 +74,7 @@ use frame_support::{
 	traits::Everything,
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
-		ConstantMultiplier, DispatchClass, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
+		ConstantMultiplier, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
 		WeightToFeePolynomial,
 	},
 	PalletId,
@@ -153,10 +146,11 @@ pub type SignedExtra = (
 );
 
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
+pub type UncheckedExtrinsic =
+	generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 
 /// Extrinsic type that has already been checked.
-pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Call, SignedExtra>;
+pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra>;
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
@@ -185,7 +179,7 @@ impl WeightToFeePolynomial for WeightToFee {
 		// in Rococo, extrinsic base weight (smallest non-zero weight) is mapped to 1 MILLIUNIT:
 		// in our template, we map to 1/10 of that, or 1/10 MILLIUNIT
 		let p = MILLIUNIT / 10;
-		let q = 100 * Balance::from(ExtrinsicBaseWeight::get());
+		let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
 		smallvec![WeightToFeeCoefficient {
 			degree: 1,
 			negative: false,
@@ -265,7 +259,7 @@ const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(5);
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 /// We allow for 0.5 of a second of compute with a 12 second average block time.
-const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND / 2;
+const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND.saturating_div(2).set_proof_size(2);
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -309,7 +303,7 @@ impl frame_system::Config for Runtime {
 	/// The identifier used to distinguish between accounts.
 	type AccountId = AccountId;
 	/// The aggregated dispatch type that is available for extrinsics.
-	type Call = Call;
+	type RuntimeCall = RuntimeCall;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.
 	type Lookup = AccountIdLookup<AccountId, ()>;
 	/// The index type for storing how many extrinsics an account has signed.
@@ -323,9 +317,9 @@ impl frame_system::Config for Runtime {
 	/// The header type.
 	type Header = generic::Header<BlockNumber, BlakeTwo256>;
 	/// The ubiquitous event type.
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	/// The ubiquitous origin type.
-	type Origin = Origin;
+	type RuntimeOrigin = RuntimeOrigin;
 	/// Maximum number of block number to block hash mappings to keep (oldest pruned first).
 	type BlockHashCount = BlockHashCount;
 	/// Runtime version.
@@ -389,7 +383,7 @@ impl pallet_balances::Config for Runtime {
 	/// The type for recording an account's balance.
 	type Balance = Balance;
 	/// The ubiquitous event type.
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
@@ -405,7 +399,7 @@ parameter_types! {
 }
 
 impl pallet_transaction_payment::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, ()>;
 	type WeightToFee = WeightToFee;
 	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
@@ -414,12 +408,12 @@ impl pallet_transaction_payment::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
-	pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
+	pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
+	pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
 }
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type OnSystemEvent = ();
 	type SelfParaId = parachain_info::Pallet<Runtime>;
 	type DmpMessageHandler = DmpQueue;
@@ -473,14 +467,14 @@ impl pallet_beefy_mmr::Config for Runtime {
 }
 
 impl pallet_sudo::Config for Runtime {
-	type Event = Event;
-	type Call = Call;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
 }
 
 impl cumulus_pallet_aura_ext::Config for Runtime {}
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type ChannelInfo = ParachainSystem;
 	type VersionWrapper = ();
@@ -491,7 +485,7 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 }
 
 impl cumulus_pallet_dmp_queue::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
 }
@@ -503,7 +497,7 @@ parameter_types! {
 }
 
 impl pallet_session::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type ValidatorId = <Self as frame_system::Config>::AccountId;
 	// we don't have stash and controller, thus we don't need the convert as well.
 	type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
@@ -535,7 +529,7 @@ parameter_types! {
 pub type CollatorSelectionUpdateOrigin = EnsureRoot<AccountId>;
 
 impl pallet_collator_selection::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type UpdateOrigin = CollatorSelectionUpdateOrigin;
 	type PotId = PotId;
@@ -587,11 +581,11 @@ parameter_types! {
 }
 
 impl dispatch::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type NetworkId = SubNetworkId;
 	type Additional = ();
 	type OriginOutput = bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>;
-	type Origin = Origin;
+	type Origin = RuntimeOrigin;
 	type MessageId = bridge_types::types::MessageId;
 	type Hashing = Keccak256;
 	type Call = DispatchableSubstrateBridgeCall;
@@ -615,12 +609,15 @@ impl Verifier<SubNetworkId, ParachainMessage<Balance>> for MockVerifier {
 pub struct DispatchableSubstrateBridgeCall(SubstrateBridgeMessage<AccountId, H256, Balance>);
 
 impl Dispatchable for DispatchableSubstrateBridgeCall {
-	type Origin = crate::Origin;
+	type RuntimeOrigin = crate::RuntimeOrigin;
 	type Config = crate::Runtime;
 	type Info = DispatchInfo;
 	type PostInfo = PostDispatchInfo;
 
-	fn dispatch(self, _origin: Self::Origin) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {
+	fn dispatch(
+		self,
+		_origin: Self::RuntimeOrigin,
+	) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {
 		match self.0 {
 			bridge_types::substrate::SubstrateBridgeMessage::SubstrateApp(_msg) => {
 				unimplemented!()
@@ -655,7 +652,7 @@ parameter_types! {
 }
 
 impl substrate_bridge_channel::inbound::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Verifier = MockVerifier;
 	type MessageDispatch = SubstrateDispatch;
 	type WeightInfo = ();
@@ -740,7 +737,7 @@ impl MultiCurrency<AccountId> for MultiCurrencyImpl {
 
 impl substrate_bridge_channel::outbound::Config for Runtime {
 	const INDEXING_PREFIX: &'static [u8] = CHANNEL_INDEXING_PREFIX;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Hashing = Keccak256;
 	type FeeCurrency = ();
 	type FeeAccountId = GetTrustlessBridgeFeesAccountId;
@@ -904,11 +901,11 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl sp_mmr_primitives::MmrApi<Block, Hash> for Runtime {
-		fn generate_proof(leaf_index: u64)
+	impl sp_mmr_primitives::MmrApi<Block, Hash, BlockNumber> for Runtime {
+		fn generate_proof(block_number: BlockNumber)
 			-> Result<(sp_mmr_primitives::EncodableOpaqueLeaf, sp_mmr_primitives::Proof<Hash>), sp_mmr_primitives::Error>
 		{
-			Mmr::generate_batch_proof(vec![leaf_index])
+			Mmr::generate_batch_proof(vec![block_number])
 				.and_then(|(leaves, proof)| Ok((
 					sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaves[0]),
 					sp_mmr_primitives::BatchProof::into_single_leaf_proof(proof)?
@@ -939,10 +936,17 @@ impl_runtime_apis! {
 			Ok(Mmr::mmr_root())
 		}
 
-		fn generate_batch_proof(leaf_indices: Vec<sp_mmr_primitives::LeafIndex>)
+		fn generate_batch_proof(block_numbers: Vec<BlockNumber>)
 			-> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::BatchProof<Hash>), sp_mmr_primitives::Error>
 		{
-			Mmr::generate_batch_proof(leaf_indices)
+			Mmr::generate_batch_proof(block_numbers)
+				.map(|(leaves, proof)| (leaves.into_iter().map(|leaf| sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaf)).collect(), proof))
+		}
+
+		fn generate_historical_batch_proof(block_numbers: Vec<BlockNumber>, best_known_block_number: BlockNumber)
+			-> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::BatchProof<Hash>), sp_mmr_primitives::Error>
+		{
+			Mmr::generate_historical_batch_proof(block_numbers, best_known_block_number)
 				.map(|(leaves, proof)| (leaves.into_iter().map(|leaf| sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaf)).collect(), proof))
 		}
 
