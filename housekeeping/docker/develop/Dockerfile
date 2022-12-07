@@ -11,6 +11,7 @@ RUN apt-get update && \
         libssl-dev pkg-config \
         build-essential \
         curl \
+        protobuf-compiler \
         git \
         software-properties-common \
         llvm clang make cmake && \
