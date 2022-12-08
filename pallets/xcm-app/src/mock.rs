@@ -95,6 +95,7 @@ impl xcm_app::Config for Test {
 	type Balance = Balance;
 	type OutboundChannel = TestOutboundChannel;
 	type AccountIdToMultiLocation = TestAccountIdToMultiLocation;
+	type MultiLocationToAccountId = TestMultiLocationToAccountId;
 }
 
 // Build genesis storage according to the mock runtime.
@@ -114,7 +115,8 @@ impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
 		_payload: &[u8],
 		_additional: (),
 	) -> Result<H256, sp_runtime::DispatchError> {
-		todo!()
+		let arr: [u8; 32] = vec![0; 32].try_into().unwrap();
+		Ok(arr.into())
 	}
 }
 
@@ -128,4 +130,9 @@ impl sp_runtime::traits::Convert<AccountId, MultiLocation> for TestAccountIdToMu
 			.expect("Failed to convert account if to xcm multilocaton");
 		X1(AccountId32 { network: xcm::v1::NetworkId::Any, id: arrarr.into() }).into()
 	}
+}
+
+pub struct TestMultiLocationToAccountId;
+impl xcm_executor::traits::Convert<MultiLocation, AccountId> for TestMultiLocationToAccountId {
+
 }

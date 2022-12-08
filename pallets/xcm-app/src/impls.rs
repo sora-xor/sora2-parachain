@@ -30,15 +30,81 @@
 
 use crate::*;
 use frame_support::fail;
+// use xcm_executor::traits::TransactAsset;
+use xcm::latest::{Error as XcmError, MultiAsset, MultiLocation, Result};
+use xcm_executor::{
+	traits::{Convert as MoreConvert, MatchesFungible, TransactAsset},
+	Assets,
+};
+use sp_std::{
+	cmp::{Eq, PartialEq},
+	fmt::Debug,
+	marker::PhantomData,
+	prelude::*,
+	result,
+};
+use sp_runtime::traits::{Convert, CheckedConversion};
+// use xcm::latest::{Error as XcmError, MultiAsset, MultiLocation, Result as XcmResult};
+
 
 // IMPLS
+impl<T: Config> TransactAsset for Pallet<T> {
+	fn transfer_asset(
+		asset: &MultiAsset,
+		from: &MultiLocation,
+		location: &MultiLocation,
+	) -> result::Result<Assets, XcmError> {
+		let asset_convert_opt = <Pallet::<T> as Convert<MultiAsset, Option<AssetId>>>::convert(asset.clone());
+		let mut amount_opt = None;
+		if let Fungible(ref amount) = &asset.fun {
+			if asset_convert_opt.is_some() {
+				// return CheckedConversion::checked_from(*amount);
+				amount_opt = CheckedConversion::checked_from(*amount);
+			}
+		}
+		let account_result = <T as Config>::MultiLocationToAccountId::convert(location.clone());
+		match (asset_convert_opt, amount_opt, account_result) {
+			(Some(currency_id), Some(amount), Ok(who)) => {
+				Pallet::<T>::add_to_channel(who.clone(), currency_id, amount).map_err(|_| XcmError::Unimplemented)?;
+				Ok(asset.clone().into())
+			},
+			_ => Err(XcmError::Unimplemented),
+		}
+
+	}
+
+	/// Deposit the `what` asset into the account of `who`.
+	///
+	/// Implementations should return `XcmError::FailedToTransactAsset` if deposit failed.
+	fn deposit_asset(asset: &MultiAsset, location: &MultiLocation) -> Result {
+		let asset_convert_opt = <Pallet::<T> as Convert<MultiAsset, Option<AssetId>>>::convert(asset.clone());
+		let mut amount_opt = None;
+		if let Fungible(ref amount) = &asset.fun {
+			if asset_convert_opt.is_some() {
+				// return CheckedConversion::checked_from(*amount);
+				amount_opt = CheckedConversion::checked_from(*amount);
+			}
+		}
+		let account_result = <T as Config>::MultiLocationToAccountId::convert(location.clone());
+		match (asset_convert_opt, amount_opt, account_result) {
+			(Some(currency_id), Some(amount), Ok(who)) => {
+				Pallet::<T>::add_to_channel(who.clone(), currency_id, amount).map_err(|_| XcmError::Unimplemented)?;
+				Ok(())
+			},
+			_ => Err(XcmError::Unimplemented),
+		}
+	}
+
+}  
+
+
 impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	type CurrencyId = AssetId;
 	type Balance = T::Balance;
 
 	fn minimum_balance(_currency_id: Self::CurrencyId) -> Self::Balance {
 		log::trace!(
-			target: "xcm::XCMApp",
+			// target: "xcm::XCMApp",
 			"minimum_balance",
 		);
 		Default::default()
@@ -46,7 +112,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 
 	fn total_issuance(_currency_id: Self::CurrencyId) -> Self::Balance {
 		log::trace!(
-			target: "xcm::XCMApp",
+			// target: "xcm::XCMApp",
 			"total_issuance",
 		);
 		Default::default()
@@ -54,7 +120,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 
 	fn total_balance(_currency_id: Self::CurrencyId, _who: &T::AccountId) -> Self::Balance {
 		log::trace!(
-			target: "xcm::XCMApp",
+			// target: "xcm::XCMApp",
 			"total_balance",
 		);
 		Default::default()
@@ -62,8 +128,8 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 
 	fn free_balance(_currency_id: Self::CurrencyId, _who: &T::AccountId) -> Self::Balance {
 		log::trace!(
-			target: "xcm::XCMApp",
-			"free_balance",
+			// target: "xcm::XCMApp",
+			"==================== free_balance",
 		);
 		Default::default()
 	}
@@ -74,10 +140,11 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		_amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
-			target: "xcm::XCMApp",
-			"ensure_can_withdraw",
+			// target: "xcm::XCMApp",
+			"====================== ensure_can_withdraw",
 		);
-		fail!(Error::<T>::MethodNotAvailible)
+		// fail!(Error::<T>::MethodNotAvailible)
+		Ok(())
 	}
 
 	fn transfer(
@@ -87,10 +154,11 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		_amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
-			target: "xcm::XCMApp",
-			"transfer",
+			// target: "============= xcm::XCMApp ======================",
+			"================== transfer",
 		);
-		fail!(Error::<T>::MethodNotAvailible)
+		// Pallet::<T>::add_to_channel(_to.clone(), _currency_id, _amount)?;
+		Ok(())
 	}
 
 	/// THIS
@@ -100,8 +168,8 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
-			target: "xcm::XCMApp",
-			"deposit",
+			// target: "============= xcm::XCMApp ======================",
+			"============================ deposit",
 		);
 		Pallet::<T>::add_to_channel(who.clone(), currency_id, amount)?;
 		Ok(())
@@ -113,10 +181,11 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		_amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
-			target: "xcm::XCMApp",
-			"withdraw",
+			// target: "============= xcm::XCMApp ======================",
+			"============================== . withdraw",
 		);
-		fail!(Error::<T>::MethodNotAvailible)
+		Pallet::<T>::add_to_channel(_who.clone(), _currency_id, _amount)?;
+		Ok(())
 	}
 
 	fn can_slash(

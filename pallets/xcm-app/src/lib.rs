@@ -90,6 +90,8 @@ pub mod pallet {
 		type OutboundChannel: OutboundChannel<SubNetworkId, Self::AccountId, ()>;
 
 		type AccountIdToMultiLocation: Convert<Self::AccountId, MultiLocation>;
+
+		type MultiLocationToAccountId: xcm_executor::traits::Convert<MultiLocation, Self::AccountId>;
 	}
 
 	#[pallet::pallet]

@@ -440,7 +440,7 @@ impl pallet_mmr::Config for Runtime {
 impl pallet_beefy::Config for Runtime {
 	type BeefyId = BeefyId;
 	type MaxAuthorities = MaxAuthorities;
-	type OnNewValidatorSet = BeefyMmr;
+	type OnNewValidatorSet = MmrLeaf;
 }
 
 parameter_types! {
@@ -557,15 +557,8 @@ impl xcm_app::Config for Runtime {
 	type Balance = Balance;
 	type OutboundChannel = SubstrateBridgeOutboundChannel;
 	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
+	type MultiLocationToAccountId = xcm_config::LocationToAccountId;
 }
-
-// impl transactor::Config for Runtime {
-// 	type RuntimeEvent = RuntimeEvent;
-// 	type Balance = Balance;
-// 	type CurrencyId = parachain_common::primitives::AssetId;
-// 	type OutboundChannel = SubstrateBridgeOutboundChannel;
-// 	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
-// }
 
 impl beefy_light_client::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -763,9 +756,12 @@ construct_runtime!(
 		} = 1,
 		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
 		ParachainInfo: parachain_info::{Pallet, Storage, Config} = 3,
-		Mmr: pallet_mmr = 4,
-		Beefy: pallet_beefy = 5,
-		BeefyMmr: pallet_beefy_mmr = 6,
+		// Mmr: pallet_mmr = 4,
+		// Beefy: pallet_beefy = 5,
+		// BeefyMmr: pallet_beefy_mmr = 6,
+		Mmr: pallet_mmr::{Pallet, Storage} = 4,
+        Beefy: pallet_beefy::{Pallet, Config<T>, Storage} = 5,
+        MmrLeaf: pallet_beefy_mmr::{Pallet, Storage} = 6,
 
 		// Monetary stuff.
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
