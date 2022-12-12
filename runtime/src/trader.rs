@@ -69,12 +69,13 @@ impl WeightTrader for ParachainTrader {
 		);
 		match &self.multi_location {
 			None => None,
-			Some(ml) =>
+			Some(ml) => {
 				if weight == 0 {
 					None
 				} else {
 					Some((ml.clone(), weight as u128).into())
-				},
+				}
+			},
 		}
 	}
 }

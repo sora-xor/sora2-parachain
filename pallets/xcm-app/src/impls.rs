@@ -92,7 +92,13 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 			"transfer",
 		);
 		let dest = <T as Config>::AccountIdToMultiLocation::convert(to.clone());
-		<T as Config>::XcmTransfer::transfer(from.clone(), currency_id, amount, dest, xcm::v2::WeightLimit::Unlimited)?;
+		<T as Config>::XcmTransfer::transfer(
+			from.clone(),
+			currency_id,
+			amount,
+			dest,
+			xcm::v2::WeightLimit::Unlimited,
+		)?;
 		Ok(())
 	}
 

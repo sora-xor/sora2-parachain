@@ -33,13 +33,13 @@ use bridge_types::{traits::OutboundChannel, SubNetworkId};
 use frame_support::{parameter_types, traits::Everything, WeakBoundedVec};
 use frame_system as system;
 use orml_traits::XcmTransfer;
+use parachain_common::primitives::AssetId;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 };
 use xcm::latest::prelude::*;
-use parachain_common::primitives::AssetId;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -135,22 +135,22 @@ impl sp_runtime::traits::Convert<AccountId, MultiLocation> for TestAccountIdToMu
 
 pub struct TestXcmTransfer;
 impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
-    fn transfer(
-		who: AccountId,
-		currency_id: AssetId,
-		amount: Balance,
-		dest: MultiLocation,
-		dest_weight_limit: WeightLimit,
+	fn transfer(
+		_who: AccountId,
+		_currency_id: AssetId,
+		_amount: Balance,
+		_dest: MultiLocation,
+		_dest_weight_limit: WeightLimit,
 	) -> frame_support::pallet_prelude::DispatchResult {
-        todo!()
-    }
+		todo!()
+	}
 
-    fn transfer_multi_asset(
-		who: AccountId,
-		asset: MultiAsset,
-		dest: MultiLocation,
-		dest_weight_limit: WeightLimit,
+	fn transfer_multi_asset(
+		_who: AccountId,
+		_asset: MultiAsset,
+		_dest: MultiLocation,
+		_dest_weight_limit: WeightLimit,
 	) -> frame_support::pallet_prelude::DispatchResult {
-        todo!()
-    }
+		todo!()
+	}
 }

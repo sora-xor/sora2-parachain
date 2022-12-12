@@ -43,11 +43,11 @@ pub mod weights;
 pub use pallet::*;
 
 use frame_support::weights::Weight;
+use orml_traits::xcm_transfer::XcmTransfer;
 use orml_traits::MultiCurrency;
 use parachain_common::primitives::AssetId;
 use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
 use xcm::v1::{MultiAsset, MultiLocation};
-use orml_traits::xcm_transfer::XcmTransfer;
 
 pub type ParachainAssetId = xcm::VersionedMultiAsset;
 
