@@ -47,6 +47,7 @@ use orml_traits::MultiCurrency;
 use parachain_common::primitives::AssetId;
 use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
 use xcm::v1::{MultiAsset, MultiLocation};
+use orml_traits::xcm_transfer::XcmTransfer;
 
 pub type ParachainAssetId = xcm::VersionedMultiAsset;
 
@@ -90,6 +91,8 @@ pub mod pallet {
 		type OutboundChannel: OutboundChannel<SubNetworkId, Self::AccountId, ()>;
 
 		type AccountIdToMultiLocation: Convert<Self::AccountId, MultiLocation>;
+
+		type XcmTransfer: XcmTransfer<Self::AccountId, Self::Balance, AssetId>;
 	}
 
 	#[pallet::pallet]

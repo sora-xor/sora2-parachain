@@ -32,12 +32,14 @@ use crate as xcm_app;
 use bridge_types::{traits::OutboundChannel, SubNetworkId};
 use frame_support::{parameter_types, traits::Everything, WeakBoundedVec};
 use frame_system as system;
+use orml_traits::XcmTransfer;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 };
 use xcm::latest::prelude::*;
+use parachain_common::primitives::AssetId;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -95,6 +97,7 @@ impl xcm_app::Config for Test {
 	type Balance = Balance;
 	type OutboundChannel = TestOutboundChannel;
 	type AccountIdToMultiLocation = TestAccountIdToMultiLocation;
+	type XcmTransfer = TestXcmTransfer;
 }
 
 // Build genesis storage according to the mock runtime.
@@ -128,4 +131,26 @@ impl sp_runtime::traits::Convert<AccountId, MultiLocation> for TestAccountIdToMu
 			.expect("Failed to convert account if to xcm multilocaton");
 		X1(AccountId32 { network: xcm::v1::NetworkId::Any, id: arrarr.into() }).into()
 	}
+}
+
+pub struct TestXcmTransfer;
+impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
+    fn transfer(
+		who: AccountId,
+		currency_id: AssetId,
+		amount: Balance,
+		dest: MultiLocation,
+		dest_weight_limit: WeightLimit,
+	) -> frame_support::pallet_prelude::DispatchResult {
+        todo!()
+    }
+
+    fn transfer_multi_asset(
+		who: AccountId,
+		asset: MultiAsset,
+		dest: MultiLocation,
+		dest_weight_limit: WeightLimit,
+	) -> frame_support::pallet_prelude::DispatchResult {
+        todo!()
+    }
 }

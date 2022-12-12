@@ -30,6 +30,7 @@
 
 use crate::*;
 use frame_support::fail;
+use sp_runtime::traits::Convert;
 
 // IMPLS
 impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
@@ -81,16 +82,18 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	}
 
 	fn transfer(
-		_currency_id: Self::CurrencyId,
-		_from: &T::AccountId,
-		_to: &T::AccountId,
-		_amount: Self::Balance,
+		currency_id: Self::CurrencyId,
+		from: &T::AccountId,
+		to: &T::AccountId,
+		amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
 		log::trace!(
 			target: "xcm::XCMApp",
 			"transfer",
 		);
-		fail!(Error::<T>::MethodNotAvailible)
+		let dest = <T as Config>::AccountIdToMultiLocation::convert(to.clone());
+		<T as Config>::XcmTransfer::transfer(from.clone(), currency_id, amount, dest, xcm::v2::WeightLimit::Unlimited)?;
+		Ok(())
 	}
 
 	/// THIS

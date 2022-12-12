@@ -557,6 +557,7 @@ impl xcm_app::Config for Runtime {
 	type Balance = Balance;
 	type OutboundChannel = SubstrateBridgeOutboundChannel;
 	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
+	type XcmTransfer = XTokens;
 }
 
 // impl transactor::Config for Runtime {
@@ -661,7 +662,7 @@ impl substrate_bridge_channel::inbound::Config for Runtime {
 	type FeeAccountId = GetTrustlessBridgeFeesAccountId;
 	type TreasuryAccountId = GetTreasuryAccountId;
 	type FeeConverter = FeeConverter;
-	type Currency = MultiCurrencyImpl;
+	type Currency = XCMApp;
 }
 
 pub struct MultiCurrencyImpl;
