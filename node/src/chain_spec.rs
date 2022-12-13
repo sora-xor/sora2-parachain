@@ -269,6 +269,9 @@ pub fn local_testnet_config() -> ChainSpec {
 					AccountId::from(hex!(
 						"3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"
 					)),
+					get_account_id_from_seed::<sr25519::Public>("Alice"),
+					get_account_id_from_seed::<sr25519::Public>("Bob"),
+					get_account_id_from_seed::<sr25519::Public>("Charlie"),
 				],
 				2011.into(),
 			)
