@@ -488,7 +488,7 @@ dependencies = [
 [[package]]
 name = "beefy-light-client"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet-v0.9.31#ed0d3a7ab301c75a37b2068d8d73da7e8fc67c11"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet-v0.9.31#7f2c26a4dd51d5095197e91502eec220edfd0d80"
 dependencies = [
  "bridge-common",
  "ethabi",
@@ -505,7 +505,7 @@ dependencies = [
 [[package]]
 name = "beefy-light-client-rpc"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet-v0.9.31#ed0d3a7ab301c75a37b2068d8d73da7e8fc67c11"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet-v0.9.31#7f2c26a4dd51d5095197e91502eec220edfd0d80"
 dependencies = [
  "beefy-light-client-runtime-api",
  "jsonrpsee",
@@ -522,7 +522,7 @@ dependencies = [
 [[package]]
 name = "beefy-light-client-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet-v0.9.31#ed0d3a7ab301c75a37b2068d8d73da7e8fc67c11"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet-v0.9.31#7f2c26a4dd51d5095197e91502eec220edfd0d80"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -726,7 +726,7 @@ dependencies = [
 [[package]]
 name = "bridge-common"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet-v0.9.31#ed0d3a7ab301c75a37b2068d8d73da7e8fc67c11"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy_light_client_pallet-v0.9.31#7f2c26a4dd51d5095197e91502eec220edfd0d80"
 dependencies = [
  "bitvec",
  "ethabi",
@@ -743,7 +743,7 @@ dependencies = [
 [[package]]
 name = "bridge-types"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common?branch=generalize-pallets#ab094fe94378c72505e1a4667bf9f97111557f2f"
+source = "git+https://github.com/sora-xor/sora2-common?branch=generalize-pallets#b71d58c9c4e814a6e44600c80ef844379b0a8972"
 dependencies = [
  "beefy-primitives",
  "enum-iterator",
@@ -2059,7 +2059,7 @@ dependencies = [
 [[package]]
 name = "dispatch"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor/sora2-common?branch=generalize-pallets#ab094fe94378c72505e1a4667bf9f97111557f2f"
+source = "git+https://github.com/sora-xor/sora2-common?branch=generalize-pallets#b71d58c9c4e814a6e44600c80ef844379b0a8972"
 dependencies = [
  "bridge-types",
  "frame-benchmarking",
@@ -3299,9 +3299,9 @@ dependencies = [
 
 [[package]]
 name = "hyper-rustls"
-version = "0.23.1"
+version = "0.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59df7c4e19c950e6e0e868dcc0a300b09a9b88e9ec55bd879ca819087a77355d"
+checksum = "1788965e61b367cd03a62950836d5cd41560c3577d90e40e0819373194d1661c"
 dependencies = [
  "http",
  "hyper",
@@ -3494,9 +3494,9 @@ dependencies = [
 
 [[package]]
 name = "ipnet"
-version = "2.5.1"
+version = "2.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f88c5561171189e69df9d98bcf18fd5f9558300f7ea7b801eb8a0fd748bd8745"
+checksum = "11b0d96e660696543b251e58030cf9787df56da39dab19ad60eae7353040917e"
 
 [[package]]
 name = "is-terminal"
@@ -6354,7 +6354,7 @@ checksum = "7d17b78036a60663b797adeaee46f5c9dfebb86948d1255007a1d6be0271ff99"
 dependencies = [
  "instant",
  "lock_api",
- "parking_lot_core 0.8.5",
+ "parking_lot_core 0.8.6",
 ]
 
 [[package]]
@@ -6369,9 +6369,9 @@ dependencies = [
 
 [[package]]
 name = "parking_lot_core"
-version = "0.8.5"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d76e8e1493bcac0d2766c42737f34458f1c8c50c0d23bcb24ea953affb273216"
+checksum = "60a2cfe6f0ad2bfc16aefa463b497d5c7a5ecd44a23efa72aa342d90177356dc"
 dependencies = [
  "cfg-if 1.0.0",
  "instant",
@@ -6396,9 +6396,9 @@ dependencies = [
 
 [[package]]
 name = "paste"
-version = "1.0.9"
+version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1de2e551fb905ac83f73f7aedf2f0cb4a0da7e35efa24a202a936269f1f18e1"
+checksum = "cf1c2c742266c2f1041c914ba65355a83ae8747b05f208319784083583494b4b"
 
 [[package]]
 name = "pbkdf2"
@@ -7678,9 +7678,9 @@ dependencies = [
 
 [[package]]
 name = "polling"
-version = "2.5.1"
+version = "2.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "166ca89eb77fd403230b9c156612965a81e094ec6ec3aa13663d4c8b113fa748"
+checksum = "22122d5ec4f9fe1b3916419b76be1e80bcb93f618d071d2edf841b137b2a2bd6"
 dependencies = [
  "autocfg",
  "cfg-if 1.0.0",
@@ -7882,9 +7882,9 @@ dependencies = [
 
 [[package]]
 name = "prost-build"
-version = "0.11.3"
+version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e330bf1316db56b12c2bcfa399e8edddd4821965ea25ddb2c134b610b1c1c604"
+checksum = "276470f7f281b0ed53d2ae42dd52b4a8d08853a3c70e7fe95882acbb98a6ae94"
 dependencies = [
  "bytes",
  "heck",
@@ -8087,11 +8087,10 @@ checksum = "60a357793950651c4ed0f3f52338f53b2f809f32d83a07f72909fa13e4c6c1e3"
 
 [[package]]
 name = "rayon"
-version = "1.6.0"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e060280438193c554f654141c9ea9417886713b7acd75974c85b18a69a88e0b"
+checksum = "6db3a213adf02b3bcfd2d3846bb41cb22857d131789e01df434fb7e7bc0759b7"
 dependencies = [
- "crossbeam-deque",
  "either",
  "rayon-core",
 ]
@@ -9634,9 +9633,9 @@ dependencies = [
 
 [[package]]
 name = "scale-info"
-version = "2.3.0"
+version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88d8a765117b237ef233705cc2cc4c6a27fccd46eea6ef0c8c6dae5f3ef407f8"
+checksum = "001cf62ece89779fd16105b5f515ad0e5cedcd5440d3dd806bb067978e7c3608"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
@@ -9648,9 +9647,9 @@ dependencies = [
 
 [[package]]
 name = "scale-info-derive"
-version = "2.3.0"
+version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cdcd47b380d8c4541044e341dcd9475f55ba37ddc50c908d945fc036a8642496"
+checksum = "303959cf613a6f6efd19ed4b4ad5bf79966a13352716299ad532cfb115f4205c"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -9806,18 +9805,18 @@ checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 
 [[package]]
 name = "serde"
-version = "1.0.149"
+version = "1.0.150"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "256b9932320c590e707b94576e3cc1f7c9024d0ee6612dfbcf1cb106cbe8e055"
+checksum = "e326c9ec8042f1b5da33252c8a37e9ffbd2c9bef0155215b6e6c80c790e05f91"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.149"
+version = "1.0.150"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4eae9b04cbffdfd550eb462ed33bc6a1b68c935127d008b27444d08380f94e4"
+checksum = "42a3df25b0713732468deadad63ab9da1f1fd75a48a15024b50363f128db627e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -10860,7 +10859,7 @@ dependencies = [
  "cfg_aliases",
  "libc",
  "parking_lot 0.11.2",
- "parking_lot_core 0.8.5",
+ "parking_lot_core 0.8.6",
  "static_init_macro 1.0.2",
  "winapi",
 ]
@@ -10948,7 +10947,7 @@ dependencies = [
 [[package]]
 name = "substrate-bridge-channel"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor/sora2-common?branch=generalize-pallets#ab094fe94378c72505e1a4667bf9f97111557f2f"
+source = "git+https://github.com/sora-xor/sora2-common?branch=generalize-pallets#b71d58c9c4e814a6e44600c80ef844379b0a8972"
 dependencies = [
  "bridge-types",
  "ethabi",
@@ -12100,9 +12099,9 @@ dependencies = [
 
 [[package]]
 name = "webpki-roots"
-version = "0.22.5"
+version = "0.22.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "368bfe657969fb01238bb756d351dcade285e0f6fcbd36dcb23359a5169975be"
+checksum = "b6c71e40d7d2c34a5106301fb632274ca37242cd0c9d3e64dbece371a40a2d87"
 dependencies = [
  "webpki",
 ]
