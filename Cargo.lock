@@ -488,11 +488,12 @@ dependencies = [
 [[package]]
 name = "beefy-light-client"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#83216fe9d7a4683c0e22b412c3c5c189d87cdd02"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#4c5f5d55026112d179c966a01ac575883badb21b"
 dependencies = [
+ "beefy-merkle-tree",
+ "beefy-primitives",
  "bridge-common",
  "bridge-types",
- "ethabi",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
@@ -501,12 +502,13 @@ dependencies = [
  "serde",
  "sp-core",
  "sp-io",
+ "sp-runtime",
 ]
 
 [[package]]
 name = "beefy-light-client-rpc"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#83216fe9d7a4683c0e22b412c3c5c189d87cdd02"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#4c5f5d55026112d179c966a01ac575883badb21b"
 dependencies = [
  "beefy-light-client-runtime-api",
  "jsonrpsee",
@@ -523,7 +525,7 @@ dependencies = [
 [[package]]
 name = "beefy-light-client-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#83216fe9d7a4683c0e22b412c3c5c189d87cdd02"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#4c5f5d55026112d179c966a01ac575883badb21b"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -727,10 +729,11 @@ dependencies = [
 [[package]]
 name = "bridge-common"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#83216fe9d7a4683c0e22b412c3c5c189d87cdd02"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#4c5f5d55026112d179c966a01ac575883badb21b"
 dependencies = [
+ "beefy-primitives",
  "bitvec",
- "ethabi",
+ "bridge-types",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
@@ -744,7 +747,7 @@ dependencies = [
 [[package]]
 name = "bridge-types"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#83216fe9d7a4683c0e22b412c3c5c189d87cdd02"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#4c5f5d55026112d179c966a01ac575883badb21b"
 dependencies = [
  "beefy-primitives",
  "enum-iterator",
@@ -2060,7 +2063,7 @@ dependencies = [
 [[package]]
 name = "dispatch"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#83216fe9d7a4683c0e22b412c3c5c189d87cdd02"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#4c5f5d55026112d179c966a01ac575883badb21b"
 dependencies = [
  "bridge-types",
  "frame-benchmarking",
@@ -3882,7 +3885,7 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 [[package]]
 name = "leaf-provider"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#83216fe9d7a4683c0e22b412c3c5c189d87cdd02"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#4c5f5d55026112d179c966a01ac575883badb21b"
 dependencies = [
  "beefy-merkle-tree",
  "beefy-primitives",
@@ -3904,7 +3907,7 @@ dependencies = [
 [[package]]
 name = "leaf-provider-rpc"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#83216fe9d7a4683c0e22b412c3c5c189d87cdd02"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#4c5f5d55026112d179c966a01ac575883badb21b"
 dependencies = [
  "jsonrpsee",
  "leaf-provider-runtime-api",
@@ -3922,7 +3925,7 @@ dependencies = [
 [[package]]
 name = "leaf-provider-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#83216fe9d7a4683c0e22b412c3c5c189d87cdd02"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#4c5f5d55026112d179c966a01ac575883badb21b"
 dependencies = [
  "bridge-types",
  "parity-scale-codec",
@@ -11008,7 +11011,7 @@ dependencies = [
 [[package]]
 name = "substrate-bridge-channel"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#83216fe9d7a4683c0e22b412c3c5c189d87cdd02"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#4c5f5d55026112d179c966a01ac575883badb21b"
 dependencies = [
  "bridge-types",
  "ethabi",
@@ -11029,7 +11032,7 @@ dependencies = [
 [[package]]
 name = "substrate-bridge-channel-rpc"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#83216fe9d7a4683c0e22b412c3c5c189d87cdd02"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=beefy-verifier#4c5f5d55026112d179c966a01ac575883badb21b"
 dependencies = [
  "anyhow",
  "bridge-types",
