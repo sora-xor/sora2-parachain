@@ -1,6 +1,9 @@
+use bridge_types::SubNetworkId;
 use cumulus_primitives_core::ParaId;
 use hex_literal::hex;
-use parachain_template_runtime::{AccountId, AuraId, BeefyId, Signature, EXISTENTIAL_DEPOSIT};
+use parachain_template_runtime::{
+	AccountId, AuraId, BeefyId, BeefyLightClientConfig, Signature, EXISTENTIAL_DEPOSIT,
+};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -106,6 +109,13 @@ impl RelayChain {
 			RelayChain::Rococo => "rococo",
 		}
 	}
+
+	pub fn bridge_network_id(&self) -> SubNetworkId {
+		match self {
+			RelayChain::Kusama => SubNetworkId::Kusama,
+			RelayChain::Rococo => SubNetworkId::Rococo,
+		}
+	}
 }
 
 /// Generate collator keys from seed.
@@ -149,6 +159,7 @@ pub fn raw_config(relay_chain: RelayChain) -> ChainSpec {
 	let root_key = relay_chain.root_key();
 	let session_keys = relay_chain.session_keys();
 	let endowed_accounts = relay_chain.endowed_accounts();
+	let bridge_network_id = relay_chain.bridge_network_id();
 	ChainSpec::from_genesis(
 		// Name
 		relay_chain.name(),
@@ -161,6 +172,7 @@ pub fn raw_config(relay_chain: RelayChain) -> ChainSpec {
 				session_keys.clone(),
 				endowed_accounts.clone(),
 				2011u32.into(),
+				bridge_network_id,
 			)
 		},
 		Vec::new(),
@@ -214,6 +226,7 @@ pub fn development_config() -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
 				2011.into(),
+				SubNetworkId::Rococo,
 			)
 		},
 		Vec::new(),
@@ -274,6 +287,7 @@ pub fn local_testnet_config() -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Charlie"),
 				],
 				2011.into(),
+				SubNetworkId::Rococo,
 			)
 		},
 		// Bootnodes
@@ -299,8 +313,10 @@ fn testnet_genesis(
 	invulnerables: Vec<(AccountId, (AuraId, BeefyId))>,
 	endowed_accounts: Vec<AccountId>,
 	id: ParaId,
+	bridge_network_id: SubNetworkId,
 ) -> parachain_template_runtime::GenesisConfig {
 	parachain_template_runtime::GenesisConfig {
+		beefy_light_client: BeefyLightClientConfig { network_id: bridge_network_id },
 		substrate_bridge_inbound_channel: Default::default(),
 		substrate_bridge_outbound_channel: Default::default(),
 		system: parachain_template_runtime::SystemConfig {

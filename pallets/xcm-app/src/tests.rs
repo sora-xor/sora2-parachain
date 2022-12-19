@@ -30,9 +30,13 @@
 
 use crate::{mock::*, Error};
 use frame_support::{assert_noop, assert_ok};
-use xcm::opaque::latest::Junction::{GeneralKey, Parachain};
-use xcm::opaque::latest::Junctions::X2;
-use xcm::v1::MultiLocation;
+use xcm::{
+	opaque::latest::{
+		Junction::{GeneralKey, Parachain},
+		Junctions::X2,
+	},
+	v1::MultiLocation,
+};
 
 #[test]
 fn it_works_register_change_delete() {
@@ -52,7 +56,11 @@ fn it_works_register_change_delete() {
 		};
 
 		// Create:
-		assert_ok!(XCMApp::register_mapping(RuntimeOrigin::root(), asset_id, multilocation.clone()));
+		assert_ok!(XCMApp::register_mapping(
+			RuntimeOrigin::root(),
+			asset_id,
+			multilocation.clone()
+		));
 		assert_eq!(
 			XCMApp::get_multilocation_from_asset_id(asset_id)
 				.expect("it_works_register_change_delete, Create: multilocation is None"),
@@ -126,7 +134,11 @@ fn it_fails_create_existing_mapping() {
 			interior: X2(Parachain(666), GeneralKey(test_general_key())),
 		};
 
-		assert_ok!(XCMApp::register_mapping(RuntimeOrigin::root(), asset_id, multilocation.clone()));
+		assert_ok!(XCMApp::register_mapping(
+			RuntimeOrigin::root(),
+			asset_id,
+			multilocation.clone()
+		));
 		assert_ok!(XCMApp::register_mapping(
 			RuntimeOrigin::root(),
 			new_asset_id,
@@ -166,7 +178,11 @@ fn it_fails_change_asset_non_existing_mapping() {
 			Error::<Test>::MappingNotExist
 		);
 
-		assert_ok!(XCMApp::register_mapping(RuntimeOrigin::root(), new_asset_id, multilocation.clone()));
+		assert_ok!(XCMApp::register_mapping(
+			RuntimeOrigin::root(),
+			new_asset_id,
+			multilocation.clone()
+		));
 		assert_noop!(
 			XCMApp::change_asset_mapping(RuntimeOrigin::root(), asset_id, multilocation.clone()),
 			Error::<Test>::MappingNotExist
@@ -197,9 +213,17 @@ fn it_fails_change_multilocation_non_existing_mapping() {
 			Error::<Test>::MappingNotExist
 		);
 
-		assert_ok!(XCMApp::register_mapping(RuntimeOrigin::root(), asset_id, new_multilocation.clone()));
+		assert_ok!(XCMApp::register_mapping(
+			RuntimeOrigin::root(),
+			asset_id,
+			new_multilocation.clone()
+		));
 		assert_noop!(
-			XCMApp::change_multilocation_mapping(RuntimeOrigin::root(), multilocation.clone(), asset_id),
+			XCMApp::change_multilocation_mapping(
+				RuntimeOrigin::root(),
+				multilocation.clone(),
+				asset_id
+			),
 			Error::<Test>::MappingNotExist
 		);
 		assert_eq!(

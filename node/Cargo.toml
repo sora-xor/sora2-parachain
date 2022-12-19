@@ -29,12 +29,13 @@ hex-literal = "0.3.1"
 jsonrpsee = { version = "0.15.1", features = ["server"] }
 
 # Sora common 
-beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy-verifier" }
-beefy-light-client-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy-verifier" }
-beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy-verifier" }
-substrate-bridge-channel-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy-verifier" }
-leaf-provider-rpc = { git = "https://github.com/sora-xor/sora2-common", branch = "beefy-verifier" }
-leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common", branch = "beefy-verifier" }
+beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "substrate_bridge" }
+beefy-light-client-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "substrate_bridge" }
+beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "substrate_bridge" }
+substrate-bridge-channel-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "substrate_bridge" }
+leaf-provider-rpc = { git = "https://github.com/sora-xor/sora2-common", branch = "substrate_bridge" }
+leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common", branch = "substrate_bridge" }
+bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "substrate_bridge", default-features = false }
 
 # Local
 parachain-template-runtime = { path = "../runtime" }

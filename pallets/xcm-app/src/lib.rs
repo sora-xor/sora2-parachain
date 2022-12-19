@@ -46,8 +46,10 @@ use bridge_types::substrate::XCMAppMessage;
 use frame_support::weights::Weight;
 use orml_traits::MultiCurrency;
 use parachain_common::primitives::AssetId;
-use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
-use xcm::v1::{MultiAsset, MultiLocation};
+use xcm::{
+	opaque::latest::{AssetId::Concrete, Fungibility::Fungible},
+	v1::{MultiAsset, MultiLocation},
+};
 
 pub type ParachainAssetId = xcm::VersionedMultiAsset;
 
@@ -64,12 +66,10 @@ pub trait WeightInfo {
 impl<T: Config> From<XCMAppMessage<T::AccountId, AssetId, T::Balance>> for Call<T> {
 	fn from(value: XCMAppMessage<T::AccountId, AssetId, T::Balance>) -> Self {
 		match value {
-			XCMAppMessage::Transfer { sender, recipient, amount, asset_id } => {
-				Call::transfer { sender, recipient, amount, asset_id }
-			},
-			XCMAppMessage::RegisterAsset { asset_id, sidechain_asset } => {
-				Call::register_asset { asset_id, multiasset: sidechain_asset }
-			},
+			XCMAppMessage::Transfer { sender, recipient, amount, asset_id } =>
+				Call::transfer { sender, recipient, amount, asset_id },
+			XCMAppMessage::RegisterAsset { asset_id, sidechain_asset, asset_kind } =>
+				Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind },
 		}
 	}
 }
@@ -77,14 +77,13 @@ impl<T: Config> From<XCMAppMessage<T::AccountId, AssetId, T::Balance>> for Call<
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use bridge_types::H256;
 	use bridge_types::{
-		substrate::{SubstrateBridgeMessageEncode, XCMAppMessage},
+		substrate::{SubstrateAppMessage, SubstrateBridgeMessageEncode},
 		traits::OutboundChannel,
-		SubNetworkId,
+		SubNetworkId, H256,
 	};
 	use frame_support::{dispatch::DispatchResultWithPostInfo, fail, pallet_prelude::*};
-	use frame_system::pallet_prelude::*;
+	use frame_system::{pallet_prelude::*, RawOrigin};
 	use parachain_common::primitives::AssetId;
 	use sp_runtime::traits::Convert;
 
@@ -187,7 +186,8 @@ pub mod pallet {
 		pub fn register_asset(
 			origin: OriginFor<T>,
 			asset_id: AssetId,
-			multiasset: xcm::VersionedMultiAsset,
+			multiasset: xcm::v2::AssetId,
+			asset_kind: bridge_types::types::AssetKind,
 		) -> DispatchResultWithPostInfo {
 			let res = T::CallOrigin::ensure_origin(origin)?;
 			frame_support::log::info!(
@@ -195,21 +195,29 @@ pub mod pallet {
 				(asset_id, multiasset.clone()),
 				res
 			);
-			let multiasset = match multiasset {
-				xcm::VersionedMultiAsset::V1(multiasset) => multiasset,
-				_ => fail!(Error::<T>::WrongXCMVersion),
-			};
-			let multilocation = match multiasset.id {
+			let multilocation = match multiasset {
 				xcm::v2::AssetId::Concrete(location) => location,
 				xcm::v2::AssetId::Abstract(_) => fail!(Error::<T>::WrongXCMVersion),
 			};
 			ensure!(
-				AssetIdToMultilocation::<T>::get(asset_id).is_none()
-					|| MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
+				AssetIdToMultilocation::<T>::get(asset_id).is_none() ||
+					MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
 				Error::<T>::MappingAlreadyExists
 			);
 			AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
 			MultilocationToAssetId::<T>::insert(multilocation.clone(), asset_id);
+
+			T::OutboundChannel::submit(
+				SubNetworkId::Mainnet,
+				&RawOrigin::Root,
+				&SubstrateAppMessage::<T::AccountId, AssetId, T::Balance>::FinalizeAssetRegistration {
+					asset_id,
+					asset_kind,
+				}
+				.prepare_message(),
+				(),
+			)?;
+
 			Self::deposit_event(Event::<T>::MappingCreated(asset_id, multilocation));
 			Ok(().into())
 		}
@@ -228,8 +236,8 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let _ = ensure_root(origin)?;
 			ensure!(
-				AssetIdToMultilocation::<T>::get(asset_id).is_none()
-					|| MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
+				AssetIdToMultilocation::<T>::get(asset_id).is_none() ||
+					MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
 				Error::<T>::MappingAlreadyExists
 			);
 			AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
@@ -362,12 +370,10 @@ pub mod pallet {
 			amount: T::Balance,
 		) -> sp_runtime::DispatchResult {
 			let raw_origin = Some(account_id.clone()).into();
-			let multilocation =
-				<T as Config>::AccountIdToMultiLocation::convert(account_id.clone());
-			let xcm_mes = XCMAppMessage::Transfer {
+			let xcm_mes = SubstrateAppMessage::Transfer {
 				asset_id,
-				sender: account_id.clone(),
-				recipient: xcm::VersionedMultiLocation::V1(multilocation),
+				recipient: account_id,
+				sender: None,
 				amount,
 			}
 			.prepare_message();
