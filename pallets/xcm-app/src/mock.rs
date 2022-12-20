@@ -98,6 +98,7 @@ impl xcm_app::Config for Test {
 	type OutboundChannel = TestOutboundChannel;
 	type AccountIdToMultiLocation = TestAccountIdToMultiLocation;
 	type XcmTransfer = TestXcmTransfer;
+	type CallOrigin = TestCallOrigin;
 }
 
 // Build genesis storage according to the mock runtime.
@@ -153,4 +154,13 @@ impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
 	) -> frame_support::pallet_prelude::DispatchResult {
 		todo!()
 	}
+}
+
+pub struct TestCallOrigin;
+impl<OuterOrigin> frame_support::traits::EnsureOrigin<OuterOrigin> for TestCallOrigin {
+    type Success = bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>;
+
+    fn try_origin(o: OuterOrigin) -> Result<Self::Success, OuterOrigin> {
+        todo!()
+    }
 }

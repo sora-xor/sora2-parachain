@@ -33,9 +33,11 @@ pub struct BeefyDeps {
 }
 
 /// Full client dependencies
-pub struct FullDeps<C, P> {
+pub struct FullDeps<C, P, B> {
 	/// The client instance to use.
 	pub client: Arc<C>,
+	/// The backend instance to use.
+	pub backend: Arc<B>,
 	/// Transaction pool instance.
 	pub pool: Arc<P>,
 	/// Whether to deny unsafe calls
@@ -45,8 +47,8 @@ pub struct FullDeps<C, P> {
 }
 
 /// Instantiate all RPC extensions.
-pub fn create_full<C, P>(
-	deps: FullDeps<C, P>,
+pub fn create_full<C, P, B>(
+	deps: FullDeps<C, P, B>,
 ) -> Result<RpcExtension, Box<dyn std::error::Error + Send + Sync>>
 where
 	C: ProvideRuntimeApi<Block>
@@ -64,18 +66,29 @@ where
 		<Block as sp_runtime::traits::Block>::Hash,
 		BlockNumber,
 	>,
+	C::Api: leaf_provider_rpc::LeafProviderRuntimeAPI<Block>,
+	C::Api: beefy_primitives::BeefyApi<Block>,
 	C::Api: BlockBuilder<Block>,
 	P: TransactionPool + Sync + Send + 'static,
+	B: sc_client_api::Backend<Block> + Send + Sync + 'static,
+	B::State: sc_client_api::StateBackend<sp_runtime::traits::HashFor<Block>>,
 {
 	use beefy_gadget_rpc::{Beefy, BeefyApiServer};
+	use leaf_provider_rpc::{LeafProviderAPIServer, LeafProviderClient};
+	use pallet_mmr_rpc::{Mmr, MmrApiServer};
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
+	use substrate_bridge_channel_rpc::{
+		BridgeChannelAPIServer as SubstrateBridgeChannelAPIServer,
+		BridgeChannelClient as SubstrateBridgeChannelClient,
+	};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
 
 	let mut module = RpcExtension::new(());
-	let FullDeps { client, pool, deny_unsafe, beefy } = deps;
+	let FullDeps { client, pool, deny_unsafe, beefy, backend } = deps;
 
 	module.merge(System::new(client.clone(), pool, deny_unsafe).into_rpc())?;
 	module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
+	module.merge(Mmr::new(client.clone()).into_rpc())?;
 	module.merge(
 		Beefy::<Block>::new(
 			beefy.beefy_finality_proof_stream,
@@ -84,6 +97,14 @@ where
 		)?
 		.into_rpc(),
 	)?;
+	if let Some(storage) = backend.offchain_storage() {
+		// io.merge(BridgeChannelClient::new(storage.clone()).into_rpc())?;
+		module.merge(<SubstrateBridgeChannelClient<_> as SubstrateBridgeChannelAPIServer<
+			Balance,
+		>>::into_rpc(SubstrateBridgeChannelClient::new(storage)))?;
+	}
+
+	module.merge(LeafProviderClient::new(client.clone()).into_rpc())?;
 	module.merge(BeefyLightClientClient::new(client).into_rpc())?;
 	Ok(module)
 }

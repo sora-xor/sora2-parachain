@@ -1,0 +1,319 @@
+version: "3.5"
+name: sora2-parachain
+
+services:
+  parachain-alice:
+    image: sora2/substrate-local-parachain
+    container_name: bridge-parachain-alice
+    build:
+      context: ..
+      dockerfile: bridge-docker/Dockerfile.parachain
+    restart: always
+    user: "root"
+    ports:
+      - "9844:9844"
+      - "9854:9854"
+    environment:
+      - RUST_LOG=xcm=trace
+    command: [
+        "--pruning", "archive",
+        "--enable-offchain-indexing", "true",
+        "-d", "/data", 
+        "--alice", 
+        "--chain", "/build-spec/sora.json",
+        "--collator",
+        "--port", "30333", 
+        "--ws-port", "9844",
+        "--rpc-port", "9854", 
+        "--unsafe-ws-external",
+        "--unsafe-rpc-external",
+        "--rpc-cors", "all",
+        "--execution", "wasm", 
+        "--wasm-execution", "compiled",
+        "--",
+        "--execution", "wasm",
+        "--wasm-execution", "compiled",
+        "--chain", "/build-spec/rococo-raw.json",
+        "--port", "30343",
+        "--ws-port", "10844",
+        "--rpc-port", "10854",
+      ]
+    depends_on:
+      build-spec-polkadot:
+        condition: service_completed_successfully
+    volumes:
+      - build-spec-data:/build-spec
+      - parachain-alice-data:/data
+    networks:
+      - bridgenet
+
+  parachain-bob:
+    image: sora2/substrate-local-parachain
+    container_name: bridge-parachain-bob
+    build:
+      context: ..
+      dockerfile: bridge-docker/Dockerfile.parachain
+    restart: always
+    user: "root"
+    ports:
+      - "9845:9845"
+      - "9855:9855"
+    environment:
+      - RUST_LOG=xcm=trace
+    command: [
+        "--pruning", "archive",
+        "--enable-offchain-indexing", "true",
+        "-d", "/data", 
+        "--bob", 
+        "--chain", "/build-spec/sora.json",
+        "--collator",
+        "--port", "30334", 
+        "--ws-port", "9845",
+        "--rpc-port", "9855", 
+        "--unsafe-ws-external",
+        "--unsafe-rpc-external",
+        "--rpc-cors", "all",
+        "--execution", "wasm", 
+        "--wasm-execution", "compiled",
+        "--",
+        "--execution", "wasm",
+        "--wasm-execution", "compiled",
+        "--chain", "/build-spec/rococo-raw.json",
+        "--port", "30344",
+        "--ws-port", "10845",
+        "--rpc-port", "10855",
+      ]
+    depends_on:
+      build-spec-polkadot:
+        condition: service_completed_successfully
+    volumes:
+      - build-spec-data:/build-spec
+      - parachain-bob-data:/data
+    networks:
+      - bridgenet
+
+  parachain-charlie:
+    image: sora2/substrate-local-parachain
+    container_name: bridge-parachain-charlie
+    build:
+      context: ..
+      dockerfile: bridge-docker/Dockerfile.parachain
+    restart: always
+    user: "root"
+    ports:
+      - "9846:9846"
+      - "9856:9856"
+    environment:
+      - RUST_LOG=xcm=trace
+    command: [
+        "--pruning", "archive",
+        "--enable-offchain-indexing", "true",
+        "-d", "/data", 
+        "--charlie", 
+        "--chain", "/build-spec/sora.json",
+        "--collator",
+        "--port", "30335", 
+        "--ws-port", "9846",
+        "--rpc-port", "9856", 
+        "--unsafe-ws-external",
+        "--unsafe-rpc-external",
+        "--rpc-cors", "all",
+        "--execution", "wasm", 
+        "--wasm-execution", "compiled",
+        "--",
+        "--execution", "wasm",
+        "--wasm-execution", "compiled",
+        "--chain", "/build-spec/rococo-raw.json",
+        "--port", "30345",
+        "--ws-port", "10846",
+        "--rpc-port", "10856",
+      ]
+    depends_on:
+      build-spec-polkadot:
+        condition: service_completed_successfully
+    volumes:
+      - build-spec-data:/build-spec
+      - parachain-charlie-data:/data
+    networks:
+      - bridgenet
+
+  relaychain-alice:
+    image: sora2/substrate-local-polkadot
+    container_name: bridge-relaychain-alice
+    build:
+      context: .
+      dockerfile: Dockerfile.polkadot
+    restart: always
+    user: "root"
+    ports:
+      - "9744:9744"
+      - "9754:9754"
+    environment:
+      - RUST_LOG=xcm=trace
+    command: [
+        "--pruning", "archive",
+        "--enable-offchain-indexing", "true",
+        "-d", "/data", 
+        "--alice", 
+        "--chain", "/build-spec/rococo-raw.json",
+        "--validator",
+        "--port", "30433", 
+        "--ws-port", "9744",
+        "--rpc-port", "9754", 
+        "--unsafe-ws-external",
+        "--unsafe-rpc-external",
+        "--rpc-cors", "all",
+        "--execution", "wasm", 
+        "--wasm-execution", "compiled"
+      ]
+    depends_on:
+      build-spec-polkadot:
+        condition: service_completed_successfully
+    volumes:
+      - build-spec-data:/build-spec
+      - relaychain-alice-data:/data
+    networks:
+      - bridgenet
+
+  relaychain-bob:
+    image: sora2/substrate-local-polkadot
+    container_name: bridge-relaychain-bob
+    build:
+      context: .
+      dockerfile: Dockerfile.polkadot
+    restart: always
+    user: "root"
+    ports:
+      - "9745:9745"
+      - "9755:9755"
+    environment:
+      - RUST_LOG=xcm=trace
+    command: [
+        "--pruning", "archive",
+        "--enable-offchain-indexing", "true",
+        "-d", "/data", 
+        "--bob", 
+        "--chain", "/build-spec/rococo-raw.json",
+        "--validator",
+        "--port", "30434", 
+        "--ws-port", "9745",
+        "--rpc-port", "9755", 
+        "--unsafe-ws-external",
+        "--unsafe-rpc-external",
+        "--rpc-cors", "all",
+        "--execution", "wasm", 
+        "--wasm-execution", "compiled"
+      ]
+    depends_on:
+      build-spec-polkadot:
+        condition: service_completed_successfully
+    volumes:
+      - build-spec-data:/build-spec
+      - relaychain-bob-data:/data
+    networks:
+      - bridgenet
+
+  karura-alice:
+    image: acala/karura-node:2.11.0
+    container_name: bridge-karura-alice
+    restart: always
+    user: "root"
+    ports:
+      - "9644:9644"
+      - "9654:9654"
+    environment:
+      - RUST_LOG=xcm=trace
+    command: [
+        "--pruning", "archive",
+        "--enable-offchain-indexing", "true",
+        "-d", "/data", 
+        "--alice", 
+        "--chain", "/build-spec/karura.json",
+        "--validator",
+        "--port", "30533", 
+        "--ws-port", "9644",
+        "--rpc-port", "9654", 
+        "--unsafe-ws-external",
+        "--unsafe-rpc-external",
+        "--rpc-cors", "all",
+        "--execution", "wasm", 
+        "--wasm-execution", "compiled",
+        "--",
+        "--execution", "wasm",
+        "--wasm-execution", "compiled",
+        "--chain", "/build-spec/rococo-raw.json",
+        "--port", "30543",
+        "--ws-port", "10644",
+        "--rpc-port", "10654",
+      ]
+    depends_on:
+      build-spec-polkadot:
+        condition: service_completed_successfully
+    volumes:
+      - build-spec-data:/build-spec
+      - karura-alice-data:/data
+    networks:
+      - bridgenet
+
+  build-spec-sora:
+    image: sora2/substrate-local-parachain
+    container_name: bridge-parachain-build-spec-sora
+    build:
+      context: ..
+      dockerfile: bridge-docker/Dockerfile.parachain
+    working_dir: /build-spec
+    entrypoint: sh
+    user: "root"
+    command: /build-spec-scripts/sora.sh
+    volumes:
+      - build-spec-data:/build-spec
+      - ./build-spec-scripts:/build-spec-scripts
+    networks:
+      - bridgenet
+
+  build-spec-karura:
+    image: acala/karura-node:2.11.0
+    container_name: bridge-parachain-build-spec-karura
+    working_dir: /build-spec
+    entrypoint: sh
+    user: "root"
+    command: /build-spec-scripts/karura.sh
+    volumes:
+      - build-spec-data:/build-spec
+      - ./build-spec-scripts:/build-spec-scripts
+    networks:
+      - bridgenet
+
+  build-spec-polkadot:
+    image: sora2/substrate-local-polkadot
+    build:
+      context: .
+      dockerfile: Dockerfile.polkadot
+    container_name: bridge-parachain-build-spec-polkadot
+    working_dir: /build-spec
+    entrypoint: sh
+    user: "root"
+    command: /build-spec-scripts/polkadot.sh
+    depends_on:
+      build-spec-sora:
+        condition: service_completed_successfully
+      build-spec-karura:
+        condition: service_completed_successfully
+    volumes:
+      - build-spec-data:/build-spec
+      - ./build-spec-scripts:/build-spec-scripts
+    networks:
+      - bridgenet
+
+volumes:
+  parachain-alice-data: null
+  parachain-bob-data: null
+  parachain-charlie-data: null
+  relaychain-alice-data: null
+  relaychain-bob-data: null
+  karura-alice-data: null
+  build-spec-data: null
+
+networks:
+  bridgenet:
+    name: bridgenet

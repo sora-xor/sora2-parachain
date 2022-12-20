@@ -32,7 +32,7 @@
 #![recursion_limit = "256"]
 
 // Make the WASM binary available.
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", not(feature = "parachain-gen")))]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 mod migrations;
@@ -41,8 +41,7 @@ mod weights;
 pub mod xcm_config;
 
 use bridge_types::{
-	substrate::SubstrateBridgeMessage, traits::Verifier, types::ParachainMessage, SubNetworkId,
-	CHANNEL_INDEXING_PREFIX, U256,
+	substrate::SubstrateBridgeMessage, SubNetworkId, CHANNEL_INDEXING_PREFIX, U256,
 };
 use codec::{Decode, Encode};
 use frame_support::{
@@ -60,7 +59,7 @@ use sp_runtime::{
 		AccountIdLookup, BlakeTwo256, Block as BlockT, Convert, IdentifyAccount, Keccak256, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, DispatchError, DispatchResult, MultiSignature, RuntimeDebug,
+	ApplyExtrinsicResult, DispatchResult, MultiSignature, RuntimeDebug,
 };
 
 use sp_std::prelude::*;
@@ -463,8 +462,8 @@ parameter_types! {
 impl pallet_beefy_mmr::Config for Runtime {
 	type LeafVersion = LeafVersion;
 	type BeefyAuthorityToMerkleLeaf = pallet_beefy_mmr::BeefyEcdsaToEthereum;
-	type LeafExtra = Vec<u8>;
-	type BeefyDataProvider = ();
+	type LeafExtra = bridge_types::types::LeafExtraData<H256, H256>;
+	type BeefyDataProvider = LeafProvider;
 }
 
 impl pallet_sudo::Config for Runtime {
@@ -557,6 +556,11 @@ impl xcm_app::Config for Runtime {
 	type Balance = Balance;
 	type OutboundChannel = SubstrateBridgeOutboundChannel;
 	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
+	type CallOrigin = dispatch::EnsureAccount<
+		SubNetworkId,
+		(),
+		bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
+	>;
 	type XcmTransfer = XTokens;
 }
 
@@ -568,9 +572,14 @@ impl xcm_app::Config for Runtime {
 // 	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
 // }
 
+parameter_types! {
+	pub const SidechainRandomnessNetwork: SubNetworkId = SubNetworkId::Mainnet;
+}
+
 impl beefy_light_client::Config for Runtime {
+	type Message = Vec<bridge_types::types::ParachainMessage<Balance>>;
 	type RuntimeEvent = RuntimeEvent;
-	type Randomness = RandomnessCollectiveFlip;
+	type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
 }
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
@@ -594,19 +603,6 @@ impl dispatch::Config for Runtime {
 	type CallFilter = SubstrateBridgeCallFilter;
 }
 
-pub struct MockVerifier;
-
-impl Verifier<SubNetworkId, ParachainMessage<Balance>> for MockVerifier {
-	type Result = Vec<ParachainMessage<Balance>>;
-
-	fn verify(
-		_network_id: SubNetworkId,
-		message: &ParachainMessage<Balance>,
-	) -> Result<Self::Result, DispatchError> {
-		Ok(vec![message.clone()])
-	}
-}
-
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug, TypeInfo)]
 pub struct DispatchableSubstrateBridgeCall(SubstrateBridgeMessage<AccountId, H256, Balance>);
 
@@ -618,14 +614,16 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
 
 	fn dispatch(
 		self,
-		_origin: Self::RuntimeOrigin,
+		origin: Self::RuntimeOrigin,
 	) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {
 		match self.0 {
 			bridge_types::substrate::SubstrateBridgeMessage::SubstrateApp(_msg) => {
 				unimplemented!()
 			},
-			bridge_types::substrate::SubstrateBridgeMessage::XCMApp(_msg) => {
-				unimplemented!()
+			bridge_types::substrate::SubstrateBridgeMessage::XCMApp(msg) => {
+				let call: xcm_app::Call<crate::Runtime> = msg.into();
+				let call: crate::RuntimeCall = call.into();
+				call.dispatch(origin)
 			},
 		}
 	}
@@ -636,7 +634,7 @@ impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
 	fn contains(call: &DispatchableSubstrateBridgeCall) -> bool {
 		match &call.0 {
 			bridge_types::substrate::SubstrateBridgeMessage::SubstrateApp(_) => false,
-			bridge_types::substrate::SubstrateBridgeMessage::XCMApp(_) => false,
+			bridge_types::substrate::SubstrateBridgeMessage::XCMApp(_) => true,
 		}
 	}
 }
@@ -655,7 +653,10 @@ parameter_types! {
 
 impl substrate_bridge_channel::inbound::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type Verifier = MockVerifier;
+	type Verifier = BeefyLightClient;
+	type ProvedMessage = beefy_light_client::ProvedSubstrateBridgeMessage<
+		Vec<bridge_types::types::ParachainMessage<Balance>>,
+	>;
 	type MessageDispatch = SubstrateDispatch;
 	type WeightInfo = ();
 	type FeeAssetId = ();
@@ -747,7 +748,15 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
 	type MaxMessagePayloadSize = BridgeMaxMessagePayloadSize;
 	type MaxMessagesPerCommit = BridgeMaxMessagesPerCommit;
 	type Currency = MultiCurrencyImpl;
+	type AuxiliaryDigestHandler = LeafProvider;
 	type WeightInfo = ();
+}
+
+impl leaf_provider::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Hashing = Keccak256;
+	type Hash = <Keccak256 as sp_runtime::traits::Hash>::Output;
+	type Randomness = RandomnessCollectiveFlip;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -786,17 +795,18 @@ construct_runtime!(
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 
 		// ORML
-		XTokens: orml_xtokens::{Call, Storage, Event<T>} = 41,
+		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 41,
 
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
 		XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
-		BeefyLightClient: beefy_light_client::{Pallet, Call, Storage, Event<T>} = 103,
+		BeefyLightClient: beefy_light_client::{Pallet, Call, Storage, Event<T>, Config} = 103,
 		// Just for testing purposes
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 104,
 		SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Config, Storage, Event<T>} = 105,
 		SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 106,
 		SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 107,
+		LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 108,
 	}
 );
 
@@ -974,9 +984,15 @@ impl_runtime_apis! {
 	}
 
 	impl beefy_light_client_runtime_api::BeefyLightClientAPI<Block, beefy_light_client::BitField> for Runtime {
-		fn get_random_bitfield(prior: beefy_light_client::BitField, num_of_validators: u128) -> beefy_light_client::BitField {
+		fn get_random_bitfield(network_id: SubNetworkId, prior: beefy_light_client::BitField, num_of_validators: u32) -> beefy_light_client::BitField {
 			let len = prior.len() as usize;
-			BeefyLightClient::create_random_bit_field(prior, num_of_validators).unwrap_or(beefy_light_client::BitField::with_capacity(len))
+			BeefyLightClient::create_random_bit_field(network_id, prior, num_of_validators).unwrap_or(beefy_light_client::BitField::with_capacity(len))
+		}
+	}
+
+	impl leaf_provider_runtime_api::LeafProviderAPI<Block> for Runtime {
+		fn latest_digest() -> Option<bridge_types::types::AuxiliaryDigest> {
+				LeafProvider::latest_digest().map(|logs| bridge_types::types::AuxiliaryDigest{ logs })
 		}
 	}
 

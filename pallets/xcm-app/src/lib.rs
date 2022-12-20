@@ -42,12 +42,15 @@ pub mod weights;
 
 pub use pallet::*;
 
+use bridge_types::substrate::XCMAppMessage;
 use frame_support::weights::Weight;
 use orml_traits::xcm_transfer::XcmTransfer;
 use orml_traits::MultiCurrency;
 use parachain_common::primitives::AssetId;
-use xcm::opaque::latest::{AssetId::Concrete, Fungibility::Fungible};
-use xcm::v1::{MultiAsset, MultiLocation};
+use xcm::{
+	opaque::latest::{AssetId::Concrete, Fungibility::Fungible},
+	v1::{MultiAsset, MultiLocation},
+};
 
 pub type ParachainAssetId = xcm::VersionedMultiAsset;
 
@@ -61,17 +64,27 @@ pub trait WeightInfo {
 	fn delete_mapping() -> Weight;
 }
 
+impl<T: Config> From<XCMAppMessage<T::AccountId, AssetId, T::Balance>> for Call<T> {
+	fn from(value: XCMAppMessage<T::AccountId, AssetId, T::Balance>) -> Self {
+		match value {
+			XCMAppMessage::Transfer { sender, recipient, amount, asset_id } =>
+				Call::transfer { sender, recipient, amount, asset_id },
+			XCMAppMessage::RegisterAsset { asset_id, sidechain_asset, asset_kind } =>
+				Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind },
+		}
+	}
+}
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use bridge_types::substrate::SubstrateAppMessage;
 	use bridge_types::{
-		substrate::{SubstrateBridgeMessageEncode},
+		substrate::{SubstrateAppMessage, SubstrateBridgeMessageEncode},
 		traits::OutboundChannel,
-		SubNetworkId,
+		SubNetworkId, H256,
 	};
 	use frame_support::{dispatch::DispatchResultWithPostInfo, fail, pallet_prelude::*};
-	use frame_system::pallet_prelude::*;
+	use frame_system::{pallet_prelude::*, RawOrigin};
 	use parachain_common::primitives::AssetId;
 	use sp_runtime::traits::Convert;
 
@@ -88,6 +101,11 @@ pub mod pallet {
 			+ Copy
 			+ MaybeSerializeDeserialize
 			+ MaxEncodedLen;
+
+		type CallOrigin: EnsureOrigin<
+			Self::RuntimeOrigin,
+			Success = bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
+		>;
 
 		type OutboundChannel: OutboundChannel<SubNetworkId, Self::AccountId, ()>;
 
@@ -139,6 +157,8 @@ pub mod pallet {
 		MappingNotExist,
 		/// Method not availible
 		MethodNotAvailible,
+		/// Wrong XCM version
+		WrongXCMVersion,
 	}
 
 	#[pallet::hooks]
@@ -146,6 +166,65 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+		#[pallet::weight(<T as Config>::WeightInfo::register_mapping())]
+		#[frame_support::transactional]
+		pub fn transfer(
+			origin: OriginFor<T>,
+			asset_id: AssetId,
+			sender: T::AccountId,
+			recipient: xcm::VersionedMultiLocation,
+			amount: T::Balance,
+		) -> DispatchResultWithPostInfo {
+			let res = T::CallOrigin::ensure_origin(origin)?;
+			frame_support::log::info!(
+				"Call transfer with params: {:?} by {:?}",
+				(asset_id, sender, recipient, amount),
+				res
+			);
+			Ok(().into())
+		}
+
+		#[pallet::weight(<T as Config>::WeightInfo::register_mapping())]
+		#[frame_support::transactional]
+		pub fn register_asset(
+			origin: OriginFor<T>,
+			asset_id: AssetId,
+			multiasset: xcm::v2::AssetId,
+			asset_kind: bridge_types::types::AssetKind,
+		) -> DispatchResultWithPostInfo {
+			let res = T::CallOrigin::ensure_origin(origin)?;
+			frame_support::log::info!(
+				"Call register_asset with params: {:?} by {:?}",
+				(asset_id, multiasset.clone()),
+				res
+			);
+			let multilocation = match multiasset {
+				xcm::v2::AssetId::Concrete(location) => location,
+				xcm::v2::AssetId::Abstract(_) => fail!(Error::<T>::WrongXCMVersion),
+			};
+			ensure!(
+				AssetIdToMultilocation::<T>::get(asset_id).is_none() ||
+					MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
+				Error::<T>::MappingAlreadyExists
+			);
+			AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
+			MultilocationToAssetId::<T>::insert(multilocation.clone(), asset_id);
+
+			T::OutboundChannel::submit(
+				SubNetworkId::Mainnet,
+				&RawOrigin::Root,
+				&SubstrateAppMessage::<T::AccountId, AssetId, T::Balance>::FinalizeAssetRegistration {
+					asset_id,
+					asset_kind,
+				}
+				.prepare_message(),
+				(),
+			)?;
+
+			Self::deposit_event(Event::<T>::MappingCreated(asset_id, multilocation));
+			Ok(().into())
+		}
+
 		/// Perform registration for mapping of an AssetId <-> Multilocation
 		///
 		/// - `origin`: the root account on whose behalf the transaction is being executed,
@@ -160,8 +239,8 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let _ = ensure_root(origin)?;
 			ensure!(
-				AssetIdToMultilocation::<T>::get(asset_id).is_none()
-					|| MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
+				AssetIdToMultilocation::<T>::get(asset_id).is_none() ||
+					MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
 				Error::<T>::MappingAlreadyExists
 			);
 			AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
@@ -273,6 +352,18 @@ pub mod pallet {
 			};
 			Ok(().into())
 		}
+
+		#[pallet::weight(<T as Config>::WeightInfo::delete_mapping())]
+		#[frame_support::transactional]
+		pub fn fake_transfer(
+			origin: OriginFor<T>,
+			asset_id: AssetId,
+			amount: T::Balance,
+		) -> DispatchResultWithPostInfo {
+			let account_id = ensure_signed(origin)?;
+			Self::add_to_channel(account_id, asset_id, amount)?;
+			Ok(().into())
+		}
 	}
 
 	impl<T: Config> Pallet<T> {
@@ -282,12 +373,10 @@ pub mod pallet {
 			amount: T::Balance,
 		) -> sp_runtime::DispatchResult {
 			let raw_origin = Some(account_id.clone()).into();
-			let multilocation =
-				<T as Config>::AccountIdToMultiLocation::convert(account_id.clone());
 			let xcm_mes = SubstrateAppMessage::Transfer {
 				asset_id,
-				sender: xcm::VersionedMultiLocation::V1(multilocation),
-				recipient: account_id.clone(),
+				recipient: account_id,
+				sender: None,
 				amount,
 			};
 			let xcm_mes_bytes = xcm_mes.clone().prepare_message();

@@ -29,9 +29,13 @@ hex-literal = "0.3.1"
 jsonrpsee = { version = "0.15.1", features = ["server"] }
 
 # Sora common 
-beefy-light-client= { git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy_light_client_pallet-v0.9.31" }
-beefy-light-client-rpc= { git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy_light_client_pallet-v0.9.31" }
-beefy-light-client-runtime-api= { git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy_light_client_pallet-v0.9.31" }
+beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
+beefy-light-client-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
+beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
+substrate-bridge-channel-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
+leaf-provider-rpc = { git = "https://github.com/sora-xor/sora2-common", branch = "develop" }
+leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common", branch = "develop" }
+bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false }
 
 # Local
 parachain-template-runtime = { path = "../runtime" }

@@ -28,8 +28,8 @@ smallvec = "1.6.1"
 
 xcm-app = { path = "../pallets/xcm-app", default-features = false }
 parachain-common = { path = "../parachain-common", default-features = false }
-beefy-light-client = {git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy_light_client_pallet-v0.9.31", default-features = false }
-beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "beefy_light_client_pallet-v0.9.31", default-features = false }
+beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false }
+beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false }
 
 
 # Substrate Dependencies
@@ -94,21 +94,23 @@ xcm-builder = { git = "https://github.com/paritytech/polkadot", default-features
 xcm-executor = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.31" }
 
 # ORML
-orml-xtokens = {git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false,  branch = "polkadot-v0.9.31"}
-orml-traits = {git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false,  branch = "polkadot-v0.9.31"}
-orml-xcm-support = {git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false,  branch = "polkadot-v0.9.31"}
+orml-xtokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.31" }
+orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.31" }
+orml-xcm-support = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.31" }
 
 # SORA
-substrate-bridge-channel = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }
-dispatch = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }
-bridge-types = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }
+substrate-bridge-channel = { git = "https://github.com/sora-xor/sora2-common", branch = "develop", default-features = false }
+dispatch = { git = "https://github.com/sora-xor/sora2-common", branch = "develop", default-features = false }
+bridge-types = { git = "https://github.com/sora-xor/sora2-common", branch = "develop", default-features = false }
+leaf-provider = { git = "https://github.com/sora-xor/sora2-common", branch = "develop", default-features = false }
+leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common", branch = "develop", default-features = false }
 
 [features]
 default = ["std"]
 std = [
 	"beefy-primitives/std",
 	"beefy-light-client/std",
-    "beefy-light-client-runtime-api/std",
+	"beefy-light-client-runtime-api/std",
 	"codec/std",
 	"cumulus-pallet-aura-ext/std",
 	"cumulus-pallet-dmp-queue/std",
@@ -164,6 +166,8 @@ std = [
 	"xcm/std",
 	"substrate-bridge-channel/std",
 	"dispatch/std",
+	"leaf-provider/std",
+	"leaf-provider-runtime-api/std",
 ]
 
 runtime-benchmarks = [
@@ -184,3 +188,5 @@ runtime-benchmarks = [
 ]
 
 try-runtime = ["frame-executive/try-runtime", "frame-try-runtime"]
+
+parachain-gen = []

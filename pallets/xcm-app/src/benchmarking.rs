@@ -34,9 +34,13 @@ use crate::Pallet as XCMApp;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
 use frame_support::WeakBoundedVec;
 use frame_system::RawOrigin;
-use xcm::opaque::latest::Junction::{GeneralKey, Parachain};
-use xcm::opaque::latest::Junctions::X2;
-use xcm::v1::MultiLocation;
+use xcm::{
+	opaque::latest::{
+		Junction::{GeneralKey, Parachain},
+		Junctions::X2,
+	},
+	v1::MultiLocation,
+};
 
 benchmarks! {
 	register_mapping {
