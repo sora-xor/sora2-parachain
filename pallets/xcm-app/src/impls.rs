@@ -31,6 +31,7 @@
 use crate::*;
 use frame_support::fail;
 use sp_runtime::traits::Convert;
+use xcm::v2::NetworkId::Any;
 
 // IMPLS
 impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
@@ -78,7 +79,8 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 			target: "xcm::XCMApp",
 			"ensure_can_withdraw",
 		);
-		fail!(Error::<T>::MethodNotAvailible)
+		// fail!(Error::<T>::MethodNotAvailible)
+		Ok(())
 	}
 
 	fn transfer(
@@ -91,7 +93,28 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 			target: "xcm::XCMApp",
 			"transfer",
 		);
-		let dest = <T as Config>::AccountIdToMultiLocation::convert(to.clone());
+		let multilocation_dest = match AssetIdToMultilocation::<T>::get(currency_id.clone()){
+			None => todo!(),
+			Some(m) => m,
+		};
+		let parachain_junction = match multilocation_dest.interior {
+			xcm::v2::Junctions::X2(asset, _) => match asset {
+				xcm::v2::Junction::Parachain(p) => xcm::v2::Junction::Parachain(p),
+				_ => todo!(),
+			},
+			_ => todo!(),
+		};
+		let account_junction = match <T as Config>::AccountIdToMultiLocation::convert(to.clone()).interior {
+			xcm::v2::Junctions::X1(acc) => match acc {
+				xcm::v2::Junction::AccountId32 { network: _, id } => xcm::v2::Junction::AccountId32 { network: Any, id },
+				_ => todo!(),
+			},
+			_ => todo!(),
+		};
+		let dest = MultiLocation {
+			parents: 1,
+			interior: xcm::v2::Junctions::X2(parachain_junction, account_junction),
+		};
 		<T as Config>::XcmTransfer::transfer(
 			from.clone(),
 			currency_id,
@@ -125,7 +148,8 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 			target: "xcm::XCMApp",
 			"withdraw",
 		);
-		fail!(Error::<T>::MethodNotAvailible)
+		// fail!(Error::<T>::MethodNotAvailible)
+		Ok(())
 	}
 
 	fn can_slash(
@@ -137,7 +161,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 			target: "xcm::XCMApp",
 			"can_slash",
 		);
-		false
+		true
 	}
 
 	fn slash(
