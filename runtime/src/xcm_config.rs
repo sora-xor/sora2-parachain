@@ -32,7 +32,6 @@ use super::{
 	AccountId, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent,
 	RuntimeOrigin, XcmpQueue,
 };
-use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get;
 use core::marker::PhantomData;
 use frame_support::{log, match_types, parameter_types, traits::Everything};
 use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
@@ -40,6 +39,8 @@ use orml_xcm_support::{IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset}
 use pallet_xcm::XcmPassthrough;
 use parachain_common::primitives::AssetId;
 use polkadot_parachain::primitives::Sibling;
+#[cfg(not(feature = "parachain-gen"))]
+use sp_core::Get;
 use xcm::{latest::Weight as XcmWeight, prelude::*};
 use xcm_builder::{
 	AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
@@ -154,19 +155,19 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 				InitiateReserveWithdraw {
 					reserve: MultiLocation { parents: 1, interior: Here },
 					..
-				} | DepositReserveAsset { dest: MultiLocation { parents: 1, interior: Here }, .. } |
-					TransferReserveAsset {
+				} | DepositReserveAsset { dest: MultiLocation { parents: 1, interior: Here }, .. }
+					| TransferReserveAsset {
 						dest: MultiLocation { parents: 1, interior: Here },
 						..
 					}
 			)
 		}) {
-			return Err(()) // Deny
+			return Err(()); // Deny
 		}
 
 		// allow reserve transfers to arrive from relay chain
-		if matches!(origin, MultiLocation { parents: 1, interior: Here }) &&
-			message.0.iter().any(|inst| matches!(inst, ReserveAssetDeposited { .. }))
+		if matches!(origin, MultiLocation { parents: 1, interior: Here })
+			&& message.0.iter().any(|inst| matches!(inst, ReserveAssetDeposited { .. }))
 		{
 			log::warn!(
 				target: "xcm::barriers",
@@ -247,8 +248,14 @@ impl cumulus_pallet_xcm::Config for Runtime {
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 }
 
+#[cfg(not(feature = "parachain-gen"))]
 parameter_types! {
 	pub SelfLocation: MultiLocation = MultiLocation::new(1, X1(Parachain(ParachainInfo::get().into())));
+}
+
+#[cfg(feature = "parachain-gen")]
+parameter_types! {
+	pub SelfLocation: MultiLocation = MultiLocation::new(1, X1(Parachain(2011)));
 }
 
 parameter_types! {

@@ -166,6 +166,8 @@ std = [
 	"xcm/std",
 	"substrate-bridge-channel/std",
 	"dispatch/std",
+	"leaf-provider/std",
+	"leaf-provider-runtime-api/std",
 ]
 
 runtime-benchmarks = [
@@ -186,3 +188,5 @@ runtime-benchmarks = [
 ]
 
 try-runtime = ["frame-executive/try-runtime", "frame-try-runtime"]
+
+parachain-gen = []

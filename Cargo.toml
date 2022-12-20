@@ -17,3 +17,4 @@ panic = "unwind"
 
 [workspace]
 members = ["node", "pallets/*", "runtime", "parachain-gen", "parachain-common"]
+resolver = "2"

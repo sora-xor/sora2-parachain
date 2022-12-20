@@ -32,7 +32,7 @@
 #![recursion_limit = "256"]
 
 // Make the WASM binary available.
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", not(feature = "parachain-gen")))]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 mod migrations;
@@ -794,7 +794,7 @@ construct_runtime!(
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 
 		// ORML
-		XTokens: orml_xtokens::{Call, Storage, Event<T>} = 41,
+		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 41,
 
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
