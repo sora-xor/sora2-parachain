@@ -571,10 +571,14 @@ impl xcm_app::Config for Runtime {
 // 	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
 // }
 
+parameter_types! {
+	pub const SidechainRandomnessNetwork: SubNetworkId = SubNetworkId::Mainnet;
+}
+
 impl beefy_light_client::Config for Runtime {
 	type Message = Vec<bridge_types::types::ParachainMessage<Balance>>;
 	type RuntimeEvent = RuntimeEvent;
-	type Randomness = BeefyLightClient;
+	type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
 }
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
@@ -979,9 +983,9 @@ impl_runtime_apis! {
 	}
 
 	impl beefy_light_client_runtime_api::BeefyLightClientAPI<Block, beefy_light_client::BitField> for Runtime {
-		fn get_random_bitfield(prior: beefy_light_client::BitField, num_of_validators: u32) -> beefy_light_client::BitField {
+		fn get_random_bitfield(network_id: SubNetworkId, prior: beefy_light_client::BitField, num_of_validators: u32) -> beefy_light_client::BitField {
 			let len = prior.len() as usize;
-			BeefyLightClient::create_random_bit_field(prior, num_of_validators).unwrap_or(beefy_light_client::BitField::with_capacity(len))
+			BeefyLightClient::create_random_bit_field(network_id, prior, num_of_validators).unwrap_or(beefy_light_client::BitField::with_capacity(len))
 		}
 	}
 
