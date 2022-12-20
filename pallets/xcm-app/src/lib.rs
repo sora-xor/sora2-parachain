@@ -64,8 +64,9 @@ pub trait WeightInfo {
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
+	use bridge_types::substrate::SubstrateAppMessage;
 	use bridge_types::{
-		substrate::{SubstrateBridgeMessageEncode, XCMAppMessage},
+		substrate::{SubstrateBridgeMessageEncode},
 		traits::OutboundChannel,
 		SubNetworkId,
 	};
@@ -127,7 +128,7 @@ pub mod pallet {
 		MappingDeleted(AssetId, MultiLocation),
 		/// Asset Added to channel
 		/// [Currency Id, amount]
-		AssetAddedToChannel(AssetId, T::Balance),
+		AssetAddedToChannel(SubstrateAppMessage<T::AccountId, AssetId, T::Balance>),
 	}
 
 	#[pallet::error]
@@ -283,20 +284,20 @@ pub mod pallet {
 			let raw_origin = Some(account_id.clone()).into();
 			let multilocation =
 				<T as Config>::AccountIdToMultiLocation::convert(account_id.clone());
-			let xcm_mes = XCMAppMessage::Transfer {
+			let xcm_mes = SubstrateAppMessage::Transfer {
 				asset_id,
-				sender: account_id.clone(),
-				recipient: xcm::VersionedMultiLocation::V1(multilocation),
+				sender: xcm::VersionedMultiLocation::V1(multilocation),
+				recipient: account_id.clone(),
 				amount,
-			}
-			.prepare_message();
+			};
+			let xcm_mes_bytes = xcm_mes.clone().prepare_message();
 			<T as Config>::OutboundChannel::submit(
 				SubNetworkId::Mainnet,
 				&raw_origin,
-				&xcm_mes,
+				&xcm_mes_bytes,
 				(),
 			)?;
-			Self::deposit_event(Event::<T>::AssetAddedToChannel(asset_id, amount));
+			Self::deposit_event(Event::<T>::AssetAddedToChannel(xcm_mes));
 			Ok(())
 		}
 	}
