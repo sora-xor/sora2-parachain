@@ -32,6 +32,8 @@ use crate as xcm_app;
 use bridge_types::{traits::OutboundChannel, SubNetworkId};
 use frame_support::{parameter_types, traits::Everything, WeakBoundedVec};
 use frame_system as system;
+use orml_traits::XcmTransfer;
+use parachain_common::primitives::AssetId;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
@@ -95,6 +97,7 @@ impl xcm_app::Config for Test {
 	type Balance = Balance;
 	type OutboundChannel = TestOutboundChannel;
 	type AccountIdToMultiLocation = TestAccountIdToMultiLocation;
+	type XcmTransfer = TestXcmTransfer;
 }
 
 // Build genesis storage according to the mock runtime.
@@ -127,5 +130,27 @@ impl sp_runtime::traits::Convert<AccountId, MultiLocation> for TestAccountIdToMu
 			.try_into()
 			.expect("Failed to convert account if to xcm multilocaton");
 		X1(AccountId32 { network: xcm::v1::NetworkId::Any, id: arrarr.into() }).into()
+	}
+}
+
+pub struct TestXcmTransfer;
+impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
+	fn transfer(
+		_who: AccountId,
+		_currency_id: AssetId,
+		_amount: Balance,
+		_dest: MultiLocation,
+		_dest_weight_limit: WeightLimit,
+	) -> frame_support::pallet_prelude::DispatchResult {
+		todo!()
+	}
+
+	fn transfer_multi_asset(
+		_who: AccountId,
+		_asset: MultiAsset,
+		_dest: MultiLocation,
+		_dest_weight_limit: WeightLimit,
+	) -> frame_support::pallet_prelude::DispatchResult {
+		todo!()
 	}
 }

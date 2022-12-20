@@ -44,6 +44,7 @@ pub use pallet::*;
 
 use bridge_types::substrate::XCMAppMessage;
 use frame_support::weights::Weight;
+use orml_traits::xcm_transfer::XcmTransfer;
 use orml_traits::MultiCurrency;
 use parachain_common::primitives::AssetId;
 use xcm::{
@@ -109,6 +110,8 @@ pub mod pallet {
 		type OutboundChannel: OutboundChannel<SubNetworkId, Self::AccountId, ()>;
 
 		type AccountIdToMultiLocation: Convert<Self::AccountId, MultiLocation>;
+
+		type XcmTransfer: XcmTransfer<Self::AccountId, Self::Balance, AssetId>;
 	}
 
 	#[pallet::pallet]
@@ -143,7 +146,7 @@ pub mod pallet {
 		MappingDeleted(AssetId, MultiLocation),
 		/// Asset Added to channel
 		/// [Currency Id, amount]
-		AssetAddedToChannel(AssetId, T::Balance),
+		AssetAddedToChannel(SubstrateAppMessage<T::AccountId, AssetId, T::Balance>),
 	}
 
 	#[pallet::error]
@@ -375,15 +378,15 @@ pub mod pallet {
 				recipient: account_id,
 				sender: None,
 				amount,
-			}
-			.prepare_message();
+			};
+			let xcm_mes_bytes = xcm_mes.clone().prepare_message();
 			<T as Config>::OutboundChannel::submit(
 				SubNetworkId::Mainnet,
 				&raw_origin,
-				&xcm_mes,
+				&xcm_mes_bytes,
 				(),
 			)?;
-			Self::deposit_event(Event::<T>::AssetAddedToChannel(asset_id, amount));
+			Self::deposit_event(Event::<T>::AssetAddedToChannel(xcm_mes));
 			Ok(())
 		}
 	}

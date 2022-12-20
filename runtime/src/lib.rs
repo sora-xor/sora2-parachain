@@ -561,6 +561,7 @@ impl xcm_app::Config for Runtime {
 		(),
 		bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
 	>;
+	type XcmTransfer = XTokens;
 }
 
 // impl transactor::Config for Runtime {
@@ -662,7 +663,7 @@ impl substrate_bridge_channel::inbound::Config for Runtime {
 	type FeeAccountId = GetTrustlessBridgeFeesAccountId;
 	type TreasuryAccountId = GetTreasuryAccountId;
 	type FeeConverter = FeeConverter;
-	type Currency = MultiCurrencyImpl;
+	type Currency = XCMApp;
 }
 
 pub struct MultiCurrencyImpl;
