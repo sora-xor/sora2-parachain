@@ -94,22 +94,22 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 			"transfer",
 		);
 		let multilocation_dest = match AssetIdToMultilocation::<T>::get(currency_id.clone()){
-			None => todo!(),
+			None => fail!(Error::<T>::InvalidMultilocationMapping),
 			Some(m) => m,
 		};
 		let parachain_junction = match multilocation_dest.interior {
 			xcm::v2::Junctions::X2(asset, _) => match asset {
 				xcm::v2::Junction::Parachain(p) => xcm::v2::Junction::Parachain(p),
-				_ => todo!(),
+				_ => fail!(Error::<T>::InvalidMultilocationMapping),
 			},
-			_ => todo!(),
+			_ => fail!(Error::<T>::InvalidMultilocationMapping),
 		};
 		let account_junction = match <T as Config>::AccountIdToMultiLocation::convert(to.clone()).interior {
 			xcm::v2::Junctions::X1(acc) => match acc {
 				xcm::v2::Junction::AccountId32 { network: _, id } => xcm::v2::Junction::AccountId32 { network: Any, id },
-				_ => todo!(),
+				_ => fail!(Error::<T>::InvalidMultilocationMapping),
 			},
-			_ => todo!(),
+			_ => fail!(Error::<T>::InvalidMultilocationMapping),
 		};
 		let dest = MultiLocation {
 			parents: 1,

@@ -795,7 +795,7 @@ construct_runtime!(
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 
 		// ORML
-		XTokens: orml_xtokens::{Pallet, Call, Storage, Event<T>} = 41,
+		XTokens: orml_xtokens::{Pallet, Storage, Event<T>} = 41,
 
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
