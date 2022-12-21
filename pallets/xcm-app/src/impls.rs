@@ -31,7 +31,6 @@
 use crate::*;
 use frame_support::fail;
 use sp_runtime::traits::Convert;
-use xcm::v2::NetworkId::Any;
 
 // IMPLS
 impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
@@ -89,6 +88,8 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		to: &T::AccountId,
 		amount: Self::Balance,
 	) -> sp_runtime::DispatchResult {
+		use xcm::v2::{Junctions::{X1, X2}, Junction::{Parachain, AccountId32}};
+
 		log::trace!(
 			target: "xcm::XCMApp",
 			"transfer",
@@ -98,17 +99,11 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 			Some(m) => m,
 		};
 		let parachain_junction = match multilocation_dest.interior {
-			xcm::v2::Junctions::X2(asset, _) => match asset {
-				xcm::v2::Junction::Parachain(p) => xcm::v2::Junction::Parachain(p),
-				_ => fail!(Error::<T>::InvalidMultilocationMapping),
-			},
+			X2(Parachain(p), _) | X2(_, Parachain(p)) => Parachain(p),
 			_ => fail!(Error::<T>::InvalidMultilocationMapping),
 		};
 		let account_junction = match <T as Config>::AccountIdToMultiLocation::convert(to.clone()).interior {
-			xcm::v2::Junctions::X1(acc) => match acc {
-				xcm::v2::Junction::AccountId32 { network: _, id } => xcm::v2::Junction::AccountId32 { network: Any, id },
-				_ => fail!(Error::<T>::InvalidMultilocationMapping),
-			},
+			X1(AccountId32 { network, id } ) => AccountId32 { network, id },
 			_ => fail!(Error::<T>::InvalidMultilocationMapping),
 		};
 		let dest = MultiLocation {
