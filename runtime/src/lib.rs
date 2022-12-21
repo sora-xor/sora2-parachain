@@ -663,7 +663,7 @@ impl substrate_bridge_channel::inbound::Config for Runtime {
 	type FeeAccountId = GetTrustlessBridgeFeesAccountId;
 	type TreasuryAccountId = GetTreasuryAccountId;
 	type FeeConverter = FeeConverter;
-	type Currency = XCMApp;
+	type Currency = MultiCurrencyImpl;
 }
 
 pub struct MultiCurrencyImpl;

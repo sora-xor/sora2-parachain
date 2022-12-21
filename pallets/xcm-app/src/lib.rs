@@ -91,6 +91,7 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
 		type WeightInfo: WeightInfo;
 
 		/// The balance type
@@ -159,7 +160,7 @@ pub mod pallet {
 		MethodNotAvailible,
 		/// Wrong XCM version
 		WrongXCMVersion,
-
+		/// Error with mapping during tranfer assets from parachain to other parachans
 		InvalidMultilocationMapping
 	}
 
@@ -170,19 +171,19 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(<T as Config>::WeightInfo::register_mapping())]
 		#[frame_support::transactional]
-		pub fn tsttransfer(
+		pub fn test_xcm_transfer(
 			origin: OriginFor<T>,
 			asset_id: AssetId,
-			from: T::AccountId,
-			to: T::AccountId,
+			sender: T::AccountId,
+			recipient: xcm::VersionedMultiLocation,
 			amount: T::Balance,
 		) -> DispatchResultWithPostInfo {
 			ensure_root(origin)?;
 			frame_support::log::info!(
 				"Call transfer with params: {:?}",
-				(asset_id, from.clone(), to.clone(), amount),
+				(asset_id, sender.clone(), recipient.clone(), amount),
 			);
-			<Self as MultiCurrency<T::AccountId>>::transfer(asset_id, &from, &to, amount)?;
+			Self::do_xcm_asset_transfer(asset_id, sender, recipient, amount)?;
 			Ok(().into())
 		}
 
@@ -198,9 +199,10 @@ pub mod pallet {
 			let res = T::CallOrigin::ensure_origin(origin)?;
 			frame_support::log::info!(
 				"Call transfer with params: {:?} by {:?}",
-				(asset_id, sender, recipient, amount),
+				(asset_id, sender.clone(), recipient.clone(), amount),
 				res
 			);
+			Self::do_xcm_asset_transfer(asset_id, sender, recipient, amount)?;
 			Ok(().into())
 		}
 
@@ -407,6 +409,26 @@ pub mod pallet {
 				(),
 			)?;
 			Self::deposit_event(Event::<T>::AssetAddedToChannel(xcm_mes));
+			Ok(())
+		}
+
+		pub fn do_xcm_asset_transfer(			
+			asset_id: AssetId,
+			sender: T::AccountId,
+			recipient: xcm::VersionedMultiLocation,
+			amount: T::Balance,
+		) -> sp_runtime::DispatchResult {
+			let recipient = match recipient {
+				xcm::VersionedMultiLocation::V1(m) => m,
+				_ => fail!(Error::<T>::WrongXCMVersion),
+			};
+			<T as Config>::XcmTransfer::transfer(
+				sender,
+				asset_id,
+				amount,
+				recipient,
+				xcm::v2::WeightLimit::Unlimited,
+			)?;
 			Ok(())
 		}
 	}
