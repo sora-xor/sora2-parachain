@@ -45,11 +45,13 @@ fn it_works_register_change_delete() {
 		let asset_id = [
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			1, 1, 1,
-		].into();
+		]
+		.into();
 		let new_asset_id = [
 			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 			2, 2, 2,
-		].into();
+		]
+		.into();
 		let multilocation = MultiLocation::parent();
 		let new_multilocation = MultiLocation {
 			parents: 1,
@@ -124,11 +126,13 @@ fn it_fails_create_existing_mapping() {
 		let asset_id = [
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			1, 1, 1,
-		].into();
+		]
+		.into();
 		let new_asset_id = [
 			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 			2, 2, 2,
-		].into();
+		]
+		.into();
 		let multilocation = MultiLocation::parent();
 		let new_multilocation = MultiLocation {
 			parents: 1,
@@ -167,11 +171,13 @@ fn it_fails_change_asset_non_existing_mapping() {
 		let asset_id = [
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			1, 1, 1,
-		].into();
+		]
+		.into();
 		let new_asset_id = [
 			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 			2, 2, 2,
-		].into();
+		]
+		.into();
 		let multilocation = MultiLocation::parent();
 
 		assert_noop!(
@@ -202,7 +208,8 @@ fn it_fails_change_multilocation_non_existing_mapping() {
 		let asset_id = [
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			1, 1, 1,
-		].into();
+		]
+		.into();
 		let multilocation = MultiLocation::parent();
 		let new_multilocation = MultiLocation {
 			parents: 1,
@@ -241,7 +248,8 @@ fn it_fails_delete_mapping_non_existing_mapping() {
 		let asset_id = [
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			1, 1, 1,
-		].into();
+		]
+		.into();
 		assert_noop!(
 			XCMApp::delete_mapping(RuntimeOrigin::root(), asset_id),
 			Error::<Test>::MappingNotExist

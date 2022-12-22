@@ -179,13 +179,14 @@ async fn build_relay_chain_interface(
 	hwbench: Option<sc_sysinfo::HwBench>,
 ) -> RelayChainResult<(Arc<(dyn RelayChainInterface + 'static)>, Option<CollatorPair>)> {
 	match collator_options.relay_chain_rpc_url {
-		Some(relay_chain_url) =>
+		Some(relay_chain_url) => {
 			cumulus_relay_chain_minimal_node::build_minimal_relay_chain_node(
 				polkadot_config,
 				task_manager,
 				relay_chain_url,
 			)
-			.await,
+			.await
+		},
 		None => build_inprocess_relay_chain(
 			polkadot_config,
 			parachain_config,

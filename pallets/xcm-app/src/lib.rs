@@ -62,15 +62,21 @@ pub trait WeightInfo {
 	fn change_multilocation_mapping() -> Weight;
 
 	fn delete_mapping() -> Weight;
+
+	fn transfer() -> Weight;
+
+	fn register_asset() -> Weight;
 }
 
 impl<T: Config> From<XCMAppMessage<T::AccountId, AssetId, T::Balance>> for Call<T> {
 	fn from(value: XCMAppMessage<T::AccountId, AssetId, T::Balance>) -> Self {
 		match value {
-			XCMAppMessage::Transfer { sender, recipient, amount, asset_id } =>
-				Call::transfer { sender, recipient, amount, asset_id },
-			XCMAppMessage::RegisterAsset { asset_id, sidechain_asset, asset_kind } =>
-				Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind },
+			XCMAppMessage::Transfer { sender, recipient, amount, asset_id } => {
+				Call::transfer { sender, recipient, amount, asset_id }
+			},
+			XCMAppMessage::RegisterAsset { asset_id, sidechain_asset, asset_kind } => {
+				Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind }
+			},
 		}
 	}
 }
@@ -161,7 +167,7 @@ pub mod pallet {
 		/// Wrong XCM version
 		WrongXCMVersion,
 		/// Error with mapping during tranfer assets from parachain to other parachans
-		InvalidMultilocationMapping
+		InvalidMultilocationMapping,
 	}
 
 	#[pallet::hooks]
@@ -169,7 +175,7 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		#[pallet::weight(<T as Config>::WeightInfo::register_mapping())]
+		#[pallet::weight(<T as Config>::WeightInfo::transfer())]
 		#[frame_support::transactional]
 		pub fn test_xcm_transfer(
 			origin: OriginFor<T>,
@@ -187,7 +193,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(<T as Config>::WeightInfo::register_mapping())]
+		#[pallet::weight(<T as Config>::WeightInfo::transfer())]
 		#[frame_support::transactional]
 		pub fn transfer(
 			origin: OriginFor<T>,
@@ -206,7 +212,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(<T as Config>::WeightInfo::register_mapping())]
+		#[pallet::weight(<T as Config>::WeightInfo::register_asset())]
 		#[frame_support::transactional]
 		pub fn register_asset(
 			origin: OriginFor<T>,
@@ -225,8 +231,8 @@ pub mod pallet {
 				xcm::v2::AssetId::Abstract(_) => fail!(Error::<T>::WrongXCMVersion),
 			};
 			ensure!(
-				AssetIdToMultilocation::<T>::get(asset_id).is_none() ||
-					MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
+				AssetIdToMultilocation::<T>::get(asset_id).is_none()
+					|| MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
 				Error::<T>::MappingAlreadyExists
 			);
 			AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
@@ -261,8 +267,8 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let _ = ensure_root(origin)?;
 			ensure!(
-				AssetIdToMultilocation::<T>::get(asset_id).is_none() ||
-					MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
+				AssetIdToMultilocation::<T>::get(asset_id).is_none()
+					|| MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
 				Error::<T>::MappingAlreadyExists
 			);
 			AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
@@ -412,7 +418,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		pub fn do_xcm_asset_transfer(			
+		pub fn do_xcm_asset_transfer(
 			asset_id: AssetId,
 			sender: T::AccountId,
 			recipient: xcm::VersionedMultiLocation,

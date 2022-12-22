@@ -63,6 +63,18 @@ impl<T: frame_system::Config> crate::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
+
+	fn transfer() -> Weight {
+		Weight::from_ref_time(17_000_000)
+			.saturating_add(T::DbWeight::get().reads(1))
+			.saturating_add(T::DbWeight::get().writes(2))
+    }
+
+	fn register_asset() -> Weight {
+		Weight::from_ref_time(17_000_000)
+			.saturating_add(T::DbWeight::get().reads(1))
+			.saturating_add(T::DbWeight::get().writes(2))
+    }
 }
 
 
@@ -82,4 +94,12 @@ impl crate::WeightInfo for () {
 	fn delete_mapping() -> Weight {
 		EXTRINSIC_FIXED_WEIGHT
 	}
+
+	fn transfer() -> Weight {
+        EXTRINSIC_FIXED_WEIGHT
+    }
+
+	fn register_asset() -> Weight {
+        EXTRINSIC_FIXED_WEIGHT
+    }
 }

@@ -158,9 +158,9 @@ impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
 
 pub struct TestCallOrigin;
 impl<OuterOrigin> frame_support::traits::EnsureOrigin<OuterOrigin> for TestCallOrigin {
-    type Success = bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>;
+	type Success = bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>;
 
-    fn try_origin(_o: OuterOrigin) -> Result<Self::Success, OuterOrigin> {
-        todo!()
-    }
+	fn try_origin(_o: OuterOrigin) -> Result<Self::Success, OuterOrigin> {
+		todo!()
+	}
 }

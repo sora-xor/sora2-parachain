@@ -77,7 +77,6 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 			target: "xcm::XCMApp",
 			"ensure_can_withdraw",
 		);
-		// fail!(Error::<T>::MethodNotAvailible)
 		Ok(())
 	}
 
@@ -117,7 +116,6 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 			target: "xcm::XCMApp",
 			"withdraw",
 		);
-		// fail!(Error::<T>::MethodNotAvailible)
 		Ok(())
 	}
 

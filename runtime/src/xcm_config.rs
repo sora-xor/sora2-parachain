@@ -225,14 +225,14 @@ impl pallet_xcm::Config for Runtime {
 	type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type XcmRouter = XcmRouter;
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
-	// TODO: investigate, created task https://app.zenhub.com/workspaces/sora2-backend-62b9c0e3e9b9e600201273e3/issues/gh/sora-xor/sora2-network/228 
+	// TODO: investigate, created task https://app.zenhub.com/workspaces/sora2-backend-62b9c0e3e9b9e600201273e3/issues/gh/sora-xor/sora2-network/228
 	// previous line was: type XcmExecuteFilter = Nothing;
 	type XcmExecuteFilter = Everything;
 	// ^ Disable dispatchable execute on the XCM pallet.
 	// Needs to be `Everything` for local testing.
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type XcmTeleportFilter = Everything;
-	// TODO: investigate, created task https://app.zenhub.com/workspaces/sora2-backend-62b9c0e3e9b9e600201273e3/issues/gh/sora-xor/sora2-network/228 
+	// TODO: investigate, created task https://app.zenhub.com/workspaces/sora2-backend-62b9c0e3e9b9e600201273e3/issues/gh/sora-xor/sora2-network/228
 	// default filter was: Nothing
 	type XcmReserveTransferFilter = Everything;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;

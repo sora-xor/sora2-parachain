@@ -29,7 +29,6 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use super::*;
-#[allow(unused)]
 use crate::Pallet as XCMApp;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
 use frame_support::WeakBoundedVec;
