@@ -385,10 +385,11 @@ pub mod pallet {
 		#[frame_support::transactional]
 		pub fn fake_transfer(
 			origin: OriginFor<T>,
+			account_id: T::AccountId,
 			asset_id: AssetId,
 			amount: T::Balance,
 		) -> DispatchResultWithPostInfo {
-			let account_id = ensure_signed(origin)?;
+			ensure_root(origin)?;
 			Self::add_to_channel(account_id, asset_id, amount)?;
 			Ok(().into())
 		}
