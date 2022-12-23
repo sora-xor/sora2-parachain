@@ -231,6 +231,8 @@ where
 		+ beefy_primitives::BeefyApi<Block>
 		+ sp_mmr_primitives::MmrApi<Block, Hash, BlockNumber>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
+		+ leaf_provider_runtime_api::LeafProviderAPI<Block>
+		+ beefy_light_client_runtime_api::BeefyLightClientAPI<Block, beefy_light_client::BitField>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
 	Executor: sc_executor::NativeExecutionDispatch + 'static,
@@ -345,11 +347,13 @@ where
 
 	let rpc_builder = {
 		let client = client.clone();
+		let backend = backend.clone();
 		let transaction_pool = transaction_pool.clone();
 
 		Box::new(move |deny_unsafe, subscription_executor| {
 			let deps = crate::rpc::FullDeps {
 				client: client.clone(),
+				backend: backend.clone(),
 				pool: transaction_pool.clone(),
 				deny_unsafe,
 				beefy: crate::rpc::BeefyDeps {

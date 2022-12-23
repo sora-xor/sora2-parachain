@@ -1,24 +1,54 @@
+// This file is part of the SORA network and Polkaswap app.
+
+// Copyright (c) 2020, 2021, Polka Biome Ltd. All rights reserved.
+// SPDX-License-Identifier: BSD-4-Clause
+
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+
+// Redistributions of source code must retain the above copyright notice, this list
+// of conditions and the following disclaimer.
+// Redistributions in binary form must reproduce the above copyright notice, this
+// list of conditions and the following disclaimer in the documentation and/or other
+// materials provided with the distribution.
+//
+// All advertising materials mentioning features or use of this software must display
+// the following acknowledgement: This product includes software developed by Polka Biome
+// Ltd., SORA, and Polkaswap.
+//
+// Neither the name of the Polka Biome Ltd. nor the names of its contributors may be used
+// to endorse or promote products derived from this software without specific prior written permission.
+
+// THIS SOFTWARE IS PROVIDED BY Polka Biome Ltd. AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES,
+// INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Polka Biome Ltd. BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+// OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
 // Make the WASM binary available.
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", not(feature = "parachain-gen")))]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 mod migrations;
+mod trader;
 mod weights;
 pub mod xcm_config;
 
 use bridge_types::{
-	substrate::SubstrateBridgeMessage, traits::Verifier, types::ParachainMessage, SubNetworkId,
-	CHANNEL_INDEXING_PREFIX, U256,
+	substrate::SubstrateBridgeMessage, SubNetworkId, CHANNEL_INDEXING_PREFIX, U256,
 };
 use codec::{Decode, Encode};
 use frame_support::{
 	dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
 	traits::{Contains, Currency, ExistenceRequirement},
 };
+use orml_traits::MultiCurrency;
 use scale_info::TypeInfo;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -29,9 +59,8 @@ use sp_runtime::{
 		AccountIdLookup, BlakeTwo256, Block as BlockT, Convert, IdentifyAccount, Keccak256, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, DispatchError, DispatchResult, MultiSignature, RuntimeDebug,
+	ApplyExtrinsicResult, DispatchResult, MultiSignature, RuntimeDebug,
 };
-use traits::MultiCurrency;
 
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -433,8 +462,8 @@ parameter_types! {
 impl pallet_beefy_mmr::Config for Runtime {
 	type LeafVersion = LeafVersion;
 	type BeefyAuthorityToMerkleLeaf = pallet_beefy_mmr::BeefyEcdsaToEthereum;
-	type LeafExtra = Vec<u8>;
-	type BeefyDataProvider = ();
+	type LeafExtra = bridge_types::types::LeafExtraData<H256, H256>;
+	type BeefyDataProvider = LeafProvider;
 }
 
 impl pallet_sudo::Config for Runtime {
@@ -515,6 +544,46 @@ impl pallet_collator_selection::Config for Runtime {
 	type WeightInfo = ();
 }
 
+orml_traits::parameter_type_with_key! {
+	pub ExistentialDeposits: |_currency_id: parachain_common::primitives::AssetId| -> Balance {
+		Default::default()
+	};
+}
+
+impl xcm_app::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = xcm_app::weights::WeightInfo<Runtime>;
+	type Balance = Balance;
+	type OutboundChannel = SubstrateBridgeOutboundChannel;
+	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
+	type CallOrigin = dispatch::EnsureAccount<
+		SubNetworkId,
+		(),
+		bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
+	>;
+	type XcmTransfer = XTokens;
+}
+
+// impl transactor::Config for Runtime {
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type Balance = Balance;
+// 	type CurrencyId = parachain_common::primitives::AssetId;
+// 	type OutboundChannel = SubstrateBridgeOutboundChannel;
+// 	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
+// }
+
+parameter_types! {
+	pub const SidechainRandomnessNetwork: SubNetworkId = SubNetworkId::Mainnet;
+}
+
+impl beefy_light_client::Config for Runtime {
+	type Message = Vec<bridge_types::types::ParachainMessage<Balance>>;
+	type RuntimeEvent = RuntimeEvent;
+	type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
+}
+
+impl pallet_randomness_collective_flip::Config for Runtime {}
+
 parameter_types! {
 	pub const BridgeMaxMessagePayloadSize: u64 = 256;
 	pub const BridgeMaxMessagesPerCommit: u64 = 20;
@@ -534,19 +603,6 @@ impl dispatch::Config for Runtime {
 	type CallFilter = SubstrateBridgeCallFilter;
 }
 
-pub struct MockVerifier;
-
-impl Verifier<SubNetworkId, ParachainMessage<Balance>> for MockVerifier {
-	type Result = Vec<ParachainMessage<Balance>>;
-
-	fn verify(
-		_network_id: SubNetworkId,
-		message: &ParachainMessage<Balance>,
-	) -> Result<Self::Result, DispatchError> {
-		Ok(vec![message.clone()])
-	}
-}
-
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug, TypeInfo)]
 pub struct DispatchableSubstrateBridgeCall(SubstrateBridgeMessage<AccountId, H256, Balance>);
 
@@ -558,14 +614,16 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
 
 	fn dispatch(
 		self,
-		_origin: Self::RuntimeOrigin,
+		origin: Self::RuntimeOrigin,
 	) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {
 		match self.0 {
 			bridge_types::substrate::SubstrateBridgeMessage::SubstrateApp(_msg) => {
 				unimplemented!()
 			},
-			bridge_types::substrate::SubstrateBridgeMessage::XCMApp(_msg) => {
-				unimplemented!()
+			bridge_types::substrate::SubstrateBridgeMessage::XCMApp(msg) => {
+				let call: xcm_app::Call<crate::Runtime> = msg.into();
+				let call: crate::RuntimeCall = call.into();
+				call.dispatch(origin)
 			},
 		}
 	}
@@ -576,7 +634,7 @@ impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
 	fn contains(call: &DispatchableSubstrateBridgeCall) -> bool {
 		match &call.0 {
 			bridge_types::substrate::SubstrateBridgeMessage::SubstrateApp(_) => false,
-			bridge_types::substrate::SubstrateBridgeMessage::XCMApp(_) => false,
+			bridge_types::substrate::SubstrateBridgeMessage::XCMApp(_) => true,
 		}
 	}
 }
@@ -595,7 +653,10 @@ parameter_types! {
 
 impl substrate_bridge_channel::inbound::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type Verifier = MockVerifier;
+	type Verifier = BeefyLightClient;
+	type ProvedMessage = beefy_light_client::ProvedSubstrateBridgeMessage<
+		Vec<bridge_types::types::ParachainMessage<Balance>>,
+	>;
 	type MessageDispatch = SubstrateDispatch;
 	type WeightInfo = ();
 	type FeeAssetId = ();
@@ -687,7 +748,15 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
 	type MaxMessagePayloadSize = BridgeMaxMessagePayloadSize;
 	type MaxMessagesPerCommit = BridgeMaxMessagesPerCommit;
 	type Currency = MultiCurrencyImpl;
+	type AuxiliaryDigestHandler = LeafProvider;
 	type WeightInfo = ();
+}
+
+impl leaf_provider::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Hashing = Keccak256;
+	type Hash = <Keccak256 as sp_runtime::traits::Hash>::Output;
+	type Randomness = RandomnessCollectiveFlip;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -725,10 +794,19 @@ construct_runtime!(
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 32,
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 
+		// ORML
+		XTokens: orml_xtokens::{Pallet, Storage, Event<T>} = 41,
+
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
+
+		XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
+		BeefyLightClient: beefy_light_client::{Pallet, Call, Storage, Event<T>, Config} = 103,
+		// Just for testing purposes
+		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 104,
 		SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Config, Storage, Event<T>} = 105,
 		SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 106,
 		SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 107,
+		LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 108,
 	}
 );
 
@@ -745,6 +823,7 @@ mod benches {
 		[pallet_timestamp, Timestamp]
 		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
+		[xcp_app, XCMApp]
 	);
 }
 
@@ -901,6 +980,19 @@ impl_runtime_apis! {
 		) -> Result<(), sp_mmr_primitives::Error> {
 			let nodes = leaves.into_iter().map(|leaf|sp_mmr_primitives::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
 			pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(root, nodes, proof)
+		}
+	}
+
+	impl beefy_light_client_runtime_api::BeefyLightClientAPI<Block, beefy_light_client::BitField> for Runtime {
+		fn get_random_bitfield(network_id: SubNetworkId, prior: beefy_light_client::BitField, num_of_validators: u32) -> beefy_light_client::BitField {
+			let len = prior.len() as usize;
+			BeefyLightClient::create_random_bit_field(network_id, prior, num_of_validators).unwrap_or(beefy_light_client::BitField::with_capacity(len))
+		}
+	}
+
+	impl leaf_provider_runtime_api::LeafProviderAPI<Block> for Runtime {
+		fn latest_digest() -> Option<bridge_types::types::AuxiliaryDigest> {
+				LeafProvider::latest_digest().map(|logs| bridge_types::types::AuxiliaryDigest{ logs })
 		}
 	}
 

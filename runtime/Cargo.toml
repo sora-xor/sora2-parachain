@@ -26,6 +26,12 @@ scale-info = { version = "2.1.1", default-features = false, features = [
 serde = { version = "1.0.119", optional = true, features = ["derive"] }
 smallvec = "1.6.1"
 
+xcm-app = { path = "../pallets/xcm-app", default-features = false }
+parachain-common = { path = "../parachain-common", default-features = false }
+beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false }
+beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false }
+
+
 # Substrate Dependencies
 ## Substrate Primitive Dependencies
 beefy-primitives = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31" }
@@ -64,6 +70,7 @@ pallet-sudo = { git = "https://github.com/paritytech/substrate.git", default-fea
 pallet-timestamp = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31" }
 pallet-transaction-payment = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31" }
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31" }
+pallet-randomness-collective-flip = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31" }
 
 # Cumulus dependencies
 cumulus-pallet-aura-ext = { git = 'https://github.com/paritytech/cumulus', branch = 'polkadot-v0.9.31', default-features = false }
@@ -86,15 +93,24 @@ xcm = { git = "https://github.com/paritytech/polkadot", default-features = false
 xcm-builder = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.31" }
 xcm-executor = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.31" }
 
-substrate-bridge-channel = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }
-dispatch = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }
-bridge-types = { git = "https://github.com/sora-xor/sora2-common", branch = "generalize-pallets", default-features = false }
-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", branch = "polkadot-v0.9.31", package = "orml-traits", default-features = false }
+# ORML
+orml-xtokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.31" }
+orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.31" }
+orml-xcm-support = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.31" }
+
+# SORA
+substrate-bridge-channel = { git = "https://github.com/sora-xor/sora2-common", branch = "develop", default-features = false }
+dispatch = { git = "https://github.com/sora-xor/sora2-common", branch = "develop", default-features = false }
+bridge-types = { git = "https://github.com/sora-xor/sora2-common", branch = "develop", default-features = false }
+leaf-provider = { git = "https://github.com/sora-xor/sora2-common", branch = "develop", default-features = false }
+leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common", branch = "develop", default-features = false }
 
 [features]
 default = ["std"]
 std = [
 	"beefy-primitives/std",
+	"beefy-light-client/std",
+	"beefy-light-client-runtime-api/std",
 	"codec/std",
 	"cumulus-pallet-aura-ext/std",
 	"cumulus-pallet-dmp-queue/std",
@@ -110,12 +126,16 @@ std = [
 	"frame-system/std",
 	"log/std",
 	"log/std",
+	"orml-xtokens/std",
+	"orml-traits/std",
+	"orml-xcm-support/std",
 	"pallet-aura/std",
 	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-beefy/std",
 	"pallet-collator-selection/std",
 	"pallet-mmr/std",
+	"pallet-randomness-collective-flip/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
 	"pallet-timestamp/std",
@@ -140,12 +160,14 @@ std = [
 	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
+	"xcm-app/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
 	"xcm/std",
-	"traits/std",
 	"substrate-bridge-channel/std",
 	"dispatch/std",
+	"leaf-provider/std",
+	"leaf-provider-runtime-api/std",
 ]
 
 runtime-benchmarks = [
@@ -159,9 +181,12 @@ runtime-benchmarks = [
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
+	"xcm-app/runtime-benchmarks",
 	"xcm-builder/runtime-benchmarks",
 	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
 	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
 ]
 
 try-runtime = ["frame-executive/try-runtime", "frame-try-runtime"]
+
+parachain-gen = []

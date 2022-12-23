@@ -1,0 +1,9 @@
+FROM parity/polkadot:v0.9.31
+
+USER root
+
+RUN rm /etc/apt/sources.list.d/parity.list && \
+    apt-get --allow-unauthenticated -y update && apt install -y jq && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
