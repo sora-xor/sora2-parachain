@@ -37,6 +37,7 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"rococo_raw" => Box::new(chain_spec::raw_config(RelayChain::Rococo)),
 		"template-rococo" => Box::new(chain_spec::local_testnet_config()),
 		"" | "local" => Box::new(chain_spec::local_testnet_config()),
+		"docker-local" => Box::new(chain_spec::docker_local_testnet_config()),
 		path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
 	})
 }
