@@ -125,6 +125,17 @@ pub fn get_collator_keys_from_seed(seed: &str) -> (AuraId, BeefyId) {
 	(get_public_from_seed::<AuraId>(seed), get_public_from_seed::<BeefyId>(seed))
 }
 
+pub fn authority_keys_from_public_keys(
+	collator_address: [u8; 32],
+	sr25519_key: [u8; 32],
+	ecdsa_key: [u8; 33],
+) -> (AccountId, (AuraId, BeefyId)) {
+	(
+		collator_address.into(),
+		(AuraId::from_slice(&sr25519_key).unwrap(), BeefyId::from_slice(&ecdsa_key).unwrap()),
+	)
+}
+
 /// Helper function to generate an account ID from seed
 pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
 where
@@ -285,6 +296,126 @@ pub fn local_testnet_config() -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Alice"),
 					get_account_id_from_seed::<sr25519::Public>("Bob"),
 					get_account_id_from_seed::<sr25519::Public>("Charlie"),
+				],
+				2011.into(),
+				SubNetworkId::Rococo,
+			)
+		},
+		// Bootnodes
+		Vec::new(),
+		// Telemetry
+		None,
+		// Protocol ID
+		Some("template-local"),
+		// Fork ID
+		None,
+		// Properties
+		Some(properties),
+		// Extensions
+		Extensions {
+			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
+			para_id: 2011,
+		},
+	)
+}
+
+/// Config for docker-compose based local testnet
+pub fn docker_local_testnet_config() -> ChainSpec {
+	// Give your base currency a unit name and decimal places
+	let mut properties = sc_chain_spec::Properties::new();
+	properties.insert("tokenSymbol".into(), "UNIT".into());
+	properties.insert("tokenDecimals".into(), 12.into());
+	properties.insert("ss58Format".into(), 42.into());
+
+	ChainSpec::from_genesis(
+		// Name
+		"Local Testnet",
+		// ID
+		"local_testnet",
+		ChainType::Local,
+		move || {
+			testnet_genesis(
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				// initial collators.
+				vec![(
+					get_account_id_from_seed::<sr25519::Public>("Alice"),
+					get_collator_keys_from_seed("Alice"),
+				)],
+				vec![
+					get_account_id_from_seed::<sr25519::Public>("Alice"),
+					get_account_id_from_seed::<sr25519::Public>("Bob"),
+					get_account_id_from_seed::<sr25519::Public>("Charlie"),
+					get_account_id_from_seed::<sr25519::Public>("Dave"),
+					get_account_id_from_seed::<sr25519::Public>("Eve"),
+					get_account_id_from_seed::<sr25519::Public>("Relayer"),
+				],
+				2011.into(),
+				SubNetworkId::Rococo,
+			)
+		},
+		// Bootnodes
+		Vec::new(),
+		// Telemetry
+		None,
+		// Protocol ID
+		Some("template-local"),
+		// Fork ID
+		None,
+		// Properties
+		Some(properties),
+		// Extensions
+		Extensions {
+			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
+			para_id: 2011,
+		},
+	)
+}
+
+/// Config for bridge private testnet
+pub fn bridge_dev_config() -> ChainSpec {
+	// Give your base currency a unit name and decimal places
+	let mut properties = sc_chain_spec::Properties::new();
+	properties.insert("tokenSymbol".into(), "UNIT".into());
+	properties.insert("tokenDecimals".into(), 12.into());
+	properties.insert("ss58Format".into(), 42.into());
+
+	ChainSpec::from_genesis(
+		// Name
+		"Local Testnet",
+		// ID
+		"local_testnet",
+		ChainType::Local,
+		move || {
+			testnet_genesis(
+				hex!("f6d0e31012ebeef4b9cc4cddd0593a8579d226dc17ce725139225e81683f0143").into(),
+				// initial collators.
+				vec![
+					authority_keys_from_public_keys(
+						// scheme: sr25519, seed: <seed>//parachain-collator-1
+						hex!("9232d7e4f6b7e1a881346c92f63d65e0a0ce6def5170e9766ed9d1001ed27e5d"),
+						// scheme: sr25519, seed: <seed>//parachain-collator-1
+						hex!("9232d7e4f6b7e1a881346c92f63d65e0a0ce6def5170e9766ed9d1001ed27e5d"),
+						// scheme: ecdsa, seed: <seed>//parachain-collator-1
+						hex!("035cb006bff18dcad55c58409b1cdc31be223b1340596c53f3704859fa0057469d"),
+					),
+					authority_keys_from_public_keys(
+						// scheme: sr25519, seed: <seed>//parachain-collator-2
+						hex!("54036a0a47f28c64885fd8f0300c8ff436c3007e6b5ef70d4c3f1d3ee8856f5c"),
+						// scheme: sr25519, seed: <seed>//parachain-collator-2
+						hex!("54036a0a47f28c64885fd8f0300c8ff436c3007e6b5ef70d4c3f1d3ee8856f5c"),
+						// scheme: ecdsa, seed: <seed>//parachain-collator-2
+						hex!("03c9a2529b1b857aa620a6b908de3aded3503d4549dd36ecfa79f800ae46ca0c9a"),
+					),
+				],
+				vec![
+					hex!("f6d0e31012ebeef4b9cc4cddd0593a8579d226dc17ce725139225e81683f0143").into(),
+					hex!("9232d7e4f6b7e1a881346c92f63d65e0a0ce6def5170e9766ed9d1001ed27e5d").into(),
+					hex!("54036a0a47f28c64885fd8f0300c8ff436c3007e6b5ef70d4c3f1d3ee8856f5c").into(),
+					hex!("7a2eaa9ba604e1c6575c0cada3e50155f98cd625566ea7239577c9565236662a").into(),
+					hex!("ac95d7df7e9f61b82654a0a9c93a74cca9182062a89aff6f0545f09ab9c1a152").into(),
+					hex!("4c6018b95a633613714b65201f9f41fb8901be88dc5fb0053fc3c10c02ddad33").into(),
+					hex!("306c3e7cb2075ca8cd7d3a5ec71e6f51e3fa6e8e550dce003a1c39167e0f317b").into(),
+					hex!("328be9c672c4fff8ae9065ebdf116a47e1121933616a1d1749ff9bb3356fd542").into(),
 				],
 				2011.into(),
 				SubNetworkId::Rococo,
