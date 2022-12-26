@@ -31,6 +31,7 @@ fn set_default_ss58_version() {
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	Ok(match id {
 		"dev" => Box::new(chain_spec::development_config()),
+		"bridge-dev" => Box::new(chain_spec::bridge_dev_config()),
 		"kusama" => Box::new(chain_spec::kusama_chain_spec()?),
 		"kusama_raw" => Box::new(chain_spec::raw_config(RelayChain::Kusama)),
 		"rococo" => Box::new(chain_spec::rococo_chain_spec()?),
