@@ -33,7 +33,7 @@ use super::{
 	RuntimeOrigin, XcmpQueue,
 };
 use core::marker::PhantomData;
-use frame_support::{log, match_types, parameter_types, traits::Everything};
+use frame_support::{log, match_types, parameter_types, traits::{Everything, Nothing}};
 use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
 use orml_xcm_support::{IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset};
 use pallet_xcm::XcmPassthrough;
@@ -45,7 +45,7 @@ use xcm::{latest::Weight as XcmWeight, prelude::*};
 use xcm_builder::{
 	AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
 	AllowTopLevelPaidExecutionFrom, EnsureXcmOrigin, FixedWeightBounds, LocationInverter,
-	NativeAsset, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
+	ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
 	SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
 	SovereignSignedViaLocation, TakeWeightCredit,
 };
@@ -196,8 +196,7 @@ impl xcm_executor::Config for XcmConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
 	type IsReserve = MultiNativeAsset<AbsoluteReserveProvider>;
-	// type IsTeleporter = (); // Teleporting is disabled.
-	type IsTeleporter = NativeAsset; // Teleporting is disabled.
+	type IsTeleporter = (); // Teleporting is disabled.
 	type LocationInverter = LocationInverter<Ancestry>;
 	type Barrier = Barrier;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
@@ -225,15 +224,11 @@ impl pallet_xcm::Config for Runtime {
 	type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type XcmRouter = XcmRouter;
 	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
-	// TODO: investigate, created task https://app.zenhub.com/workspaces/sora2-backend-62b9c0e3e9b9e600201273e3/issues/gh/sora-xor/sora2-network/228
-	// previous line was: type XcmExecuteFilter = Nothing;
-	type XcmExecuteFilter = Everything;
+	type XcmExecuteFilter = Nothing;
 	// ^ Disable dispatchable execute on the XCM pallet.
 	// Needs to be `Everything` for local testing.
 	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type XcmTeleportFilter = Everything;
-	// TODO: investigate, created task https://app.zenhub.com/workspaces/sora2-backend-62b9c0e3e9b9e600201273e3/issues/gh/sora-xor/sora2-network/228
-	// default filter was: Nothing
+	type XcmTeleportFilter = Nothing;
 	type XcmReserveTransferFilter = Everything;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type LocationInverter = LocationInverter<Ancestry>;
