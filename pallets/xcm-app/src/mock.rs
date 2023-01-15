@@ -118,7 +118,11 @@ impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
 		_payload: &[u8],
 		_additional: (),
 	) -> Result<H256, sp_runtime::DispatchError> {
-		todo!()
+		Ok([
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1,
+		]
+		.into())
 	}
 }
 
@@ -143,7 +147,7 @@ impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
 		_dest: MultiLocation,
 		_dest_weight_limit: WeightLimit,
 	) -> frame_support::pallet_prelude::DispatchResult {
-		todo!()
+		Ok(())
 	}
 
 	fn transfer_multi_asset(
@@ -152,7 +156,7 @@ impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
 		_dest: MultiLocation,
 		_dest_weight_limit: WeightLimit,
 	) -> frame_support::pallet_prelude::DispatchResult {
-		todo!()
+		Ok(())
 	}
 }
 
@@ -161,6 +165,15 @@ impl<OuterOrigin> frame_support::traits::EnsureOrigin<OuterOrigin> for TestCallO
 	type Success = bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>;
 
 	fn try_origin(_o: OuterOrigin) -> Result<Self::Success, OuterOrigin> {
-		todo!()
+		Ok(bridge_types::types::CallOriginOutput {
+			network_id: SubNetworkId::Mainnet,
+			message_id: [
+				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1,
+			]
+			.into(),
+			timestamp: 0,
+			additional: (),
+		})
 	}
 }
