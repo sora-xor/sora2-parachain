@@ -121,16 +121,11 @@ fn it_works_register_change_delete() {
 }
 
 #[test]
-fn it_fails_create_existing_mapping() {
+fn it_fails_create_existing_multilocation_mapping() {
 	new_test_ext().execute_with(|| {
 		let asset_id = [
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			1, 1, 1,
-		]
-		.into();
-		let new_asset_id = [
-			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-			2, 2, 2,
 		]
 		.into();
 		let multilocation = MultiLocation::parent();
@@ -144,11 +139,6 @@ fn it_fails_create_existing_mapping() {
 			asset_id,
 			multilocation.clone()
 		));
-		assert_ok!(XCMApp::register_mapping(
-			RuntimeOrigin::root(),
-			new_asset_id,
-			new_multilocation.clone()
-		));
 
 		assert_noop!(
 			XCMApp::register_mapping(RuntimeOrigin::root(), asset_id, multilocation.clone()),
@@ -156,6 +146,34 @@ fn it_fails_create_existing_mapping() {
 		);
 		assert_noop!(
 			XCMApp::register_mapping(RuntimeOrigin::root(), asset_id, new_multilocation.clone()),
+			Error::<Test>::MappingAlreadyExists
+		);
+	});
+}
+
+#[test]
+fn it_fails_create_existing_asset_id_mapping() {
+	new_test_ext().execute_with(|| {
+		let asset_id = [
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1, 1,
+		]
+		.into();
+		let new_asset_id = [
+			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+			2, 2, 2,
+		]
+		.into();
+		let multilocation = MultiLocation::parent();
+
+		assert_ok!(XCMApp::register_mapping(
+			RuntimeOrigin::root(),
+			asset_id,
+			multilocation.clone()
+		));
+
+		assert_noop!(
+			XCMApp::register_mapping(RuntimeOrigin::root(), asset_id, multilocation.clone()),
 			Error::<Test>::MappingAlreadyExists
 		);
 		assert_noop!(
