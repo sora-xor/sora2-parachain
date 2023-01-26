@@ -35,6 +35,9 @@
 #[cfg(all(feature = "std", not(feature = "parachain-gen")))]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+#[cfg(test)]
+mod xcm_tests;
+
 mod migrations;
 mod trader;
 mod weights;
