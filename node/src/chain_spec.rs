@@ -46,6 +46,17 @@ type AccountPublic = <Signature as Verify>::Signer;
 pub enum RelayChain {
 	Kusama,
 	Rococo,
+	Polkadot,
+}
+
+pub fn dummy_beefy_id_from_account_id(a: AccountId) -> BeefyId {
+	let mut id_raw = [0u8; 33];
+
+	// NOTE: AccountId is 32 bytes, whereas BeefyId is 33 bytes.
+	id_raw[1..].copy_from_slice(a.as_ref());
+	id_raw[0..4].copy_from_slice(b"beef");
+
+	sp_core::ecdsa::Public(id_raw).into()
 }
 
 impl RelayChain {
@@ -53,6 +64,7 @@ impl RelayChain {
 		match self {
 			RelayChain::Kusama => "SORA Kusama",
 			RelayChain::Rococo => "SORA Rococo",
+			RelayChain::Polkadot => "SORA Polkadot",
 		}
 	}
 
@@ -60,12 +72,16 @@ impl RelayChain {
 		match self {
 			RelayChain::Kusama => "sora_kusama",
 			RelayChain::Rococo => "sora_rococo",
+			RelayChain::Polkadot => "sora_polkadot",
 		}
 	}
 
 	pub fn root_key(&self) -> AccountId {
 		let bytes = match self {
 			RelayChain::Kusama => {
+				hex!("de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058")
+			},
+			RelayChain::Polkadot => {
 				hex!("de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058")
 			},
 			RelayChain::Rococo => {
@@ -77,22 +93,50 @@ impl RelayChain {
 
 	pub fn session_keys(&self) -> Vec<(AccountId, (AuraId, BeefyId))> {
 		let public_keys = match self {
+			RelayChain::Polkadot => vec![
+				(
+					hex!("74ca689ef5d95cf72b47adba0cf9080ddab33c71d3e838ed2aa19cd8e2f6014c"),
+					Some(hex!(
+						"035e87f3efbe033675c9451fbfbfd7d8777cbd6b3f48570a617366444f012c6a1a"
+					)),
+				),
+				(
+					hex!("56ca3b3b5104baa59e213ab20c6d531702828081833adf0f79d60afa81380462"),
+					Some(hex!(
+						"039a57dc9b4ea068c2da95462b7230399058a1de70bfada9480d2e4eece4cef2ad"
+					)),
+				),
+			],
 			RelayChain::Kusama => vec![
-				hex!("ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"),
-				hex!("f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"),
+				(hex!("ac0ad7c17a14833a42f8a282cd0715868c6b2680827e47b158474fdefd82e164"), None),
+				(hex!("f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"), None),
 			],
 			RelayChain::Rococo => vec![
-				hex!("caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"),
-				hex!("3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"),
+				(hex!("caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"), None),
+				(hex!("3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"), None),
 			],
 		};
 		public_keys
 			.into_iter()
-			.map(|x| {
-				(
-					AccountId::from(x),
-					(AuraId::from_slice(&x).unwrap(), BeefyId::from_slice(&x).unwrap()),
-				)
+			.map(|(sr25519, ecdsa)| {
+				if let Some(ecdsa) = ecdsa {
+					(
+						AccountId::from(sr25519),
+						(
+							AuraId::from_slice(&sr25519).unwrap(),
+							BeefyId::from_slice(&ecdsa).unwrap(),
+						),
+					)
+				} else {
+					log::warn!("No Beefy session key for this relaychain. Using dummy key.");
+					(
+						AccountId::from(sr25519),
+						(
+							AuraId::from_slice(&sr25519).unwrap(),
+							dummy_beefy_id_from_account_id(AccountId::from(sr25519)),
+						),
+					)
+				}
 			})
 			.collect()
 	}
@@ -106,6 +150,7 @@ impl RelayChain {
 	pub fn relay_chain(&self) -> &'static str {
 		match self {
 			RelayChain::Kusama => "kusama",
+			RelayChain::Polkadot => "polkadot",
 			RelayChain::Rococo => "rococo",
 		}
 	}
@@ -113,6 +158,7 @@ impl RelayChain {
 	pub fn bridge_network_id(&self) -> SubNetworkId {
 		match self {
 			RelayChain::Kusama => SubNetworkId::Kusama,
+			RelayChain::Polkadot => SubNetworkId::Polkadot,
 			RelayChain::Rococo => SubNetworkId::Rococo,
 		}
 	}
@@ -157,11 +203,15 @@ pub fn kusama_chain_spec() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(&include_bytes!("../res/kusama.json")[..])
 }
 
+pub fn polkadot_chain_spec() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../res/polkadot.json")[..])
+}
+
 pub fn rococo_chain_spec() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(&include_bytes!("../res/rococo.json")[..])
 }
 
-pub fn raw_config(relay_chain: RelayChain) -> ChainSpec {
+pub fn coded_config(relay_chain: RelayChain, para_id: u32) -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "XOR".into());
@@ -182,7 +232,7 @@ pub fn raw_config(relay_chain: RelayChain) -> ChainSpec {
 				root_key.clone(),
 				session_keys.clone(),
 				endowed_accounts.clone(),
-				2011u32.into(),
+				para_id.into(),
 				bridge_network_id,
 			)
 		},
@@ -191,7 +241,7 @@ pub fn raw_config(relay_chain: RelayChain) -> ChainSpec {
 		Some(relay_chain.id()),
 		None,
 		Some(properties),
-		Extensions { relay_chain: relay_chain.relay_chain().to_owned(), para_id: 2011 },
+		Extensions { relay_chain: relay_chain.relay_chain().to_owned(), para_id },
 	)
 }
 
