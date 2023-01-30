@@ -46,7 +46,7 @@ benchmarks! {
 		let asset_id = [
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			1, 1, 1,
-		];
+		].into();
 		let multilocation = MultiLocation {
 			parents: 1,
 			interior: X2(Parachain(666), GeneralKey(test_general_key())),
@@ -69,14 +69,14 @@ benchmarks! {
 		let asset_id = [
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			1, 1, 1,
-		];
+		].into();
 		let multilocation = MultiLocation::parent();
 		let new_multilocation = MultiLocation {
 			parents: 1,
 			interior: X2(Parachain(666), GeneralKey(test_general_key())),
 		};
 		XCMApp::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
-			.expect("change_asset_mapping: failed to create a map");
+		.expect("change_asset_mapping: failed to create a map");
 	}: _(RawOrigin::Root, asset_id, new_multilocation.clone())
 	verify {
 		assert_eq!(
@@ -97,11 +97,11 @@ benchmarks! {
 		let asset_id = [
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			1, 1, 1,
-		];
+		].into();
 		let new_asset_id = [
 			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 			2, 2, 2,
-		];
+		].into();
 		let multilocation = MultiLocation {
 			parents: 1,
 			interior: X2(Parachain(666), GeneralKey(test_general_key())),
@@ -128,7 +128,7 @@ benchmarks! {
 		let asset_id = [
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			1, 1, 1,
-		];
+		].into();
 		let multilocation = MultiLocation {
 			parents: 1,
 			interior: X2(Parachain(666), GeneralKey(test_general_key())),

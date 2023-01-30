@@ -268,7 +268,7 @@ pub mod pallet {
 			let _ = ensure_root(origin)?;
 			ensure!(
 				AssetIdToMultilocation::<T>::get(asset_id).is_none()
-					|| MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
+					&& MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
 				Error::<T>::MappingAlreadyExists
 			);
 			AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
