@@ -11,9 +11,10 @@ use cumulus_primitives_core::ParaId;
 use polkadot_runtime_parachains::{configuration, origin, shared, ump};
 use xcm::latest::prelude::*;
 use xcm_builder::{
-	AccountId32Aliases, AllowTopLevelPaidExecutionFrom, ChildParachainAsNative, ChildParachainConvertsVia,
-	CurrencyAdapter as XcmCurrencyAdapter, FixedWeightBounds, IsConcrete, LocationInverter, SignedAccountId32AsNative,
-	SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit, UsingComponents,
+	AccountId32Aliases, AllowTopLevelPaidExecutionFrom, ChildParachainAsNative,
+	ChildParachainConvertsVia, CurrencyAdapter as XcmCurrencyAdapter, FixedWeightBounds,
+	IsConcrete, LocationInverter, SignedAccountId32AsNative, SignedToAccountId32,
+	SovereignSignedViaLocation, TakeWeightCredit, UsingComponents,
 };
 use xcm_executor::{Config, XcmExecutor};
 
@@ -71,10 +72,8 @@ parameter_types! {
 	pub Ancestry: MultiLocation = Here.into();
 }
 
-pub type SovereignAccountOf = (
-	ChildParachainConvertsVia<ParaId, AccountId>,
-	AccountId32Aliases<KusamaNetwork, AccountId>,
-);
+pub type SovereignAccountOf =
+	(ChildParachainConvertsVia<ParaId, AccountId>, AccountId32Aliases<KusamaNetwork, AccountId>);
 
 pub type LocalAssetTransactor =
 	XcmCurrencyAdapter<Balances, IsConcrete<KsmLocation>, SovereignAccountOf, AccountId, ()>;

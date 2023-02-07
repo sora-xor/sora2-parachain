@@ -1,9 +1,10 @@
 use super::{Amount, Balance, CurrencyId, CurrencyIdConvert, ParachainXcmRouter};
 
 use frame_support::{
-	construct_runtime, match_types, parameter_types,
+	construct_runtime,
+	match_types,
+	parameter_types,
 	traits::{ConstU128, ConstU32, ConstU64, Everything, Get, Nothing},
-	// weights::constants::WEIGHT_REF_TIME_PER_SECOND,
 };
 use frame_system::EnsureRoot;
 use sp_core::H256;
@@ -18,9 +19,10 @@ use pallet_xcm::XcmPassthrough;
 use polkadot_parachain::primitives::Sibling;
 use xcm::latest::{prelude::*, Weight};
 use xcm_builder::{
-	AccountId32Aliases, AllowTopLevelPaidExecutionFrom, EnsureXcmOrigin, FixedWeightBounds, LocationInverter,
-	NativeAsset, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
-	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
+	AccountId32Aliases, AllowTopLevelPaidExecutionFrom, EnsureXcmOrigin, FixedWeightBounds,
+	LocationInverter, NativeAsset, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
+	SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
+	SovereignSignedViaLocation, TakeWeightCredit,
 };
 use xcm_executor::{Config, XcmExecutor};
 
@@ -84,17 +86,16 @@ impl orml_tokens::Config for Runtime {
 	type CurrencyId = CurrencyId;
 	type WeightInfo = ();
 	type ExistentialDeposits = ExistentialDeposits;
-	// type CurrencyHooks = ();
 	type MaxLocks = ConstU32<50>;
 	type MaxReserves = ConstU32<50>;
 	type ReserveIdentifier = [u8; 8];
 	type DustRemovalWhitelist = Everything;
 	type OnNewTokenAccount = ();
 	type OnKilledTokenAccount = ();
-    type OnDust = ();
-    type OnSlash = ();
-    type OnDeposit = ();
-    type OnTransfer = ();
+	type OnDust = ();
+	type OnSlash = ();
+	type OnDeposit = ();
+	type OnTransfer = ();
 }
 
 parameter_types! {
@@ -211,11 +212,7 @@ impl pallet_xcm::Config for Runtime {
 pub struct AccountIdToMultiLocation;
 impl Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
 	fn convert(account: AccountId) -> MultiLocation {
-		X1(Junction::AccountId32 {
-			network: NetworkId::Any,
-			id: account.into(),
-		})
-		.into()
+		X1(Junction::AccountId32 { network: NetworkId::Any, id: account.into() }).into()
 	}
 }
 
@@ -229,20 +226,13 @@ match_types! {
 		MultiLocation { parents: 0, interior: X1(Junction::AccountId32 { .. }) } |
 		MultiLocation { parents: 1, interior: X1(Junction::AccountId32 { .. }) } |
 		MultiLocation { parents: 1, interior: X2(Parachain(1), Junction::AccountId32 { .. }) } |
-		MultiLocation { parents: 1, interior: X2(Parachain(2), Junction::AccountId32 { .. }) } |
-		MultiLocation { parents: 1, interior: X2(Parachain(3), Junction::AccountId32 { .. }) } |
-		MultiLocation { parents: 1, interior: X2(Parachain(4), Junction::AccountId32 { .. }) } |
-		MultiLocation { parents: 1, interior: X2(Parachain(100), Junction::AccountId32 { .. }) }
+		MultiLocation { parents: 1, interior: X2(Parachain(2), Junction::AccountId32 { .. }) }
 	};
 }
 
 parameter_type_with_key! {
-	pub ParachainMinFee: |location: MultiLocation| -> Option<u128> {
-		#[allow(clippy::match_ref_pats)] // false positive
-		match (location.parents, location.first_interior()) {
-			(1, Some(Parachain(3))) => Some(40),
-			_ => None,
-		}
+	pub ParachainMinFee: |_l: MultiLocation| -> Option<u128> {
+		None
 	};
 }
 
