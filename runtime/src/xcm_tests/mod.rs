@@ -55,6 +55,7 @@ decl_test_network! {
 		relay_chain = Relay,
 		parachains = vec![
             (1, ParaX),
+			(2, SoraParachain),
         ],
 	}
 }
@@ -72,6 +73,15 @@ decl_test_parachain! {
 		Runtime = para_x::Runtime,
 		XcmpMessageHandler = para_x::XcmpQueue,
 		DmpMessageHandler = para_x::DmpQueue,
+		new_ext = para_ext(1),
+	}
+}
+
+decl_test_parachain! {
+	pub struct SoraParachain {
+		Runtime = crate::Runtime,
+		XcmpMessageHandler = crate::XcmpQueue,
+		DmpMessageHandler = crate::DmpQueue,
 		new_ext = para_ext(1),
 	}
 }
