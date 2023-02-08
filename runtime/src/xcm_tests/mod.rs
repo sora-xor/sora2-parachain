@@ -161,7 +161,7 @@ impl Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
 		match id {
 			CurrencyId::R => Some(Parent.into()),
 			CurrencyId::X => {
-				Some((Parent, Parachain(1), GeneralKey(b"A".to_vec().try_into().unwrap())).into())
+				Some((Parent, Parachain(1), GeneralKey(b"X".to_vec().try_into().unwrap())).into())
 			},
 			// CurrencyId::A1 => Some((Parent, Parachain(1), GeneralKey(b"A1".to_vec().try_into().unwrap())).into()),
 			// CurrencyId::B => Some((Parent, Parachain(2), GeneralKey(b"B".to_vec().try_into().unwrap())).into()),

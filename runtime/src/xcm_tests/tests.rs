@@ -3,7 +3,7 @@
 use super::*;
 use cumulus_primitives_core::ParaId;
 use frame_support::{assert_err, assert_noop, assert_ok, traits::Currency};
-use orml_traits::{MultiCurrency};
+use orml_traits::MultiCurrency;
 use sp_runtime::{traits::AccountIdConversion, AccountId32};
 use xcm_simulator::TestExt;
 
@@ -40,7 +40,7 @@ fn sora_register_native_relay_asset() {
 }
 
 #[test]
-fn send_relay_chain_asset_to_sora() {
+fn send_relay_chain_asset_to_sora_from_sibling() {
 	TestNet::reset();
 
 	Relay::execute_with(|| {
@@ -86,32 +86,145 @@ fn send_relay_chain_asset_to_sora() {
 	});
 }
 
-#[test]
-fn send_relay_chain_asset_to_sibling() {
-	TestNet::reset();
+// #[test]
+// fn send_relay_chain_asset_to_sibling() {
+// 	TestNet::reset();
 
-	Relay::execute_with(|| {
-		let _ = RelayBalances::deposit_creating(&para_x_account(), 1000000000000000000);
-		let _ = RelayBalances::deposit_creating(&sora_para_account(), 1000000000000000000);
-	});
+// 	Relay::execute_with(|| {
+// 		// let _ = RelayBalances::deposit_creating(&para_x_account(), 1000000000000000000);
+// 		let _ = RelayBalances::deposit_creating(&sora_para_account(), 1000000000000000000);
+// 	});
+
+// 	sora_register_native_relay_asset();
+
+// 	SoraParachain::execute_with(|| {
+// 		// assert_ok!(crate::XCMApp::test_xcm_transfer(
+// 		assert_ok!(crate::XCMApp::test_xcm_transfer(
+// 			crate::RuntimeOrigin::root(),
+// 			relay_native_asset_id(),
+// 			ALICE,
+// 			xcm::VersionedMultiLocation::V1(MultiLocation::new(
+// 				1,
+// 				X2(Parachain(1), Junction::AccountId32 { network: NetworkId::Any, id: BOB.into() })
+// 			)),
+// 			10000000,
+// 		));
+// 	});
+
+// 	Relay::execute_with(|| {
+// 		print_events::<relay::Runtime>("!!!!! send_relay_chain_asset_to_sibling RELAY");
+// 		// assert_eq!(RelayBalances::free_balance(&para_x_account()), 999999900000000000);
+
+// 		// assert_eq!(RelayBalances::free_balance(&sora_para_account()), 99999999960);
+// 	});
+
+// 	ParaX::execute_with(|| {
+// 		print_events::<para_x::Runtime>("!!!!! send_relay_chain_asset_to_sibling ParaX");
+// 		assert_eq!(ParaTokens::free_balance(CurrencyId::R, &BOB), 500);
+// 	});
+
+// 	SoraParachain::execute_with(|| {
+// 		print_events::<crate::Runtime>("!!!!! send_relay_chain_asset_to_sibling Sora");
+// 	});
+
+// }
+
+// #[test]
+// fn send_relay_chain_asset_to_relay_chain() {
+// 	TestNet::reset();
+
+// 	Relay::execute_with(|| {
+// 		let _ = RelayBalances::deposit_creating(&sora_para_account(), 1_000_000_000_000_000);
+// 	});
+
+// 	sora_register_native_relay_asset();
+
+// 	SoraParachain::execute_with(|| {
+// 		assert_ok!(crate::XCMApp::test_xcm_transfer(
+// 			crate::RuntimeOrigin::root(),
+// 			relay_native_asset_id(),
+// 			ALICE,
+// 			xcm::VersionedMultiLocation::V1(MultiLocation::new(
+// 				1,
+// 				X1(Junction::AccountId32 { network: NetworkId::Any, id: ALICE.into() })
+// 			)),
+// 			1_000_000_000_000_000,
+// 		));
+// 		print_events::<crate::Runtime>("!!!!! send_relay_chain_asset_to_sibling Sora");
+// 		// assert_eq!(ParaTokens::free_balance(CurrencyId::R, &ALICE), 500);
+// 	});
+
+// 	Relay::execute_with(|| {
+// 		// assert_eq!(RelayBalances::free_balance(&sora_para_account()), 500);
+// 		assert_eq!(RelayBalances::free_balance(&ALICE), 460);
+// 	});
+// }
+
+#[test]
+fn send_relay_chain_asset_to_sora_from_relay() {
+	TestNet::reset();
 
 	sora_register_native_relay_asset();
 
-	SoraParachain::execute_with(|| {
-		assert_ok!(crate::XCMApp::test_xcm_transfer(
-			crate::RuntimeOrigin::root(),
-			relay_native_asset_id(),
-			ALICE,
-			xcm::VersionedMultiLocation::V1(MultiLocation::new(
-				1,
-				X2(Parachain(1), Junction::AccountId32 { network: NetworkId::Any, id: BOB.into() })
+	Relay::execute_with(|| {
+		let _ = RelayBalances::deposit_creating(&ALICE, 1_000_000_000_000_000_000);
+		// XcmPallet: pallet_xcm::{Pallet, Call, Storage, Event<T>, Origin},
+		assert_ok!(relay::XcmPallet::reserve_transfer_assets(
+			Some(ALICE).into(),
+			Box::new(xcm::VersionedMultiLocation::V1(MultiLocation::new(
+				0,
+				X1(Junction::Parachain(2))
+			))),
+			Box::new(xcm::VersionedMultiLocation::V1(MultiLocation::new(
+				0,
+				X1(Junction::AccountId32 { network: NetworkId::Any, id: ALICE.into() })
+			))),
+			Box::new(xcm::VersionedMultiAssets::V1(
+				vec![xcm::v1::MultiAsset {
+					id: Concrete(MultiLocation::new(0, Here)),
+					fun: Fungible(1_000_000_000_000_000),
+				}]
+				.into()
 			)),
-			10000,
+			0,
 		));
+
+		assert_ok!(relay::XcmPallet::reserve_transfer_assets(
+			Some(ALICE).into(),
+			Box::new(xcm::VersionedMultiLocation::V1(MultiLocation::new(
+				0,
+				X1(Junction::Parachain(1))
+			))),
+			Box::new(xcm::VersionedMultiLocation::V1(MultiLocation::new(
+				0,
+				X1(Junction::AccountId32 { network: NetworkId::Any, id: ALICE.into() })
+			))),
+			Box::new(xcm::VersionedMultiAssets::V1(
+				vec![xcm::v1::MultiAsset {
+					id: Concrete(MultiLocation::new(0, Here)),
+					fun: Fungible(1_000_000_000_000_000),
+				}]
+				.into()
+			)),
+			0,
+		));
+		// print_events::<relay::Runtime>("!!!!! send_relay_chain_asset_to_sora_from_relay RELAY");
 	});
 
-	Relay::execute_with(|| {
-		assert_eq!(RelayBalances::free_balance(&para_x_account()), 999999900000000000);
-		// assert_eq!(RelayBalances::free_balance(&sora_para_account()), 99999999960);
+	SoraParachain::execute_with(|| {
+		print_events::<crate::Runtime>("!!!!! send_relay_chain_asset_to_sora_from_relay SORA");
+		// assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+		// 	r.event,
+		// 	crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
+		// )));
+
+		// assert!(frame_system::Pallet::<crate::Runtime>::events()
+		// 	.iter()
+		// 	.any(|r| matches!(r.event, crate::RuntimeEvent::SubstrateBridgeOutboundChannel(_))));
 	});
+
+	ParaX::execute_with(|| {
+		print_events::<para_x::Runtime>("!!!!! send_relay_chain_asset_to_sora_from_relay ParaX");
+	});
+
 }

@@ -152,8 +152,11 @@ pub mod pallet {
 		/// [Sora AssetId, XCM Multilocation]
 		MappingDeleted(AssetId, MultiLocation),
 		/// Asset Added to channel
-		/// [Currency Id, amount]
+		/// [SubstrateAppMessage]
 		AssetAddedToChannel(SubstrateAppMessage<T::AccountId, AssetId, T::Balance>),
+		/// Asset transfered from this parachain
+		/// [AssedId, amount]
+		AssetTransfered(AssetId, T::Balance),
 	}
 
 	#[pallet::error]
@@ -436,6 +439,7 @@ pub mod pallet {
 				recipient,
 				xcm::v2::WeightLimit::Unlimited,
 			)?;
+			Self::deposit_event(Event::<T>::AssetTransfered(asset_id, amount));
 			Ok(())
 		}
 	}
