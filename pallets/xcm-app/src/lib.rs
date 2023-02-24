@@ -155,8 +155,8 @@ pub mod pallet {
 		/// [SubstrateAppMessage]
 		AssetAddedToChannel(SubstrateAppMessage<T::AccountId, AssetId, T::Balance>),
 		/// Asset transfered from this parachain
-		/// [AssedId, amount]
-		AssetTransfered(AssetId, T::Balance),
+		/// [From, To, AssedId, amount]
+		AssetTransfered(T::AccountId, MultiLocation, AssetId, T::Balance),
 	}
 
 	#[pallet::error]
@@ -433,13 +433,13 @@ pub mod pallet {
 				_ => fail!(Error::<T>::WrongXCMVersion),
 			};
 			<T as Config>::XcmTransfer::transfer(
-				sender,
+				sender.clone(),
 				asset_id,
 				amount,
-				recipient,
+				recipient.clone(),
 				xcm::v2::WeightLimit::Unlimited,
 			)?;
-			Self::deposit_event(Event::<T>::AssetTransfered(asset_id, amount));
+			Self::deposit_event(Event::<T>::AssetTransfered(sender, recipient, asset_id, amount));
 			Ok(())
 		}
 	}

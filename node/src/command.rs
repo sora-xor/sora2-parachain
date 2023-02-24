@@ -33,9 +33,11 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"dev" => Box::new(chain_spec::development_config()),
 		"bridge-dev" => Box::new(chain_spec::bridge_dev_config()),
 		"kusama" => Box::new(chain_spec::kusama_chain_spec()?),
-		"kusama_raw" => Box::new(chain_spec::raw_config(RelayChain::Kusama)),
+		"kusama-coded" => Box::new(chain_spec::coded_config(RelayChain::Kusama, 2011)),
+		"polkadot" => Box::new(chain_spec::polkadot_chain_spec()?),
+		"polkadot-coded" => Box::new(chain_spec::coded_config(RelayChain::Polkadot, 2025)),
 		"rococo" => Box::new(chain_spec::rococo_chain_spec()?),
-		"rococo_raw" => Box::new(chain_spec::raw_config(RelayChain::Rococo)),
+		"rococo-coded" => Box::new(chain_spec::coded_config(RelayChain::Rococo, 2011)),
 		"template-rococo" => Box::new(chain_spec::local_testnet_config()),
 		"" | "local" => Box::new(chain_spec::local_testnet_config()),
 		"docker-local" => Box::new(chain_spec::docker_local_testnet_config()),
@@ -144,6 +146,7 @@ pub fn run() -> Result<()> {
 	let cli = Cli::from_args();
 
 	match &cli.subcommand {
+		Some(Subcommand::Key(cmd)) => cmd.run(&cli),
 		Some(Subcommand::BuildSpec(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
