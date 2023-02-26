@@ -21,10 +21,11 @@ use xcm_executor::Assets;
 
 use xcm_simulator::{decl_test_network, decl_test_parachain, decl_test_relay_chain};
 
-pub const ALICE: AccountId32 = AccountId32::new([0u8; 32]);
-pub const BOB: AccountId32 = AccountId32::new([1u8; 32]);
+pub const ALICE: AccountId32 = AccountId32::new([10u8; 32]);
+pub const BOB: AccountId32 = AccountId32::new([11u8; 32]);
 
 pub type RelayBalances = pallet_balances::Pallet<relay::Runtime>;
+pub type SoraBalances = pallet_balances::Pallet<crate::Runtime>;
 pub type ParaTokens = orml_tokens::Pallet<para_x::Runtime>;
 pub type ParaXTokens = orml_xtokens::Pallet<para_x::Runtime>;
 

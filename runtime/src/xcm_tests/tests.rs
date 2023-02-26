@@ -17,6 +17,7 @@ fn sora_para_account() -> AccountId32 {
 
 // Not used in any unit tests, but it's super helpful for debugging. Let's
 // keep it here. Don't forget to use  -- --nocapture when running test
+// EXAMPLE: print_events::<crate::Runtime>("Transfer to SORA");
 #[allow(dead_code)]
 fn print_events<Runtime: frame_system::Config>(name: &'static str) {
 	println!("------ {:?} events -------", name);
@@ -29,8 +30,11 @@ fn relay_native_asset_id() -> crate::H256 {
 	hex_literal::hex!("54fd1e1728cd833d21da6f3e36c50884062e35edfc24aec7a70c18a60451255b").into()
 }
 
-fn sora_register_native_relay_asset() {
+fn prepeare_sora_parachain() {
 	SoraParachain::execute_with(|| {
+		let _ = SoraBalances::deposit_creating(&crate::GetTrustlessBridgeFeesAccountId::get(), 1000000000000000000);
+		let _ = SoraBalances::deposit_creating(&ALICE, 1000000000000000000);
+		let _ = SoraBalances::deposit_creating(&BOB, 1000000000000000000);
 		assert_ok!(crate::XCMApp::register_mapping(
 			crate::RuntimeOrigin::root(),
 			relay_native_asset_id(),
@@ -47,7 +51,7 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
 		let _ = RelayBalances::deposit_creating(&para_x_account(), 1000000000000000000);
 	});
 
-	sora_register_native_relay_asset();
+	prepeare_sora_parachain();
 
 	ParaX::execute_with(|| {
 		assert_ok!(ParaXTokens::transfer(
@@ -164,7 +168,7 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
 fn send_relay_chain_asset_to_sora_from_relay() {
 	TestNet::reset();
 
-	sora_register_native_relay_asset();
+	prepeare_sora_parachain();
 
 	Relay::execute_with(|| {
 		let _ = RelayBalances::deposit_creating(&ALICE, 1_000_000_000_000_000_000);
@@ -188,43 +192,16 @@ fn send_relay_chain_asset_to_sora_from_relay() {
 			)),
 			0,
 		));
-
-		assert_ok!(relay::XcmPallet::reserve_transfer_assets(
-			Some(ALICE).into(),
-			Box::new(xcm::VersionedMultiLocation::V1(MultiLocation::new(
-				0,
-				X1(Junction::Parachain(1))
-			))),
-			Box::new(xcm::VersionedMultiLocation::V1(MultiLocation::new(
-				0,
-				X1(Junction::AccountId32 { network: NetworkId::Any, id: ALICE.into() })
-			))),
-			Box::new(xcm::VersionedMultiAssets::V1(
-				vec![xcm::v1::MultiAsset {
-					id: Concrete(MultiLocation::new(0, Here)),
-					fun: Fungible(1_000_000_000_000_000),
-				}]
-				.into()
-			)),
-			0,
-		));
-		// print_events::<relay::Runtime>("!!!!! send_relay_chain_asset_to_sora_from_relay RELAY");
 	});
 
 	SoraParachain::execute_with(|| {
-		print_events::<crate::Runtime>("!!!!! send_relay_chain_asset_to_sora_from_relay SORA");
-		// assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
-		// 	r.event,
-		// 	crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
-		// )));
+		assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+			r.event,
+			crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
+		)));
 
-		// assert!(frame_system::Pallet::<crate::Runtime>::events()
-		// 	.iter()
-		// 	.any(|r| matches!(r.event, crate::RuntimeEvent::SubstrateBridgeOutboundChannel(_))));
+		assert!(frame_system::Pallet::<crate::Runtime>::events()
+			.iter()
+			.any(|r| matches!(r.event, crate::RuntimeEvent::SubstrateBridgeOutboundChannel(_))));
 	});
-
-	ParaX::execute_with(|| {
-		print_events::<para_x::Runtime>("!!!!! send_relay_chain_asset_to_sora_from_relay ParaX");
-	});
-
 }
