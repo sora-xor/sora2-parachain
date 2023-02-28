@@ -18,7 +18,7 @@ use xcm::{latest::Weight, prelude::*};
 use xcm_executor::traits::WeightTrader;
 use xcm_executor::traits::{InvertLocation, WeightBounds};
 use xcm_executor::Assets;
-
+use cumulus_primitives_core::{ChannelStatus, GetChannelInfo, ParaId};
 use xcm_simulator::{decl_test_network, decl_test_parachain, decl_test_relay_chain};
 
 pub const ALICE: AccountId32 = AccountId32::new([10u8; 32]);
@@ -48,6 +48,16 @@ pub enum CurrencyId {
 	R,
 	/// Parachain X token.
 	X,
+}
+
+pub struct ChannelInfo;
+impl GetChannelInfo for ChannelInfo {
+	fn get_channel_status(_id: ParaId) -> ChannelStatus {
+		ChannelStatus::Ready(10, 10)
+	}
+	fn get_channel_max(_id: ParaId) -> Option<usize> {
+		Some(usize::max_value())
+	}
 }
 
 // Declare network and chains:
@@ -146,7 +156,7 @@ pub fn para_ext(para_id: u32) -> TestExternalities {
 		.unwrap();
 
 	orml_tokens::GenesisConfig::<Runtime> {
-		balances: vec![(ALICE, CurrencyId::R, 1_000_000_000_000_000_000)],
+		balances: vec![(ALICE, CurrencyId::R, 1_000_000_000_000_000_000), (ALICE, CurrencyId::X, 1_000_000_000_000_000_000)],
 	}
 	.assimilate_storage(&mut t)
 	.unwrap();
@@ -164,46 +174,22 @@ impl Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
 			CurrencyId::X => {
 				Some((Parent, Parachain(1), GeneralKey(b"X".to_vec().try_into().unwrap())).into())
 			},
-			// CurrencyId::A1 => Some((Parent, Parachain(1), GeneralKey(b"A1".to_vec().try_into().unwrap())).into()),
-			// CurrencyId::B => Some((Parent, Parachain(2), GeneralKey(b"B".to_vec().try_into().unwrap())).into()),
-			// CurrencyId::B1 => Some((Parent, Parachain(2), GeneralKey(b"B1".to_vec().try_into().unwrap())).into()),
-			// CurrencyId::B2 => Some((Parent, Parachain(2), GeneralKey(b"B2".to_vec().try_into().unwrap())).into()),
-			// CurrencyId::C => Some((Parent, Parachain(3), GeneralKey(b"C".to_vec().try_into().unwrap())).into()),
-			// CurrencyId::D => Some((Parent, Parachain(4), GeneralKey(b"D".to_vec().try_into().unwrap())).into()),
 		}
 	}
 }
 impl Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
 	fn convert(l: MultiLocation) -> Option<CurrencyId> {
 		let x: Vec<u8> = "X".into();
-		// let a1: Vec<u8> = "A1".into();
-		// let b: Vec<u8> = "B".into();
-		// let b1: Vec<u8> = "B1".into();
-		// let b2: Vec<u8> = "B2".into();
-		// let c: Vec<u8> = "C".into();
-		// let d: Vec<u8> = "D".into();
 		if l == MultiLocation::parent() {
 			return Some(CurrencyId::R);
 		}
 		match l {
 			MultiLocation { parents, interior } if parents == 1 => match interior {
 				X2(Parachain(1), GeneralKey(k)) if k == x => Some(CurrencyId::X),
-				// X2(Parachain(1), GeneralKey(k)) if k == a1 => Some(CurrencyId::A1),
-				// X2(Parachain(2), GeneralKey(k)) if k == b => Some(CurrencyId::B),
-				// X2(Parachain(2), GeneralKey(k)) if k == b1 => Some(CurrencyId::B1),
-				// X2(Parachain(2), GeneralKey(k)) if k == b2 => Some(CurrencyId::B2),
-				// X2(Parachain(3), GeneralKey(k)) if k == c => Some(CurrencyId::C),
-				// X2(Parachain(4), GeneralKey(k)) if k == d => Some(CurrencyId::D),
 				_ => None,
 			},
 			MultiLocation { parents, interior } if parents == 0 => match interior {
 				X1(GeneralKey(k)) if k == x => Some(CurrencyId::X),
-				// X1(GeneralKey(k)) if k == b => Some(CurrencyId::B),
-				// X1(GeneralKey(k)) if k == a1 => Some(CurrencyId::A1),
-				// X1(GeneralKey(k)) if k == b1 => Some(CurrencyId::B1),
-				// X1(GeneralKey(k)) if k == b2 => Some(CurrencyId::B2),
-				// X1(GeneralKey(k)) if k == c => Some(CurrencyId::C),
-				// X1(GeneralKey(k)) if k == d => Some(CurrencyId::D),
 				_ => None,
 			},
 			_ => None,
