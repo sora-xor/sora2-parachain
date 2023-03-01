@@ -2,9 +2,6 @@ pub mod para_x;
 pub mod relay;
 pub mod tests;
 
-// use super::*;
-// use crate as sora_para;
-
 use frame_support::{
 	pallet_prelude::*,
 	traits::{Contains, Get},
