@@ -2,10 +2,8 @@ pub mod para_x;
 pub mod relay;
 pub mod tests;
 
-use frame_support::{
-	pallet_prelude::*,
-	traits::{Contains, Get},
-};
+use cumulus_primitives_core::{ChannelStatus, GetChannelInfo, ParaId};
+use frame_support::pallet_prelude::*;
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 use sp_io::TestExternalities;
@@ -13,9 +11,7 @@ use sp_runtime::traits::{Convert, Zero};
 use sp_runtime::AccountId32;
 use xcm::{latest::Weight, prelude::*};
 use xcm_executor::traits::WeightTrader;
-use xcm_executor::traits::{InvertLocation, WeightBounds};
 use xcm_executor::Assets;
-use cumulus_primitives_core::{ChannelStatus, GetChannelInfo, ParaId};
 use xcm_simulator::{decl_test_network, decl_test_parachain, decl_test_relay_chain};
 
 pub const ALICE: AccountId32 = AccountId32::new([10u8; 32]);
@@ -153,7 +149,10 @@ pub fn para_ext(para_id: u32) -> TestExternalities {
 		.unwrap();
 
 	orml_tokens::GenesisConfig::<Runtime> {
-		balances: vec![(ALICE, CurrencyId::R, 1_000_000_000_000_000_000), (ALICE, CurrencyId::X, 1_000_000_000_000_000_000)],
+		balances: vec![
+			(ALICE, CurrencyId::R, 1_000_000_000_000_000_000),
+			(ALICE, CurrencyId::X, 1_000_000_000_000_000_000),
+		],
 	}
 	.assimilate_storage(&mut t)
 	.unwrap();

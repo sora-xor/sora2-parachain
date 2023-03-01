@@ -3,7 +3,7 @@
 use super::*;
 use bridge_types::substrate::SubstrateAppMessage;
 use cumulus_primitives_core::ParaId;
-use frame_support::{assert_err, assert_noop, assert_ok, traits::Currency};
+use frame_support::{assert_noop, assert_ok, traits::Currency};
 use orml_traits::MultiCurrency;
 use sp_runtime::{traits::AccountIdConversion, AccountId32};
 use xcm_simulator::TestExt;
@@ -37,7 +37,10 @@ fn para_x_asset_id() -> crate::H256 {
 
 fn prepeare_sora_parachain() {
 	SoraParachain::execute_with(|| {
-		let _ = SoraBalances::deposit_creating(&crate::GetTrustlessBridgeFeesAccountId::get(), 1000000000000000000);
+		let _ = SoraBalances::deposit_creating(
+			&crate::GetTrustlessBridgeFeesAccountId::get(),
+			1000000000000000000,
+		);
 		let _ = SoraBalances::deposit_creating(&ALICE, 1000000000000000000);
 		let _ = SoraBalances::deposit_creating(&BOB, 1000000000000000000);
 		assert_ok!(crate::XCMApp::register_mapping(
@@ -89,15 +92,15 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
 	});
 
 	SoraParachain::execute_with(|| {
-		assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r|
-			r.event ==
-			crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(SubstrateAppMessage::Transfer{
-				asset_id: relay_native_asset_id(),
-				sender: None,
-				recipient: BOB,
-				amount: 95999999960,
-			})
-		)));
+		assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
+			== crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
+				SubstrateAppMessage::Transfer {
+					asset_id: relay_native_asset_id(),
+					sender: None,
+					recipient: BOB,
+					amount: 95999999960,
+				}
+			))));
 
 		assert!(frame_system::Pallet::<crate::Runtime>::events()
 			.iter()
@@ -116,7 +119,13 @@ fn send_sibling_asset_to_sora_from_sibling() {
 	prepeare_sora_parachain();
 
 	ParaX::execute_with(|| {
-		let _ = ParaTokens::set_balance(para_x::RuntimeOrigin::root(), ALICE, CurrencyId::X, 999999999999999999999, 0);
+		let _ = ParaTokens::set_balance(
+			para_x::RuntimeOrigin::root(),
+			ALICE,
+			CurrencyId::X,
+			999999999999999999999,
+			0,
+		);
 		assert_ok!(ParaXTokens::transfer(
 			Some(ALICE).into(),
 			CurrencyId::X,
@@ -137,15 +146,15 @@ fn send_sibling_asset_to_sora_from_sibling() {
 	});
 
 	SoraParachain::execute_with(|| {
-		assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r|
-			r.event ==
-			crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(SubstrateAppMessage::Transfer {
-				asset_id: para_x_asset_id(),
-				sender: None,
-				recipient: BOB,
-				amount: 9999996000000000,
-			})
-		)));
+		assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
+			== crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
+				SubstrateAppMessage::Transfer {
+					asset_id: para_x_asset_id(),
+					sender: None,
+					recipient: BOB,
+					amount: 9999996000000000,
+				}
+			))));
 
 		assert!(frame_system::Pallet::<crate::Runtime>::events()
 			.iter()
@@ -166,7 +175,7 @@ fn send_relay_chain_asset_to_sibling() {
 	SoraParachain::execute_with(|| {
 		let location = MultiLocation::new(
 			1,
-			X2(Parachain(1), Junction::AccountId32 { network: NetworkId::Any, id: BOB.into() })
+			X2(Parachain(1), Junction::AccountId32 { network: NetworkId::Any, id: BOB.into() }),
 		);
 		let assetid = relay_native_asset_id();
 		assert_ok!(crate::XCMApp::do_xcm_asset_transfer(
@@ -175,13 +184,17 @@ fn send_relay_chain_asset_to_sibling() {
 			xcm::VersionedMultiLocation::V1(location.clone()),
 			10000000,
 		));
-		let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransfered(ALICE, location.clone(), assetid, 10000000));
-		assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| 
-			r.clone().event == test_event
+		let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransfered(
+			ALICE,
+			location.clone(),
+			assetid,
+			10000000,
 		));
+		assert!(frame_system::Pallet::<crate::Runtime>::events()
+			.iter()
+			.any(|r| r.clone().event == test_event));
 	});
 }
-
 
 #[test]
 fn send_sibling_chain_asset_to_sibling() {
@@ -196,7 +209,7 @@ fn send_sibling_chain_asset_to_sibling() {
 	SoraParachain::execute_with(|| {
 		let location = MultiLocation::new(
 			1,
-			X2(Parachain(1), Junction::AccountId32 { network: NetworkId::Any, id: BOB.into() })
+			X2(Parachain(1), Junction::AccountId32 { network: NetworkId::Any, id: BOB.into() }),
 		);
 		let assetid = para_x_asset_id();
 		assert_ok!(crate::XCMApp::do_xcm_asset_transfer(
@@ -205,10 +218,12 @@ fn send_sibling_chain_asset_to_sibling() {
 			xcm::VersionedMultiLocation::V1(location.clone()),
 			10000000,
 		));
-		let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransfered(ALICE, location, assetid, 10000000));
-		assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| 
-			r.clone().event == test_event
+		let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransfered(
+			ALICE, location, assetid, 10000000,
 		));
+		assert!(frame_system::Pallet::<crate::Runtime>::events()
+			.iter()
+			.any(|r| r.clone().event == test_event));
 	});
 }
 
@@ -225,7 +240,7 @@ fn send_relay_chain_asset_to_relay_chain() {
 	SoraParachain::execute_with(|| {
 		let location = MultiLocation::new(
 			1,
-			X1(Junction::AccountId32 { network: NetworkId::Any, id: ALICE.into() })
+			X1(Junction::AccountId32 { network: NetworkId::Any, id: ALICE.into() }),
 		);
 		let assetid = relay_native_asset_id();
 		assert_ok!(crate::XCMApp::test_xcm_transfer(
@@ -235,10 +250,15 @@ fn send_relay_chain_asset_to_relay_chain() {
 			xcm::VersionedMultiLocation::V1(location.clone()),
 			1_000_000_000_000_000,
 		));
-		let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransfered(ALICE, location, assetid, 1_000_000_000_000_000));
-		assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| 
-			r.clone().event == test_event
+		let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransfered(
+			ALICE,
+			location,
+			assetid,
+			1_000_000_000_000_000,
 		));
+		assert!(frame_system::Pallet::<crate::Runtime>::events()
+			.iter()
+			.any(|r| r.clone().event == test_event));
 	});
 }
 
@@ -281,5 +301,132 @@ fn send_relay_chain_asset_to_sora_from_relay() {
 		assert!(frame_system::Pallet::<crate::Runtime>::events()
 			.iter()
 			.any(|r| matches!(r.event, crate::RuntimeEvent::SubstrateBridgeOutboundChannel(_))));
+	});
+}
+
+#[test]
+fn send_to_sora_no_mapping_error() {
+	TestNet::reset();
+
+	Relay::execute_with(|| {
+		let _ = RelayBalances::deposit_creating(&para_x_account(), 1000000000000000000);
+	});
+
+	ParaX::execute_with(|| {
+		assert_ok!(ParaXTokens::transfer(
+			Some(ALICE).into(),
+			CurrencyId::R,
+			1_000_000_000_00,
+			Box::new(
+				MultiLocation::new(
+					1,
+					X2(
+						Parachain(2),
+						Junction::AccountId32 { network: NetworkId::Any, id: BOB.into() }
+					)
+				)
+				.into()
+			),
+			WeightLimit::Unlimited
+		));
+		assert_eq!(ParaTokens::free_balance(CurrencyId::R, &ALICE), 999999900000000000);
+	});
+
+	SoraParachain::execute_with(|| {
+		assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+			r.event,
+			crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
+		)));
+
+		assert!(!frame_system::Pallet::<crate::Runtime>::events()
+			.iter()
+			.any(|r| matches!(r.event, crate::RuntimeEvent::SubstrateBridgeOutboundChannel(_))));
+
+		assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+			r.event,
+			crate::RuntimeEvent::DmpQueue(cumulus_pallet_dmp_queue::Event::ExecutedDownward {
+				message_id: _,
+				outcome: Outcome::Incomplete(_, xcm::v2::Error::FailedToTransactAsset(_)),
+			})
+		)));
+	});
+}
+
+#[test]
+fn send_from_sora_no_mapping_error() {
+	TestNet::reset();
+
+	Relay::execute_with(|| {
+		let _ = RelayBalances::deposit_creating(&para_x_account(), 1000000000000000000);
+	});
+
+	SoraParachain::execute_with(|| {
+		let location = MultiLocation::new(
+			1,
+			X2(Parachain(1), Junction::AccountId32 { network: NetworkId::Any, id: BOB.into() }),
+		);
+		let assetid = relay_native_asset_id();
+		assert_noop!(
+			crate::XCMApp::do_xcm_asset_transfer(
+				assetid,
+				ALICE,
+				xcm::VersionedMultiLocation::V1(location.clone()),
+				10000000,
+			),
+			orml_xtokens::Error::<crate::Runtime>::NotCrossChainTransferableCurrency,
+		);
+
+		// check that assets are not transferred
+		assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+			r.clone().event,
+			crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransfered(_, _, _, _))
+		)));
+	});
+}
+
+#[test]
+fn send_relay_chain_asset_to_sora_from_sibling_not_enough_fees() {
+	TestNet::reset();
+
+	Relay::execute_with(|| {
+		let _ = RelayBalances::deposit_creating(&para_x_account(), 1000000000000000000);
+	});
+
+	prepeare_sora_parachain();
+
+	ParaX::execute_with(|| {
+		assert_ok!(ParaXTokens::transfer(
+			Some(ALICE).into(),
+			CurrencyId::R,
+			// 7_999_999_999, 8kkk - is a minimum amount now
+			8_000_000_000 - 1,
+			Box::new(
+				MultiLocation::new(
+					1,
+					X2(
+						Parachain(2),
+						Junction::AccountId32 { network: NetworkId::Any, id: BOB.into() }
+					)
+				)
+				.into()
+			),
+			WeightLimit::Unlimited
+		));
+	});
+
+	SoraParachain::execute_with(|| {
+		// check that assets are not added to channel
+		assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!( r.event
+			, crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_)
+			))));
+
+		assert!(!frame_system::Pallet::<crate::Runtime>::events()
+			.iter()
+			.any(|r| matches!(r.event, crate::RuntimeEvent::SubstrateBridgeOutboundChannel(_))));
+
+		// check that asset are trappet
+		assert!(frame_system::Pallet::<crate::Runtime>::events()
+			.iter()
+			.any(|r| matches!(r.event, crate::RuntimeEvent::PolkadotXcm(pallet_xcm::Event::AssetsTrapped(_, _, _)))));
 	});
 }
