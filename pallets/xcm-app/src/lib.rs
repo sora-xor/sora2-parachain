@@ -422,7 +422,6 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[frame_support::transactional]
 		pub fn do_xcm_asset_transfer(
 			asset_id: AssetId,
 			sender: T::AccountId,

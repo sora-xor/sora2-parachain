@@ -566,6 +566,23 @@ orml_traits::parameter_type_with_key! {
 	};
 }
 
+// #[cfg(test)]
+// impl xcm_app::Config for Runtime {
+// 	type RuntimeEvent = RuntimeEvent;
+// 	type WeightInfo = xcm_app::weights::WeightInfo<Runtime>;
+// 	type Balance = Balance;
+// 	type OutboundChannel = SubstrateBridgeOutboundChannel;
+// 	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
+// 	type CallOrigin = CallOriginStub;
+// 	type XcmTransfer = XTokens;
+// }
+
+// #[cfg(test)]
+// pub struct CallOriginStub;
+
+// impl
+
+// #[cfg(not(test))]
 impl xcm_app::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = xcm_app::weights::WeightInfo<Runtime>;
@@ -579,14 +596,6 @@ impl xcm_app::Config for Runtime {
 	>;
 	type XcmTransfer = XTokens;
 }
-
-// impl transactor::Config for Runtime {
-// 	type RuntimeEvent = RuntimeEvent;
-// 	type Balance = Balance;
-// 	type CurrencyId = parachain_common::primitives::AssetId;
-// 	type OutboundChannel = SubstrateBridgeOutboundChannel;
-// 	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
-// }
 
 parameter_types! {
 	pub const SidechainRandomnessNetwork: SubNetworkId = SubNetworkId::Mainnet;
