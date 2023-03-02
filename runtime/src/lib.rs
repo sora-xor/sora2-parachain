@@ -566,23 +566,6 @@ orml_traits::parameter_type_with_key! {
 	};
 }
 
-// #[cfg(test)]
-// impl xcm_app::Config for Runtime {
-// 	type RuntimeEvent = RuntimeEvent;
-// 	type WeightInfo = xcm_app::weights::WeightInfo<Runtime>;
-// 	type Balance = Balance;
-// 	type OutboundChannel = SubstrateBridgeOutboundChannel;
-// 	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
-// 	type CallOrigin = CallOriginStub;
-// 	type XcmTransfer = XTokens;
-// }
-
-// #[cfg(test)]
-// pub struct CallOriginStub;
-
-// impl
-
-// #[cfg(not(test))]
 impl xcm_app::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = xcm_app::weights::WeightInfo<Runtime>;

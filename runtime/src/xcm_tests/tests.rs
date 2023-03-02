@@ -391,18 +391,19 @@ fn send_from_sora_no_mapping_error() {
 			X2(Parachain(1), Junction::AccountId32 { network: NetworkId::Any, id: BOB.into() }),
 		);
 		let assetid = relay_native_asset_id();
-		assert_noop!(crate::XCMApp::transfer(
-			dispatch::RawOrigin::new(bridge_types::types::CallOriginOutput {
-				network_id: SubNetworkId::Mainnet,
-				additional: (),
-				message_id: message_id(),
-				timestamp: 0,
-			})
-			.into(),
-			assetid,
-			ALICE,
-			xcm::VersionedMultiLocation::V1(location.clone()),
-			10000000,
+		assert_noop!(
+			crate::XCMApp::transfer(
+				dispatch::RawOrigin::new(bridge_types::types::CallOriginOutput {
+					network_id: SubNetworkId::Mainnet,
+					additional: (),
+					message_id: message_id(),
+					timestamp: 0,
+				})
+				.into(),
+				assetid,
+				ALICE,
+				xcm::VersionedMultiLocation::V1(location.clone()),
+				10000000,
 			),
 			orml_xtokens::Error::<crate::Runtime>::NotCrossChainTransferableCurrency,
 		);
