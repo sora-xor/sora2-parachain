@@ -28,22 +28,24 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 use super::{Amount, Balance, CurrencyId, CurrencyIdConvert, ParachainXcmRouter};
+use crate::xcm_tests::AllTokensAreCreatedEqualToWeight;
+use cumulus_primitives_core::{ChannelStatus, GetChannelInfo, ParaId};
 use frame_support::{
 	construct_runtime, match_types, parameter_types,
 	traits::{ConstU128, ConstU32, ConstU64, Everything, Get, Nothing},
 };
 use frame_system::EnsureRoot;
+use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
+use orml_xcm_support::{IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset};
+use pallet_xcm::XcmPassthrough;
+use polkadot_parachain::primitives::Sibling;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{Convert, IdentityLookup},
 	AccountId32,
 };
-use cumulus_primitives_core::{ChannelStatus, GetChannelInfo, ParaId};
-use pallet_xcm::XcmPassthrough;
-use polkadot_parachain::primitives::Sibling;
 use xcm::latest::{prelude::*, Weight};
 use xcm_builder::{
 	AccountId32Aliases, AllowTopLevelPaidExecutionFrom, EnsureXcmOrigin, FixedWeightBounds,
@@ -52,9 +54,6 @@ use xcm_builder::{
 	SovereignSignedViaLocation, TakeWeightCredit,
 };
 use xcm_executor::{Config, XcmExecutor};
-use crate::xcm_tests::AllTokensAreCreatedEqualToWeight;
-use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
-use orml_xcm_support::{IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset};
 
 pub const WEIGHT_REF_TIME_PER_SECOND: u64 = 1_000_000_000_000;
 pub type AccountId = AccountId32;
