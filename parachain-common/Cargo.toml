@@ -19,7 +19,7 @@ frame-support = { git = "https://github.com/paritytech/substrate.git", default-f
 polkadot-parachain = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.31" }
 xcm-builder = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.31" }
 xcm = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.31" }
-bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false }
+bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "add_beefy_tests", default-features = false }
 
 [features]
 default = ["std"]
