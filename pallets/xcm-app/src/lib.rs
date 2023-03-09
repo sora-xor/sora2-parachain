@@ -157,6 +157,18 @@ pub mod pallet {
 		/// Asset transfered from this parachain
 		/// [From, To, AssedId, amount]
 		AssetTransfered(T::AccountId, MultiLocation, AssetId, T::Balance),
+
+		// Error events:
+		/// Error while submitting to outbound channel
+		SubmittingToChannelError(DispatchError, AssetId),
+		/// Error while trasferring XCM message to other chains
+		TrasferringAssetError(DispatchError, AssetId),
+		/// No mapping for MultiLocation
+		MultilocationMappingError(MultiLocation),
+		/// No mapping for AssetId
+		AssetIdMappingError(AssetId),
+		/// No mapping for MultiAsset
+		MultiAssetMappingError(MultiAsset),
 	}
 
 	#[pallet::error]
@@ -412,12 +424,15 @@ pub mod pallet {
 				amount,
 			};
 			let xcm_mes_bytes = xcm_mes.clone().prepare_message();
-			<T as Config>::OutboundChannel::submit(
+			if let Err(e) = <T as Config>::OutboundChannel::submit(
 				SubNetworkId::Mainnet,
 				&raw_origin,
 				&xcm_mes_bytes,
 				(),
-			)?;
+			) {
+				Self::deposit_event(Event::<T>::SubmittingToChannelError(e, asset_id));
+				return Err(e);
+			}
 			Self::deposit_event(Event::<T>::AssetAddedToChannel(xcm_mes));
 			Ok(())
 		}
@@ -432,13 +447,16 @@ pub mod pallet {
 				xcm::VersionedMultiLocation::V1(m) => m,
 				_ => fail!(Error::<T>::WrongXCMVersion),
 			};
-			<T as Config>::XcmTransfer::transfer(
+			if let Err(e) = <T as Config>::XcmTransfer::transfer(
 				sender.clone(),
 				asset_id,
 				amount,
 				recipient.clone(),
 				xcm::v2::WeightLimit::Unlimited,
-			)?;
+			) {
+				Self::deposit_event(Event::<T>::TrasferringAssetError(e, asset_id));
+				return Err(e);
+			}
 			Self::deposit_event(Event::<T>::AssetTransfered(sender, recipient, asset_id, amount));
 			Ok(())
 		}
