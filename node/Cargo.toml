@@ -29,13 +29,13 @@ hex-literal = "0.3.1"
 jsonrpsee = { version = "0.15.1", features = ["server"] }
 
 # Sora common 
-beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "add_beefy_tests" }
-beefy-light-client-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "add_beefy_tests" }
-beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "add_beefy_tests" }
-substrate-bridge-channel-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "add_beefy_tests" }
-leaf-provider-rpc = { git = "https://github.com/sora-xor/sora2-common", branch = "add_beefy_tests" }
-leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common", branch = "add_beefy_tests" }
-bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "add_beefy_tests", default-features = false }
+beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "temp_check_bench" }
+beefy-light-client-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "temp_check_bench" }
+beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "temp_check_bench" }
+substrate-bridge-channel-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "temp_check_bench" }
+leaf-provider-rpc = { git = "https://github.com/sora-xor/sora2-common", branch = "temp_check_bench" }
+leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common", branch = "temp_check_bench" }
+bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "temp_check_bench", default-features = false }
 
 # Local
 parachain-template-runtime = { path = "../runtime" }

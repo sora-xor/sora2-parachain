@@ -8,6 +8,9 @@ homepage = "https://substrate.io"
 repository = "https://github.com/paritytech/cumulus/"
 edition = "2021"
 
+# [lib]
+# crate-type = ["cdylib", "rlib"]
+
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
 
@@ -24,15 +27,18 @@ scale-info = { version = "2.1.1", default-features = false, features = [
 	"derive",
 ] }
 serde = { version = "1.0.119", optional = true, features = ["derive"] }
+serde_json = { version = "1.0.73", optional = true, features = ["alloc"], default-features = false  }
+# serde = { version = "1.0.119", features = ["derive"] }
 smallvec = "1.6.1"
 # secp256k1 = {version = "0.26.0", default-features=false, optional = true}
 # libsecp256k1 = { version = "0.7", default-features = false, optional = true }
-libsecp256k1 = { version = "0.7.1", default-features = false, features = ["static-context"], optional = true }
+# libsecp256k1 = { version = "0.7.1", default-features = false, features = ["static-context"] }
+# secp256k1-sys = { version = "0.8.0", default-features = false }
 
 xcm-app = { path = "../pallets/xcm-app", default-features = false }
 parachain-common = { path = "../parachain-common", default-features = false }
-beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "add_beefy_tests", default-features = false }
-beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "add_beefy_tests", default-features = false }
+beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "temp_check_bench", default-features = false }
+beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "temp_check_bench", default-features = false }
 
 
 # Substrate Dependencies
@@ -41,7 +47,8 @@ beefy-primitives = { git = "https://github.com/paritytech/substrate.git", defaul
 sp-api = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31" }
 sp-block-builder = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31" }
 sp-consensus-aura = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31" }
-sp-core = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31", features = ["full_crypto"], optional = true}
+# sp-core = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31", features = ["full_crypto"]}
+# sp-core = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31"}
 sp-inherents = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31" }
 sp-io = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31" }
 sp-offchain = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.31" }
@@ -102,11 +109,11 @@ orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-li
 orml-xcm-support = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.31" }
 
 # SORA
-substrate-bridge-channel = { git = "https://github.com/sora-xor/sora2-common", branch = "add_beefy_tests", default-features = false }
-dispatch = { git = "https://github.com/sora-xor/sora2-common", branch = "add_beefy_tests", default-features = false }
-bridge-types = { git = "https://github.com/sora-xor/sora2-common", branch = "add_beefy_tests", default-features = false }
-leaf-provider = { git = "https://github.com/sora-xor/sora2-common", branch = "add_beefy_tests", default-features = false }
-leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common", branch = "add_beefy_tests", default-features = false }
+substrate-bridge-channel = { git = "https://github.com/sora-xor/sora2-common", branch = "temp_check_bench", default-features = false }
+dispatch = { git = "https://github.com/sora-xor/sora2-common", branch = "temp_check_bench", default-features = false }
+bridge-types = { git = "https://github.com/sora-xor/sora2-common", branch = "temp_check_bench", default-features = false }
+leaf-provider = { git = "https://github.com/sora-xor/sora2-common", branch = "temp_check_bench", default-features = false }
+leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common", branch = "temp_check_bench", default-features = false }
 
 [features]
 default = ["std"]
@@ -150,10 +157,11 @@ std = [
 	"polkadot-runtime-common/std",
 	"scale-info/std",
 	"serde",
+	"serde_json",
 	"sp-api/std",
 	"sp-block-builder/std",
 	"sp-consensus-aura/std",
-	"sp-core/std",
+	# "sp-core/std",
 	"sp-inherents/std",
 	"sp-io/std",
 	"sp-mmr-primitives/std",
@@ -185,14 +193,17 @@ runtime-benchmarks = [
 	"pallet-xcm/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"xcm-app/runtime-benchmarks",
-	"beefy-light-client/runtime-benchmarks",
+	# "beefy-light-client/runtime-benchmarks",
 	"xcm-builder/runtime-benchmarks",
 	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
 	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
-	"libsecp256k1/std",
-	"libsecp256k1/static-context",
+	# "libsecp256k1/std",
+	# "libsecp256k1/static-context",
 	"sp-io/std",
-	"sp-core/full_crypto",
+	"sp-io/std",
+	# "serde",
+	# "sp-core/full_crypto",
+	"serde_json/std",
 ]
 
 try-runtime = ["frame-executive/try-runtime", "frame-try-runtime"]
