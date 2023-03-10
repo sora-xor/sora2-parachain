@@ -580,6 +580,7 @@ impl beefy_light_client::Config for Runtime {
 	type Message = Vec<bridge_types::types::ParachainMessage<Balance>>;
 	type RuntimeEvent = RuntimeEvent;
 	type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
+	type WeightInfo = beefy_light_client::weights::WeightInfo<Runtime>;
 }
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
@@ -824,6 +825,7 @@ mod benches {
 		[pallet_collator_selection, CollatorSelection]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[xcp_app, XCMApp]
+		[beefy_light_client, BeefyLightClient]
 	);
 }
 
@@ -1049,6 +1051,7 @@ impl_runtime_apis! {
 
 			let mut list = Vec::<BenchmarkList>::new();
 			list_benchmark!(list, extra, xcm_app, XCMApp);
+			// list_benchmark!(list, extra, beefy_light_client, BeefyLightClient);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
 			return (list, storage_info)
