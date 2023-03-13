@@ -1051,7 +1051,7 @@ impl_runtime_apis! {
 
 			let mut list = Vec::<BenchmarkList>::new();
 			list_benchmark!(list, extra, xcm_app, XCMApp);
-			// list_benchmark!(list, extra, beefy_light_client, BeefyLightClient);
+			list_benchmark!(list, extra, beefy_light_client, BeefyLightClient);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
 			return (list, storage_info)
@@ -1084,6 +1084,7 @@ impl_runtime_apis! {
 			let mut batches = Vec::<BenchmarkBatch>::new();
 			let params = (&config, &whitelist);
 			add_benchmark!(params, batches, xcm_app, XCMApp);
+			add_benchmark!(params, batches, beefy_light_client, BeefyLightClient);
 
 			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)
