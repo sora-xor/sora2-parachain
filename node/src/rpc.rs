@@ -61,13 +61,9 @@ where
 	C::Api: beefy_light_client_rpc::BeefyLightClientRuntimeAPI<Block, beefy_light_client::BitField>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
-	C::Api: pallet_mmr_rpc::MmrRuntimeApi<
-		Block,
-		<Block as sp_runtime::traits::Block>::Hash,
-		BlockNumber,
-	>,
+	C::Api: mmr_rpc::MmrRuntimeApi<Block, <Block as sp_runtime::traits::Block>::Hash, BlockNumber>,
 	C::Api: leaf_provider_rpc::LeafProviderRuntimeAPI<Block>,
-	C::Api: beefy_primitives::BeefyApi<Block>,
+	C::Api: sp_beefy::BeefyApi<Block>,
 	C::Api: BlockBuilder<Block>,
 	P: TransactionPool + Sync + Send + 'static,
 	B: sc_client_api::Backend<Block> + Send + Sync + 'static,
@@ -75,7 +71,7 @@ where
 {
 	use beefy_gadget_rpc::{Beefy, BeefyApiServer};
 	use leaf_provider_rpc::{LeafProviderAPIServer, LeafProviderClient};
-	use pallet_mmr_rpc::{Mmr, MmrApiServer};
+	use mmr_rpc::{Mmr, MmrApiServer};
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
 	use substrate_bridge_channel_rpc::{
 		BridgeChannelAPIServer as SubstrateBridgeChannelAPIServer,

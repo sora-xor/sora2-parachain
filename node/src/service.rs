@@ -228,7 +228,7 @@ where
 		> + sp_offchain::OffchainWorkerApi<Block>
 		+ sp_block_builder::BlockBuilder<Block>
 		+ cumulus_primitives_core::CollectCollationInfo<Block>
-		+ beefy_primitives::BeefyApi<Block>
+		+ sp_beefy::BeefyApi<Block>
 		+ sp_mmr_primitives::MmrApi<Block, Hash, BlockNumber>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ leaf_provider_runtime_api::LeafProviderAPI<Block>
@@ -367,7 +367,7 @@ where
 		})
 	};
 
-	let payload_provider = beefy_primitives::mmr::MmrRootProvider::new(client.clone());
+	let payload_provider = sp_beefy::mmr::MmrRootProvider::new(client.clone());
 
 	let beefy_params = beefy_gadget::BeefyParams {
 		client: client.clone(),

@@ -67,13 +67,11 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-pub use beefy_primitives::crypto::AuthorityId as BeefyId;
-use beefy_primitives::mmr::MmrLeafVersion;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::Everything,
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_REF_TIME_PER_SECOND},
 		ConstantMultiplier, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
 		WeightToFeePolynomial,
 	},
@@ -83,6 +81,8 @@ use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot,
 };
+pub use sp_beefy::crypto::AuthorityId as BeefyId;
+use sp_beefy::mmr::MmrLeafVersion;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
@@ -259,7 +259,9 @@ const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(5);
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 /// We allow for 0.5 of a second of compute with a 12 second average block time.
-const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND.saturating_div(2).set_proof_size(2);
+const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_ref_time(WEIGHT_REF_TIME_PER_SECOND)
+	.saturating_div(2)
+	.set_proof_size(2);
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -907,8 +909,8 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl beefy_primitives::BeefyApi<Block> for Runtime {
-		fn validator_set() -> Option<beefy_primitives::ValidatorSet<BeefyId>> {
+	impl sp_beefy::BeefyApi<Block> for Runtime {
+		fn validator_set() -> Option<sp_beefy::ValidatorSet<BeefyId>> {
 			Beefy::validator_set()
 		}
 	}

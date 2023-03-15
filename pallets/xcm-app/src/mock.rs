@@ -134,7 +134,7 @@ impl sp_runtime::traits::Convert<AccountId, MultiLocation> for TestAccountIdToMu
 			.concat()
 			.try_into()
 			.expect("Failed to convert account if to xcm multilocaton");
-		X1(AccountId32 { network: xcm::v1::NetworkId::Any, id: arrarr.into() }).into()
+		X1(AccountId32 { network: xcm::v3::NetworkId::Any, id: arrarr.into() }).into()
 	}
 }
 
