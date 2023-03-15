@@ -68,7 +68,7 @@ fn message_id() -> crate::H256 {
 	hex_literal::hex!("54fd1e1728cd833d21da6f3e36c50884062e35edfc24aec7a70c18a60451255c").into()
 }
 
-fn prepeare_sora_parachain() {
+fn prepare_sora_parachain() {
 	SoraParachain::execute_with(|| {
 		let _ = SoraBalances::deposit_creating(
 			&crate::GetTrustlessBridgeFeesAccountId::get(),
@@ -97,7 +97,7 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
 		let _ = RelayBalances::deposit_creating(&para_x_account(), 1000000000000000000);
 	});
 
-	prepeare_sora_parachain();
+	prepare_sora_parachain();
 
 	ParaX::execute_with(|| {
 		assert_ok!(ParaXTokens::transfer(
@@ -149,7 +149,7 @@ fn send_sibling_asset_to_sora_from_sibling() {
 		let _ = RelayBalances::deposit_creating(&para_x_account(), 1000000000000000000);
 	});
 
-	prepeare_sora_parachain();
+	prepare_sora_parachain();
 
 	ParaX::execute_with(|| {
 		let _ = ParaTokens::set_balance(
@@ -203,7 +203,7 @@ fn send_relay_chain_asset_to_sibling() {
 		let _ = RelayBalances::deposit_creating(&sora_para_account(), 1000000000000000000);
 	});
 
-	prepeare_sora_parachain();
+	prepare_sora_parachain();
 
 	SoraParachain::execute_with(|| {
 		let location = MultiLocation::new(
@@ -244,7 +244,7 @@ fn send_sibling_chain_asset_to_sibling() {
 		let _ = RelayBalances::deposit_creating(&sora_para_account(), 1000000000000000000);
 	});
 
-	prepeare_sora_parachain();
+	prepare_sora_parachain();
 
 	SoraParachain::execute_with(|| {
 		let location = MultiLocation::new(
@@ -282,7 +282,7 @@ fn send_relay_chain_asset_to_relay_chain() {
 		let _ = RelayBalances::deposit_creating(&sora_para_account(), 1_000_000_000_000_000);
 	});
 
-	prepeare_sora_parachain();
+	prepare_sora_parachain();
 
 	SoraParachain::execute_with(|| {
 		let location = MultiLocation::new(
@@ -319,7 +319,7 @@ fn send_relay_chain_asset_to_relay_chain() {
 fn send_relay_chain_asset_to_sora_from_relay() {
 	TestNet::reset();
 
-	prepeare_sora_parachain();
+	prepare_sora_parachain();
 
 	Relay::execute_with(|| {
 		let _ = RelayBalances::deposit_creating(&ALICE, 1_000_000_000_000_000_000);
@@ -452,7 +452,7 @@ fn send_relay_chain_asset_to_sora_from_sibling_not_enough_fees() {
 		let _ = RelayBalances::deposit_creating(&para_x_account(), 1000000000000000000);
 	});
 
-	prepeare_sora_parachain();
+	prepare_sora_parachain();
 
 	ParaX::execute_with(|| {
 		assert_ok!(ParaXTokens::transfer(
