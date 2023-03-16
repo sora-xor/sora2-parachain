@@ -484,6 +484,8 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ControllerOrigin = EnsureRoot<AccountId>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type WeightInfo = ();
+	// TODO! look at this parameter
+	type PriceForSiblingDelivery = ();
 }
 
 impl cumulus_pallet_dmp_queue::Config for Runtime {
@@ -917,73 +919,101 @@ impl_runtime_apis! {
 	}
 
 	impl sp_mmr_primitives::MmrApi<Block, Hash, BlockNumber> for Runtime {
-		fn generate_proof(block_number: BlockNumber)
-			-> Result<(sp_mmr_primitives::EncodableOpaqueLeaf, sp_mmr_primitives::Proof<Hash>), sp_mmr_primitives::Error>
-		{
-			Mmr::generate_batch_proof(vec![block_number])
-				.and_then(|(leaves, proof)| Ok((
-					sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaves[0]),
-					sp_mmr_primitives::BatchProof::into_single_leaf_proof(proof)?
-				)))
-		}
-
-		fn verify_proof(leaf: sp_mmr_primitives::EncodableOpaqueLeaf, proof: sp_mmr_primitives::Proof<Hash>)
-			-> Result<(), sp_mmr_primitives::Error>
-		{
-			pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as sp_mmr_primitives::LeafDataProvider>::LeafData;
-			let leaf: MmrLeaf = leaf
-				.into_opaque_leaf()
-				.try_decode()
-				.ok_or(sp_mmr_primitives::Error::Verify)?;
-			Mmr::verify_leaves(vec![leaf], sp_mmr_primitives::Proof::into_batch_proof(proof))
-		}
-
-		fn verify_proof_stateless(
-			root: Hash,
-			leaf: sp_mmr_primitives::EncodableOpaqueLeaf,
-			proof: sp_mmr_primitives::Proof<Hash>
-		) -> Result<(), sp_mmr_primitives::Error> {
-			let node = sp_mmr_primitives::DataOrHash::Data(leaf.into_opaque_leaf());
-			pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(root, vec![node], sp_mmr_primitives::Proof::into_batch_proof(proof))
-		}
 
 		fn mmr_root() -> Result<Hash, sp_mmr_primitives::Error> {
-			Ok(Mmr::mmr_root())
+			todo!()
 		}
 
-		fn generate_batch_proof(block_numbers: Vec<BlockNumber>)
-			-> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::BatchProof<Hash>), sp_mmr_primitives::Error>
-		{
-			Mmr::generate_batch_proof(block_numbers)
-				.map(|(leaves, proof)| (leaves.into_iter().map(|leaf| sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaf)).collect(), proof))
+		fn mmr_leaf_count() -> Result<sp_mmr_primitives::LeafIndex, sp_mmr_primitives::Error> {
+			todo!()
 		}
 
-		fn generate_historical_batch_proof(block_numbers: Vec<BlockNumber>, best_known_block_number: BlockNumber)
-			-> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::BatchProof<Hash>), sp_mmr_primitives::Error>
-		{
-			Mmr::generate_historical_batch_proof(block_numbers, best_known_block_number)
-				.map(|(leaves, proof)| (leaves.into_iter().map(|leaf| sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaf)).collect(), proof))
+		fn generate_proof(
+			block_numbers: Vec<BlockNumber>,
+			best_known_block_number: Option<BlockNumber>
+		) -> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::Proof<Hash>), sp_mmr_primitives::Error> {
+			todo!()
 		}
 
-		fn verify_batch_proof(leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, proof: sp_mmr_primitives::BatchProof<Hash>)
-			-> Result<(), sp_mmr_primitives::Error>
-		{
-			pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as sp_mmr_primitives::LeafDataProvider>::LeafData;
-			let leaves = leaves.into_iter().map(|leaf|
-				leaf.into_opaque_leaf()
-				.try_decode()
-				.ok_or(sp_mmr_primitives::Error::Verify)).collect::<Result<Vec<MmrLeaf>, sp_mmr_primitives::Error>>()?;
-			Mmr::verify_leaves(leaves, proof)
+		fn verify_proof(leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, proof: sp_mmr_primitives::Proof<Hash>) -> Result<(), sp_mmr_primitives::Error> {
+			todo!()
 		}
 
-		fn verify_batch_proof_stateless(
-			root: Hash,
-			leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>,
-			proof: sp_mmr_primitives::BatchProof<Hash>
-		) -> Result<(), sp_mmr_primitives::Error> {
-			let nodes = leaves.into_iter().map(|leaf|sp_mmr_primitives::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
-			pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(root, nodes, proof)
+		fn verify_proof_stateless(root: Hash, leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, proof: sp_mmr_primitives::Proof<Hash>)
+		-> Result<(), sp_mmr_primitives::Error> {
+			todo!()
 		}
+		// fn generate_proof(block_number: BlockNumber)
+		// 	-> Result<(sp_mmr_primitives::EncodableOpaqueLeaf, sp_mmr_primitives::Proof<Hash>), sp_mmr_primitives::Error>
+		// {
+		// 	Mmr::generate_batch_proof(vec![block_number])
+		// 		.and_then(|(leaves, proof)| Ok((
+		// 			sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaves[0]),
+		// 			sp_mmr_primitives::Proof::into_single_leaf_proof(proof)?
+		// 		)))
+		// }
+
+		// fn verify_proof(leaf: sp_mmr_primitives::EncodableOpaqueLeaf, proof: sp_mmr_primitives::Proof<Hash>)
+		// 	-> Result<(), sp_mmr_primitives::Error>
+		// {
+		// 	pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as sp_mmr_primitives::LeafDataProvider>::LeafData;
+		// 	let leaf: MmrLeaf = leaf
+		// 		.into_opaque_leaf()
+		// 		.try_decode()
+		// 		.ok_or(sp_mmr_primitives::Error::Verify)?;
+		// 	Mmr::verify_leaves(vec![leaf], sp_mmr_primitives::Proof::into_batch_proof(proof))
+		// }
+
+		// fn verify_proof_stateless(
+		// 	root: Hash,
+		// 	leaf: sp_mmr_primitives::EncodableOpaqueLeaf,
+		// 	proof: sp_mmr_primitives::Proof<Hash>
+		// ) -> Result<(), sp_mmr_primitives::Error> {
+		// 	let node = sp_mmr_primitives::DataOrHash::Data(leaf.into_opaque_leaf());
+		// 	pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(root, vec![node], sp_mmr_primitives::Proof::into_batch_proof(proof))
+		// }
+
+		// fn mmr_root() -> Result<Hash, sp_mmr_primitives::Error> {
+		// 	Ok(Mmr::mmr_root())
+		// }
+
+		// fn mmr_leaf_count() -> Result<sp_mmr_primitives::LeafIndex, sp_mmr_primitives::Error> {
+		// 	todo!()
+		// }
+
+		// fn generate_proof(block_numbers: Vec<BlockNumber>)
+		// 	-> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::Proof<Hash>), sp_mmr_primitives::Error>
+		// {
+		// 	Mmr::generate_batch_proof(block_numbers)
+		// 		.map(|(leaves, proof)| (leaves.into_iter().map(|leaf| sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaf)).collect(), proof))
+		// }
+
+		// fn generate_historical_batch_proof(block_numbers: Vec<BlockNumber>, best_known_block_number: BlockNumber)
+		// 	-> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::Proof<Hash>), sp_mmr_primitives::Error>
+		// {
+		// 	Mmr::generate_historical_batch_proof(block_numbers, best_known_block_number)
+		// 		.map(|(leaves, proof)| (leaves.into_iter().map(|leaf| sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaf)).collect(), proof))
+		// }
+
+		// fn verify_proof(leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, proof: sp_mmr_primitives::Proof<Hash>)
+		// 	-> Result<(), sp_mmr_primitives::Error>
+		// {
+		// 	pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as sp_mmr_primitives::LeafDataProvider>::LeafData;
+		// 	let leaves = leaves.into_iter().map(|leaf|
+		// 		leaf.into_opaque_leaf()
+		// 		.try_decode()
+		// 		.ok_or(sp_mmr_primitives::Error::Verify)).collect::<Result<Vec<MmrLeaf>, sp_mmr_primitives::Error>>()?;
+		// 	Mmr::verify_leaves(leaves, proof)
+		// }
+
+		// fn verify_batch_proof_stateless(
+		// 	root: Hash,
+		// 	leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>,
+		// 	proof: sp_mmr_primitives::Proof<Hash>
+		// ) -> Result<(), sp_mmr_primitives::Error> {
+		// 	let nodes = leaves.into_iter().map(|leaf|sp_mmr_primitives::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
+		// 	pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(root, nodes, proof)
+		// }
 	}
 
 	impl beefy_light_client_runtime_api::BeefyLightClientAPI<Block, beefy_light_client::BitField> for Runtime {
@@ -1017,6 +1047,12 @@ impl_runtime_apis! {
 			len: u32,
 		) -> pallet_transaction_payment::FeeDetails<Balance> {
 			TransactionPayment::query_fee_details(uxt, len)
+		}
+		fn query_weight_to_fee(weight: Weight) -> Balance {
+			TransactionPayment::weight_to_fee(weight)
+		}
+		fn query_length_to_fee(length: u32) -> Balance {
+			TransactionPayment::length_to_fee(length)
 		}
 	}
 
