@@ -5104,6 +5104,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "orml-tokens"
+version = "0.4.1-dev"
+source = "git+https://github.com/open-web3-stack/open-runtime-module-library.git?branch=polkadot-v0.9.31#034f66d569d60b7edc0933f42492db708ba8974e"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "orml-traits",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "orml-traits"
 version = "0.4.1-dev"
 source = "git+https://github.com/open-web3-stack/open-runtime-module-library.git?branch=polkadot-v0.9.31#034f66d569d60b7edc0933f42492db708ba8974e"
@@ -5133,6 +5148,20 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "orml-xcm"
+version = "0.4.1-dev"
+source = "git+https://github.com/open-web3-stack/open-runtime-module-library.git?branch=polkadot-v0.9.31#034f66d569d60b7edc0933f42492db708ba8974e"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-xcm",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-std",
+ "xcm",
 ]
 
 [[package]]
@@ -6300,7 +6329,9 @@ dependencies = [
  "leaf-provider",
  "leaf-provider-runtime-api",
  "log",
+ "orml-tokens",
  "orml-traits",
+ "orml-xcm",
  "orml-xcm-support",
  "orml-xtokens",
  "pallet-aura",
@@ -6322,6 +6353,7 @@ dependencies = [
  "parity-scale-codec",
  "polkadot-parachain",
  "polkadot-runtime-common",
+ "polkadot-runtime-parachains",
  "scale-info",
  "serde",
  "smallvec",
@@ -6344,6 +6376,7 @@ dependencies = [
  "xcm-app",
  "xcm-builder",
  "xcm-executor",
+ "xcm-simulator",
 ]
 
 [[package]]
@@ -12653,6 +12686,23 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "xcm-simulator"
+version = "0.9.31"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.31#32dd0c9cfcd1a1bda821747f6ab334f0e3577558"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec",
+ "paste",
+ "polkadot-core-primitives",
+ "polkadot-parachain",
+ "polkadot-runtime-parachains",
+ "sp-io",
+ "sp-std",
+ "xcm",
+ "xcm-executor",
 ]
 
 [[package]]

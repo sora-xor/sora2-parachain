@@ -35,6 +35,9 @@
 #[cfg(all(feature = "std", not(feature = "parachain-gen")))]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+#[cfg(test)]
+mod xcm_tests;
+
 mod migrations;
 mod trader;
 mod weights;
@@ -473,10 +476,23 @@ impl pallet_sudo::Config for Runtime {
 
 impl cumulus_pallet_aura_ext::Config for Runtime {}
 
+#[cfg(not(test))]
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type ChannelInfo = ParachainSystem;
+	type VersionWrapper = ();
+	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
+	type ControllerOrigin = EnsureRoot<AccountId>;
+	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
+	type WeightInfo = ();
+}
+
+#[cfg(test)]
+impl cumulus_pallet_xcmp_queue::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type XcmExecutor = XcmExecutor<XcmConfig>;
+	type ChannelInfo = xcm_tests::ChannelInfo;
 	type VersionWrapper = ();
 	type ExecuteOverweightOrigin = EnsureRoot<AccountId>;
 	type ControllerOrigin = EnsureRoot<AccountId>;
@@ -563,14 +579,6 @@ impl xcm_app::Config for Runtime {
 	>;
 	type XcmTransfer = XTokens;
 }
-
-// impl transactor::Config for Runtime {
-// 	type RuntimeEvent = RuntimeEvent;
-// 	type Balance = Balance;
-// 	type CurrencyId = parachain_common::primitives::AssetId;
-// 	type OutboundChannel = SubstrateBridgeOutboundChannel;
-// 	type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
-// }
 
 parameter_types! {
 	pub const SidechainRandomnessNetwork: SubNetworkId = SubNetworkId::Mainnet;

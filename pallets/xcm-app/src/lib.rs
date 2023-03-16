@@ -152,7 +152,7 @@ pub mod pallet {
 		/// [Sora AssetId, XCM Multilocation]
 		MappingDeleted(AssetId, MultiLocation),
 		/// Asset Added to channel
-		/// [Currency Id, amount]
+		/// [SubstrateAppMessage]
 		AssetAddedToChannel(SubstrateAppMessage<T::AccountId, AssetId, T::Balance>),
 		/// Asset transfered from this parachain
 		/// [From, To, AssedId, amount]
