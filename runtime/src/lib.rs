@@ -919,30 +919,74 @@ impl_runtime_apis! {
 	}
 
 	impl sp_mmr_primitives::MmrApi<Block, Hash, BlockNumber> for Runtime {
+		// fn mmr_root() -> Result<Hash, sp_mmr_primitives::Error> {
+		// 	todo!()
+		// }
+
+		// fn mmr_leaf_count() -> Result<sp_mmr_primitives::LeafIndex, sp_mmr_primitives::Error> {
+		// 	todo!()
+		// }
+
+		// fn generate_proof(
+		// 	block_numbers: Vec<BlockNumber>,
+		// 	best_known_block_number: Option<BlockNumber>
+		// ) -> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::Proof<Hash>), sp_mmr_primitives::Error> {
+		// 	todo!()
+		// }
+
+		// fn verify_proof(leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, proof: sp_mmr_primitives::Proof<Hash>) -> Result<(), sp_mmr_primitives::Error> {
+		// 	todo!()
+		// }
+
+		// fn verify_proof_stateless(root: Hash, leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, proof: sp_mmr_primitives::Proof<Hash>)
+		// -> Result<(), sp_mmr_primitives::Error> {
+		// 	todo!()
+		// }
 
 		fn mmr_root() -> Result<Hash, sp_mmr_primitives::Error> {
-			todo!()
-		}
+            Ok(Mmr::mmr_root())
+        }
 
-		fn mmr_leaf_count() -> Result<sp_mmr_primitives::LeafIndex, sp_mmr_primitives::Error> {
-			todo!()
-		}
+        fn mmr_leaf_count() -> Result<sp_mmr_primitives::LeafIndex, sp_mmr_primitives::Error> {
+            Ok(Mmr::mmr_leaves())
+        }
 
-		fn generate_proof(
-			block_numbers: Vec<BlockNumber>,
-			best_known_block_number: Option<BlockNumber>
-		) -> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::Proof<Hash>), sp_mmr_primitives::Error> {
-			todo!()
-		}
+        fn generate_proof(
+            block_numbers: Vec<BlockNumber>,
+            best_known_block_number: Option<BlockNumber>,
+        ) -> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::Proof<Hash>), sp_mmr_primitives::Error> {
+            Mmr::generate_proof(block_numbers, best_known_block_number).map(
+                |(leaves, proof)| {
+                    (
+                        leaves
+                            .into_iter()
+                            .map(|leaf| sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaf))
+                            .collect(),
+                        proof,
+                    )
+                },
+            )
+        }
 
-		fn verify_proof(leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, proof: sp_mmr_primitives::Proof<Hash>) -> Result<(), sp_mmr_primitives::Error> {
-			todo!()
-		}
+        fn verify_proof(leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, proof: sp_mmr_primitives::Proof<Hash>)
+            -> Result<(), sp_mmr_primitives::Error>
+        {
+            pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as sp_mmr_primitives::LeafDataProvider>::LeafData;
+            let leaves = leaves.into_iter().map(|leaf|
+                leaf.into_opaque_leaf()
+                .try_decode()
+                .ok_or(sp_mmr_primitives::Error::Verify)).collect::<Result<Vec<MmrLeaf>, sp_mmr_primitives::Error>>()?;
+            Mmr::verify_leaves(leaves, proof)
+        }
 
-		fn verify_proof_stateless(root: Hash, leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, proof: sp_mmr_primitives::Proof<Hash>)
-		-> Result<(), sp_mmr_primitives::Error> {
-			todo!()
-		}
+        fn verify_proof_stateless(
+            root: Hash,
+            leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>,
+            proof: sp_mmr_primitives::Proof<Hash>
+        ) -> Result<(), sp_mmr_primitives::Error> {
+            let nodes = leaves.into_iter().map(|leaf|sp_mmr_primitives::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
+            pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(root, nodes, proof)
+        }
 		// fn generate_proof(block_number: BlockNumber)
 		// 	-> Result<(sp_mmr_primitives::EncodableOpaqueLeaf, sp_mmr_primitives::Proof<Hash>), sp_mmr_primitives::Error>
 		// {
