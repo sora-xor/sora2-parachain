@@ -6782,7 +6782,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-benchmarking-cli",
  "hex-literal",
- "jsonrpsee 0.15.1",
+ "jsonrpsee 0.16.2",
  "leaf-provider-rpc",
  "leaf-provider-runtime-api",
  "log",

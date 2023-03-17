@@ -82,8 +82,11 @@ where
 	let mut module = RpcExtension::new(());
 	let FullDeps { client, pool, deny_unsafe, beefy, backend } = deps;
 
+	// Default RPC:
 	module.merge(System::new(client.clone(), pool, deny_unsafe).into_rpc())?;
 	module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
+
+	// Beefy and MMR:
 	module.merge(Mmr::new(client.clone()).into_rpc())?;
 	module.merge(
 		Beefy::<Block>::new(
