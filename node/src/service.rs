@@ -37,6 +37,7 @@ use sp_api::ConstructRuntimeApi;
 use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
+use sc_consensus::ImportQueue;
 
 use polkadot_service::CollatorPair;
 
@@ -178,23 +179,29 @@ async fn build_relay_chain_interface(
 	collator_options: CollatorOptions,
 	hwbench: Option<sc_sysinfo::HwBench>,
 ) -> RelayChainResult<(Arc<(dyn RelayChainInterface + 'static)>, Option<CollatorPair>)> {
-	match collator_options.relay_chain_rpc_url {
-		Some(relay_chain_url) => {
-			cumulus_relay_chain_minimal_node::build_minimal_relay_chain_node(
-				polkadot_config,
-				task_manager,
-				relay_chain_url,
-			)
-			.await
-		},
-		None => build_inprocess_relay_chain(
-			polkadot_config,
-			parachain_config,
-			telemetry_worker_handle,
-			task_manager,
-			hwbench,
-		),
-	}
+	// match collator_options.relay_chain_rpc_url {
+	// 	Some(relay_chain_url) => {
+	// 		cumulus_relay_chain_minimal_node::build_minimal_relay_chain_node(
+	// 			polkadot_config,
+	// 			task_manager,
+	// 			relay_chain_url,
+	// 		)
+	// 		.await
+	// 	},
+	// 	None => build_inprocess_relay_chain(
+	// 		polkadot_config,
+	// 		parachain_config,
+	// 		telemetry_worker_handle,
+	// 		task_manager,
+	// 		hwbench,
+	// 	),
+	// }
+	cumulus_relay_chain_minimal_node::build_minimal_relay_chain_node(
+		polkadot_config,
+		task_manager,
+		collator_options.relay_chain_rpc_urls,
+	)
+	.await
 }
 
 /// Start a node with the given parachain `Configuration` and relay chain `Configuration`.
@@ -318,8 +325,8 @@ where
 	)
 	.await
 	.map_err(|e| match e {
-		RelayChainError::ServiceError(polkadot_service::Error::Sub(x)) => x,
-		s => s.to_string().into(),
+		// RelayChainError::ServiceError(polkadot_service::Error::Sub(x)) => x,
+		s => sc_service::Error::from(s.to_string())//.into(),
 	})?;
 
 	let block_announce_validator = BlockAnnounceValidator::new(relay_chain_interface.clone(), id);
@@ -328,14 +335,16 @@ where
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let transaction_pool = params.transaction_pool.clone();
-	let import_queue = cumulus_client_service::SharedImportQueue::new(params.import_queue);
+	// let import_queue = cumulus_client_service::SharedImportQueue::new(params.import_queue);
+	let import_queue = params.import_queue.service();
 	let (network, system_rpc_tx, tx_handler_controller, start_network) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &parachain_config,
 			client: client.clone(),
 			transaction_pool: transaction_pool.clone(),
 			spawn_handle: task_manager.spawn_handle(),
-			import_queue: import_queue.clone(),
+			// import_queue: import_queue.clone(),
+			import_queue: params.import_queue,
 			block_announce_validator_builder: Some(Box::new(|_| {
 				Box::new(block_announce_validator)
 			})),
