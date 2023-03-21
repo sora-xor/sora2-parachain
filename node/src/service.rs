@@ -259,12 +259,22 @@ async fn build_relay_chain_interface(
 	// 		hwbench,
 	// 	),
 	// }
-	cumulus_relay_chain_minimal_node::build_minimal_relay_chain_node(
-		polkadot_config,
-		task_manager,
-		collator_options.relay_chain_rpc_urls,
-	)
-	.await
+	if collator_options.relay_chain_rpc_urls.len() != 0 {
+		return cumulus_relay_chain_minimal_node::build_minimal_relay_chain_node(
+			polkadot_config,
+			task_manager,
+			collator_options.relay_chain_rpc_urls,
+		)
+		.await
+	}
+	cumulus_relay_chain_inprocess_interface::build_inprocess_relay_chain(
+				polkadot_config,
+				parachain_config,
+				telemetry_worker_handle,
+				task_manager,
+				hwbench,
+			)
+
 }
 
 /// Start a node with the given parachain `Configuration` and relay chain `Configuration`.

@@ -504,65 +504,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "beefy-gadget"
-version = "4.0.0-dev"
-source = "git+https://github.com/nikania/substrate.git?branch=polkadot-v0.9.38-beefy#8f2531b7be3ec96d033008858a12f5634277e83d"
-dependencies = [
- "array-bytes 4.2.0",
- "async-trait",
- "cumulus-client-consensus-common",
- "fnv",
- "futures",
- "log",
- "parity-scale-codec",
- "parking_lot 0.12.1",
- "sc-client-api",
- "sc-consensus",
- "sc-keystore",
- "sc-network",
- "sc-network-common",
- "sc-network-gossip",
- "sc-utils",
- "sp-api",
- "sp-application-crypto",
- "sp-arithmetic",
- "sp-beefy",
- "sp-blockchain",
- "sp-consensus",
- "sp-core",
- "sp-keystore",
- "sp-mmr-primitives",
- "sp-runtime",
- "substrate-prometheus-endpoint",
- "thiserror",
- "wasm-timer",
-]
-
-[[package]]
 name = "beefy-gadget-rpc"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.38#18bb7c7c841b101c19a8d1881b893ae8e37de460"
 dependencies = [
- "beefy-gadget 4.0.0-dev (git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.38)",
- "futures",
- "jsonrpsee",
- "log",
- "parity-scale-codec",
- "parking_lot 0.12.1",
- "sc-rpc",
- "serde",
- "sp-beefy",
- "sp-core",
- "sp-runtime",
- "thiserror",
-]
-
-[[package]]
-name = "beefy-gadget-rpc"
-version = "4.0.0-dev"
-source = "git+https://github.com/nikania/substrate.git?branch=polkadot-v0.9.38-beefy#70863b9fb1bfbedd228afa1d39117299362befbf"
-dependencies = [
- "beefy-gadget 4.0.0-dev (git+https://github.com/nikania/substrate.git?branch=polkadot-v0.9.38-beefy)",
+ "beefy-gadget",
  "futures",
  "jsonrpsee",
  "log",
@@ -6706,8 +6652,8 @@ dependencies = [
 name = "parachain-template-node"
 version = "0.1.0"
 dependencies = [
- "beefy-gadget 4.0.0-dev (git+https://github.com/nikania/substrate.git?branch=polkadot-v0.9.38-beefy)",
- "beefy-gadget-rpc 4.0.0-dev (git+https://github.com/nikania/substrate.git?branch=polkadot-v0.9.38-beefy)",
+ "beefy-gadget",
+ "beefy-gadget-rpc",
  "beefy-light-client",
  "beefy-light-client-rpc",
  "beefy-light-client-runtime-api",
@@ -7912,8 +7858,8 @@ name = "polkadot-rpc"
 version = "0.9.38"
 source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#8deef133d3ca1bdea8c6267c4a66ecabb903a18b"
 dependencies = [
- "beefy-gadget 4.0.0-dev (git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.38)",
- "beefy-gadget-rpc 4.0.0-dev (git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.38)",
+ "beefy-gadget",
+ "beefy-gadget-rpc",
  "jsonrpsee",
  "mmr-rpc",
  "pallet-transaction-payment-rpc",
@@ -8152,7 +8098,7 @@ version = "0.9.38"
 source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#8deef133d3ca1bdea8c6267c4a66ecabb903a18b"
 dependencies = [
  "async-trait",
- "beefy-gadget 4.0.0-dev (git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.38)",
+ "beefy-gadget",
  "frame-benchmarking-cli",
  "frame-support",
  "frame-system-rpc-runtime-api",
