@@ -17,7 +17,9 @@ use parachain_template_runtime::{
 
 // Cumulus Imports
 use cumulus_client_consensus_aura::{AuraConsensus, BuildAuraConsensusParams, SlotProportion};
-use cumulus_client_consensus_common::{ParachainBlockImport as TParachainBlockImport, ParachainConsensus};
+use cumulus_client_consensus_common::{
+	ParachainBlockImport as TParachainBlockImport, ParachainConsensus,
+};
 use cumulus_client_network::BlockAnnounceValidator;
 use cumulus_client_service::{
 	prepare_node_config, start_collator, start_full_node, StartCollatorParams, StartFullNodeParams,
@@ -60,7 +62,8 @@ impl sc_executor::NativeExecutionDispatch for ParachainNativeExecutor {
 type ParachainExecutor<T> = NativeElseWasmExecutor<T>;
 type ParachainClient<T> = TFullClient<Block, RuntimeApi, ParachainExecutor<T>>;
 type ParachainBackend = TFullBackend<Block>;
-type ParachainBlockImport<T> = TParachainBlockImport<Block, Arc<ParachainClient<T>>, ParachainBackend>;
+type ParachainBlockImport<T> =
+	TParachainBlockImport<Block, Arc<ParachainClient<T>>, ParachainBackend>;
 
 /// Native executor instance.
 // pub struct TemplateRuntimeExecutor;
@@ -88,16 +91,28 @@ pub fn new_partial<RuntimeApi, Executor, BIQ>(
 	build_import_queue: BIQ,
 ) -> Result<
 	PartialComponents<
-		TFullClient<Block, parachain_template_runtime::RuntimeApi, NativeElseWasmExecutor<Executor>>,
+		TFullClient<
+			Block,
+			parachain_template_runtime::RuntimeApi,
+			NativeElseWasmExecutor<Executor>,
+		>,
 		TFullBackend<Block>,
 		(),
 		sc_consensus::DefaultImportQueue<
 			Block,
-			TFullClient<Block, parachain_template_runtime::RuntimeApi, NativeElseWasmExecutor<Executor>>,
+			TFullClient<
+				Block,
+				parachain_template_runtime::RuntimeApi,
+				NativeElseWasmExecutor<Executor>,
+			>,
 		>,
 		sc_transaction_pool::FullPool<
 			Block,
-			TFullClient<Block, parachain_template_runtime::RuntimeApi, NativeElseWasmExecutor<Executor>>,
+			TFullClient<
+				Block,
+				parachain_template_runtime::RuntimeApi,
+				NativeElseWasmExecutor<Executor>,
+			>,
 		>,
 		(Option<Telemetry>, Option<TelemetryWorkerHandle>),
 	>,
@@ -123,7 +138,6 @@ where
 		// &Configuration,
 		// Option<TelemetryHandle>,
 		// &TaskManager,
-
 		Arc<ParachainClient<Executor>>,
 		// Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 		ParachainBlockImport<Executor>,
@@ -133,7 +147,11 @@ where
 	) -> Result<
 		sc_consensus::DefaultImportQueue<
 			Block,
-			TFullClient<Block, parachain_template_runtime::RuntimeApi, NativeElseWasmExecutor<Executor>>,
+			TFullClient<
+				Block,
+				parachain_template_runtime::RuntimeApi,
+				NativeElseWasmExecutor<Executor>,
+			>,
 		>,
 		sc_service::Error,
 	>,
@@ -167,7 +185,7 @@ where
 			config,
 			telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
 			executor,
-	)?;
+		)?;
 	let client = Arc::new(client);
 
 	let telemetry_worker_handle = telemetry.as_ref().map(|(worker, _)| worker.handle());
@@ -306,28 +324,32 @@ where
 	// 		sc_service::Error,
 	// 	> + 'static,
 	BIQ: FnOnce(
-		// Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
-		// &Configuration,
-		// Option<TelemetryHandle>,
-		// &TaskManager,
-		Arc<ParachainClient<Executor>>,
-		ParachainBlockImport<Executor>,
-		&Configuration,
-		Option<TelemetryHandle>,
-		&TaskManager,
-	) -> Result<
-		sc_consensus::DefaultImportQueue<
-			Block,
-			TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
-		>,
-		sc_service::Error,
-	> + 'static,
+			// Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+			// &Configuration,
+			// Option<TelemetryHandle>,
+			// &TaskManager,
+			Arc<ParachainClient<Executor>>,
+			ParachainBlockImport<Executor>,
+			&Configuration,
+			Option<TelemetryHandle>,
+			&TaskManager,
+		) -> Result<
+			sc_consensus::DefaultImportQueue<
+				Block,
+				TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+			>,
+			sc_service::Error,
+		> + 'static,
 	BIC: FnOnce(
-		beefy_gadget::import::BeefyBlockImport<
+		cumulus_client_consensus_common::ParachainBlockImport<
 			Block,
-			sc_service::TFullBackend<Block>,
-			TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
-			Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+			beefy_gadget::import::BeefyBlockImport<
+				Block,
+				sc_service::TFullBackend<Block>,
+				TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+				Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+			>,
+			TFullBackend<Block>,
 		>,
 		Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
 		Option<&Registry>,
@@ -492,9 +514,14 @@ where
 
 	let relay_chain_slot_duration = Duration::from_secs(6);
 
+	let block_import = cumulus_client_consensus_common::ParachainBlockImport::new(
+		beefy_block_import,
+		backend.clone(),
+	);
+
 	if validator {
 		let parachain_consensus = build_consensus(
-			beefy_block_import,
+			block_import,
 			client.clone(),
 			prometheus_registry.as_ref(),
 			telemetry.as_ref().map(|t| t.handle()),
@@ -601,9 +628,9 @@ pub fn parachain_build_import_queue<T>(
 	config: &Configuration,
 	telemetry: Option<TelemetryHandle>,
 	task_manager: &TaskManager,
-) -> Result<sc_consensus::DefaultImportQueue<Block, ParachainClient<T>>, sc_service::Error> 
-	where
-		T: Send + Sync + polkadot_service::NativeExecutionDispatch + 'static,
+) -> Result<sc_consensus::DefaultImportQueue<Block, ParachainClient<T>>, sc_service::Error>
+where
+	T: Send + Sync + polkadot_service::NativeExecutionDispatch + 'static,
 {
 	let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
 
