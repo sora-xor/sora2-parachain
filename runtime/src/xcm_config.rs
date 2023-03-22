@@ -32,9 +32,8 @@ use super::{
 	AccountId, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent,
 	RuntimeOrigin, XcmpQueue,
 };
-// use core::marker::PhantomData;
 use frame_support::{
-	log, match_types, parameter_types,
+	match_types, parameter_types,
 	traits::{Everything, Nothing},
 };
 use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
@@ -51,7 +50,7 @@ use xcm_builder::{
 	AllowSubscriptionsFrom,
 	AllowTopLevelPaidExecutionFrom,
 	EnsureXcmOrigin,
-	FixedWeightBounds, //LocationInverter,
+	FixedWeightBounds,
 	ParentIsPreset,
 	RelayChainAsNative,
 	SiblingParachainAsNative,
@@ -61,7 +60,7 @@ use xcm_builder::{
 	SovereignSignedViaLocation,
 	TakeWeightCredit,
 };
-use xcm_executor::{traits::ShouldExecute, XcmExecutor};
+use xcm_executor::XcmExecutor;
 
 parameter_types! {
 	pub const RelayLocation: MultiLocation = MultiLocation::parent();
@@ -119,9 +118,9 @@ pub type XcmOriginToTransactDispatchOrigin = (
 
 parameter_types! {
 	// One XCM operation is 1_000_000_000 weight - almost certainly a conservative estimate.
-	// pub UnitWeightCost: XcmWeight  = 1_000_000_000;
 	pub UnitWeightCost: XcmWeight  = XcmWeight::from_ref_time(1_000_000_000);
 	pub const MaxInstructions: u32 = 100;
+	pub const MaxAssetsIntoHolding: u32 = 64;
 }
 
 match_types! {
@@ -130,69 +129,6 @@ match_types! {
 		MultiLocation { parents: 1, interior: X1(Plurality { id: BodyId::Executive, .. }) }
 	};
 }
-
-//TODO: move DenyThenTry to polkadot's xcm module.
-/// Deny executing the xcm message if it matches any of the Deny filter regardless of anything else.
-/// If it passes the Deny, and matches one of the Allow cases then it is let through.
-// pub struct DenyThenTry<Deny, Allow>(PhantomData<Deny>, PhantomData<Allow>)
-// where
-// 	Deny: ShouldExecute,
-// 	Allow: ShouldExecute;
-
-// impl<Deny, Allow> ShouldExecute for DenyThenTry<Deny, Allow>
-// where
-// 	Deny: ShouldExecute,
-// 	Allow: ShouldExecute,
-// {
-// 	fn should_execute<Call>(
-// 		origin: &MultiLocation,
-// 		message: &mut Xcm<Call>,
-// 		max_weight: XcmWeight,
-// 		weight_credit: &mut XcmWeight,
-// 	) -> Result<(), ()> {
-// 		Deny::should_execute(origin, message, max_weight, weight_credit)?;
-// 		Allow::should_execute(origin, message, max_weight, weight_credit)
-// 	}
-// }
-
-// See issue #5233
-// pub struct DenyReserveTransferToRelayChain;
-// impl ShouldExecute for DenyReserveTransferToRelayChain {
-// 	fn should_execute<Call>(
-// 		origin: &MultiLocation,
-// 		message: &mut Xcm<Call>,
-// 		_max_weight: XcmWeight,
-// 		_weight_credit: &mut XcmWeight,
-// 	) -> Result<(), ()> {
-// 		if message.0.iter().any(|inst| {
-// 			matches!(
-// 				inst,
-// 				InitiateReserveWithdraw {
-// 					reserve: MultiLocation { parents: 1, interior: Here },
-// 					..
-// 				} | DepositReserveAsset { dest: MultiLocation { parents: 1, interior: Here }, .. }
-// 					| TransferReserveAsset {
-// 						dest: MultiLocation { parents: 1, interior: Here },
-// 						..
-// 					}
-// 			)
-// 		}) {
-// 			return Err(()); // Deny
-// 		}
-
-// 		// allow reserve transfers to arrive from relay chain
-// 		if matches!(origin, MultiLocation { parents: 1, interior: Here })
-// 			&& message.0.iter().any(|inst| matches!(inst, ReserveAssetDeposited { .. }))
-// 		{
-// 			log::warn!(
-// 				target: "xcm::barriers",
-// 				"Unexpected ReserveAssetDeposited from the relay chain",
-// 			);
-// 		}
-// 		// Permit everything else
-// 		Ok(())
-// 	}
-// }
 
 pub type Barrier = (
 	TakeWeightCredit,
@@ -212,7 +148,6 @@ impl xcm_executor::Config for XcmConfig {
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
 	type IsReserve = MultiNativeAsset<AbsoluteReserveProvider>;
 	type IsTeleporter = (); // Teleporting is disabled.
-						// type LocationInverter = LocationInverter<Ancestry>;
 	type Barrier = Barrier;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type Trader = crate::trader::ParachainTrader;
@@ -225,7 +160,7 @@ impl xcm_executor::Config for XcmConfig {
 	type AssetLocker = ();
 	type AssetExchanger = ();
 	type PalletInstancesInfo = ();
-	type MaxAssetsIntoHolding = ();
+	type MaxAssetsIntoHolding = MaxAssetsIntoHolding;
 	type FeeManager = ();
 	type MessageExporter = ();
 	type UniversalAliases = ();
@@ -257,22 +192,19 @@ impl pallet_xcm::Config for Runtime {
 	type XcmTeleportFilter = Nothing;
 	type XcmReserveTransferFilter = Everything;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
-	// type LocationInverter = LocationInverter<Ancestry>;
 	type RuntimeOrigin = RuntimeOrigin;
 	type RuntimeCall = RuntimeCall;
 
 	const VERSION_DISCOVERY_QUEUE_SIZE: u32 = 100;
 	// ^ Override for AdvertisedXcmVersion default
 	type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
-
 	type Currency = crate::Balances;
 	type CurrencyMatcher = ();
 	type UniversalLocation = UniversalLocation;
 	type TrustedLockers = ();
 	type SovereignAccountOf = ();
 	type MaxLockers = ();
-	// TODO: CHANGE:
-	type WeightInfo = pallet_xcm::TestWeightInfo;
+	type WeightInfo = PalletXCMWeightInfo;
 }
 
 impl cumulus_pallet_xcm::Config for Runtime {
@@ -291,7 +223,6 @@ parameter_types! {
 }
 
 parameter_types! {
-	// pub const BaseXcmWeight: XcmWeight = 100_000_000; // TODO: recheck this
 	pub const BaseXcmWeight: XcmWeight = XcmWeight::from_ref_time(100_000_000); // TODO: recheck this
 	pub const MaxAssetsForTransfer: usize = 2;
 }
@@ -323,10 +254,73 @@ impl orml_xtokens::Config for Runtime {
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type BaseXcmWeight = BaseXcmWeight;
-	// type LocationInverter = LocationInverter<Ancestry>;
 	type MaxAssetsForTransfer = MaxAssetsForTransfer;
 	type MinXcmFee = ParachainMinFee;
 	type MultiLocationsFilter = Everything;
 	type ReserveProvider = AbsoluteReserveProvider;
 	type UniversalLocation = UniversalLocation;
+}
+
+// The pallet will be disabled for extarnal calls 
+pub struct PalletXCMWeightInfo;
+impl pallet_xcm::WeightInfo for PalletXCMWeightInfo {
+    fn send() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn teleport_assets() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn reserve_transfer_assets() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn execute() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn force_xcm_version() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn force_default_xcm_version() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn force_subscribe_version_notify() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn force_unsubscribe_version_notify() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn migrate_supported_version() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn migrate_version_notifiers() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn already_notified_target() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn notify_current_targets() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn notify_target_migration_fail() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn migrate_version_notify_targets() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
+
+    fn migrate_and_notify_old_targets() -> XcmWeight {
+        XcmWeight::from_ref_time(0)
+    }
 }
