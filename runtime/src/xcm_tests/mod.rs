@@ -142,6 +142,10 @@ pub fn relay_ext() -> sp_io::TestExternalities {
 pub type Balance = u128;
 pub type Amount = i128;
 
+fn para_x_general_key() -> [u8; 32] {
+	hex_literal::hex!("14fd1e1728cd833d21da6f3e36c50884062e35edfc24aec7a70c18a60451255b")
+}
+
 pub struct AllTokensAreCreatedEqualToWeight(MultiLocation);
 impl WeightTrader for AllTokensAreCreatedEqualToWeight {
 	fn new() -> Self {
@@ -150,7 +154,7 @@ impl WeightTrader for AllTokensAreCreatedEqualToWeight {
 
 	fn buy_weight(&mut self, weight: Weight, payment: Assets) -> Result<Assets, XcmError> {
 		let asset_id = payment.fungible.iter().next().expect("Payment must be something; qed").0;
-		let required = MultiAsset { id: asset_id.clone(), fun: Fungible(weight as u128) };
+		let required = MultiAsset { id: asset_id.clone(), fun: Fungible(weight.ref_time() as u128) };
 
 		if let MultiAsset { fun: _, id: Concrete(ref id) } = &required {
 			self.0 = id.clone();
@@ -164,7 +168,7 @@ impl WeightTrader for AllTokensAreCreatedEqualToWeight {
 		if weight.is_zero() {
 			None
 		} else {
-			Some((self.0.clone(), weight as u128).into())
+			Some((self.0.clone(), weight.ref_time() as u128).into())
 		}
 	}
 }
@@ -198,24 +202,25 @@ impl Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
 		match id {
 			CurrencyId::R => Some(Parent.into()),
 			CurrencyId::X => {
-				Some((Parent, Parachain(1), GeneralKey(b"X".to_vec().try_into().unwrap())).into())
+				Some((Parent, Parachain(1), GeneralKey{length: 32, data: para_x_general_key()}).into())
 			},
 		}
 	}
 }
 impl Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
 	fn convert(l: MultiLocation) -> Option<CurrencyId> {
-		let x: Vec<u8> = "X".into();
+		// let x: Vec<u8> = "X".into();
+		let x = para_x_general_key();
 		if l == MultiLocation::parent() {
 			return Some(CurrencyId::R);
 		}
 		match l {
 			MultiLocation { parents, interior } if parents == 1 => match interior {
-				X2(Parachain(1), GeneralKey(k)) if k == x => Some(CurrencyId::X),
+				X2(Parachain(1), GeneralKey {length: 32, data: k}) if k == x => Some(CurrencyId::X),
 				_ => None,
 			},
 			MultiLocation { parents, interior } if parents == 0 => match interior {
-				X1(GeneralKey(k)) if k == x => Some(CurrencyId::X),
+				X1(GeneralKey {length: 32, data: k}) if k == x => Some(CurrencyId::X),
 				_ => None,
 			},
 			_ => None,
