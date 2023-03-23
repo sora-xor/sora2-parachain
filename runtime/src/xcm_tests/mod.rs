@@ -209,7 +209,6 @@ impl Convert<CurrencyId, Option<MultiLocation>> for CurrencyIdConvert {
 }
 impl Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
 	fn convert(l: MultiLocation) -> Option<CurrencyId> {
-		// let x: Vec<u8> = "X".into();
 		let x = para_x_general_key();
 		if l == MultiLocation::parent() {
 			return Some(CurrencyId::R);
