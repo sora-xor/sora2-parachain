@@ -256,7 +256,7 @@ impl pallet_xcm::Config for Runtime {
 pub struct AccountIdToMultiLocation;
 impl Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
 	fn convert(account: AccountId) -> MultiLocation {
-		X1(Junction::AccountId32 { network: Some(NetworkId::Rococo), id: account.into() }).into()
+		X1(Junction::AccountId32 { network: Some(NetworkId::Kusama), id: account.into() }).into()
 	}
 }
 
@@ -296,7 +296,6 @@ impl orml_xtokens::Config for Runtime {
 	type MaxAssetsForTransfer = MaxAssetsForTransfer;
 	type ReserveProvider = AbsoluteReserveProvider;
 	type UniversalLocation = UniversalLocation;
-	
 }
 
 impl orml_xcm::Config for Runtime {

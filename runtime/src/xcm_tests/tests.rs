@@ -323,7 +323,6 @@ fn send_relay_chain_asset_to_sora_from_relay() {
 
 	Relay::execute_with(|| {
 		let _ = RelayBalances::deposit_creating(&ALICE, 1_000_000_000_000_000_000);
-		// XcmPallet: pallet_xcm::{Pallet, Call, Storage, Event<T>, Origin},
 		assert_ok!(relay::XcmPallet::reserve_transfer_assets(
 			Some(ALICE).into(),
 			Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
@@ -332,7 +331,7 @@ fn send_relay_chain_asset_to_sora_from_relay() {
 			))),
 			Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
 				0,
-				X1(Junction::AccountId32 { network: Some(NetworkId::Rococo), id: ALICE.into() })
+				X1(Junction::AccountId32 { network: Some(NetworkId::Kusama), id: ALICE.into() })
 			))),
 			Box::new(xcm::VersionedMultiAssets::V3(
 				vec![xcm::v3::MultiAsset {
