@@ -147,7 +147,12 @@ impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
 		dest: MultiLocation,
 		_dest_weight_limit: WeightLimit,
 	) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
-		Ok(orml_traits::xcm_transfer::Transferred { sender, dest, assets: vec![].into(), fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) } })
+		Ok(orml_traits::xcm_transfer::Transferred {
+			sender,
+			dest,
+			assets: vec![].into(),
+			fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) },
+		})
 	}
 
 	fn transfer_with_fee(
@@ -158,7 +163,12 @@ impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
 		dest: MultiLocation,
 		_dest_weight_limit: WeightLimit,
 	) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
-		Ok(orml_traits::xcm_transfer::Transferred { sender, dest, assets: vec![].into(), fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) } })
+		Ok(orml_traits::xcm_transfer::Transferred {
+			sender,
+			dest,
+			assets: vec![].into(),
+			fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) },
+		})
 	}
 
 	fn transfer_multiasset_with_fee(
@@ -178,7 +188,12 @@ impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
 		dest: MultiLocation,
 		_dest_weight_limit: WeightLimit,
 	) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
-		Ok(orml_traits::xcm_transfer::Transferred { sender, dest, assets: vec![].into(), fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) } })
+		Ok(orml_traits::xcm_transfer::Transferred {
+			sender,
+			dest,
+			assets: vec![].into(),
+			fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) },
+		})
 	}
 
 	fn transfer_multiassets(
@@ -188,7 +203,7 @@ impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
 		dest: MultiLocation,
 		_dest_weight_limit: WeightLimit,
 	) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
-		Ok(orml_traits::xcm_transfer::Transferred { sender, dest, assets: assets, fee })
+		Ok(orml_traits::xcm_transfer::Transferred { sender, dest, assets, fee })
 	}
 
 	fn transfer(
@@ -198,7 +213,12 @@ impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
 		dest: MultiLocation,
 		_dest_weight_limit: WeightLimit,
 	) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
-		Ok(orml_traits::xcm_transfer::Transferred { sender, dest, assets: vec![].into(), fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) } })
+		Ok(orml_traits::xcm_transfer::Transferred {
+			sender,
+			dest,
+			assets: vec![].into(),
+			fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) },
+		})
 	}
 }
 

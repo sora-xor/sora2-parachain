@@ -84,7 +84,10 @@ fn prepare_sora_parachain() {
 		assert_ok!(crate::XCMApp::register_mapping(
 			crate::RuntimeOrigin::root(),
 			para_x_asset_id(),
-			MultiLocation::new(1, X2(Parachain(1), GeneralKey {length: 32, data: para_x_general_key()}))
+			MultiLocation::new(
+				1,
+				X2(Parachain(1), GeneralKey { length: 32, data: para_x_general_key() })
+			)
 		));
 	});
 }
@@ -203,7 +206,10 @@ fn send_relay_chain_asset_to_sibling() {
 	SoraParachain::execute_with(|| {
 		let location = MultiLocation::new(
 			1,
-			X2(Parachain(1), Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() }),
+			X2(
+				Parachain(1),
+				Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() },
+			),
 		);
 		let assetid = relay_native_asset_id();
 		assert_ok!(crate::XCMApp::transfer(
@@ -244,7 +250,10 @@ fn send_sibling_chain_asset_to_sibling() {
 	SoraParachain::execute_with(|| {
 		let location = MultiLocation::new(
 			1,
-			X2(Parachain(1), Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() }),
+			X2(
+				Parachain(1),
+				Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() },
+			),
 		);
 		let assetid = para_x_asset_id();
 		assert_ok!(crate::XCMApp::transfer(
@@ -410,7 +419,10 @@ fn send_from_sora_no_mapping_error() {
 	SoraParachain::execute_with(|| {
 		let location = MultiLocation::new(
 			1,
-			X2(Parachain(1), Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() }),
+			X2(
+				Parachain(1),
+				Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() },
+			),
 		);
 		let assetid = relay_native_asset_id();
 		assert_noop!(

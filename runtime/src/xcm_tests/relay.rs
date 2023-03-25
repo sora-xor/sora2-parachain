@@ -36,7 +36,7 @@ use frame_support::{
 use frame_system::EnsureRoot;
 use sp_core::H256;
 use sp_runtime::{testing::Header, traits::IdentityLookup, AccountId32};
-use xcm::latest::{Weight};
+use xcm::latest::Weight;
 
 use cumulus_primitives_core::ParaId;
 use polkadot_runtime_parachains::{configuration, origin, shared, ump};
@@ -44,8 +44,8 @@ use xcm::latest::prelude::*;
 use xcm_builder::{
 	AccountId32Aliases, AllowTopLevelPaidExecutionFrom, ChildParachainAsNative,
 	ChildParachainConvertsVia, CurrencyAdapter as XcmCurrencyAdapter, FixedWeightBounds,
-	IsConcrete, SignedAccountId32AsNative, SignedToAccountId32,
-	SovereignSignedViaLocation, TakeWeightCredit, UsingComponents,
+	IsConcrete, SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation,
+	TakeWeightCredit, UsingComponents,
 };
 use xcm_executor::{Config, XcmExecutor};
 
@@ -120,11 +120,7 @@ pub type Barrier = (TakeWeightCredit, AllowTopLevelPaidExecutionFrom<Everything>
 
 parameter_types! {
 	pub Rococo: MultiAssetFilter = Wild(AllOf { fun: WildFungible, id: Concrete(RocLocation::get()) });
-	// pub const UnitWeightCost: Weight = Weight::from_ref_time(1_000_000_000);
-	// pub const UnitWeightCost: Weight = Weight::from_ref_time(10);
-	// pub const UnitWeightCost: Weight = Weight::from_parts(10, 10);
-
-	pub const UnitWeightCost: Weight = Weight::from_parts(1_000_000_000, 1_000_000_000);//XcmWeight::from_ref_time(1_000_000_000);
+	pub const UnitWeightCost: Weight = Weight::from_ref_time(1_000_000_000);
 	pub const BaseXcmWeight: Weight = Weight::from_parts(100_000_000, 100_000_000);
 	pub const MaxInstructions: u32 = 100;
 	pub const MaxAssetsIntoHolding: u32 = 64;

@@ -45,20 +45,10 @@ use polkadot_parachain::primitives::Sibling;
 use sp_core::Get;
 use xcm::{latest::Weight as XcmWeight, prelude::*};
 use xcm_builder::{
-	AccountId32Aliases,
-	AllowKnownQueryResponses,
-	AllowSubscriptionsFrom,
-	AllowTopLevelPaidExecutionFrom,
-	EnsureXcmOrigin,
-	FixedWeightBounds,
-	ParentIsPreset,
-	RelayChainAsNative,
-	SiblingParachainAsNative,
-	SiblingParachainConvertsVia,
-	SignedAccountId32AsNative,
-	SignedToAccountId32,
-	SovereignSignedViaLocation,
-	TakeWeightCredit,
+	AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
+	AllowTopLevelPaidExecutionFrom, EnsureXcmOrigin, FixedWeightBounds, ParentIsPreset,
+	RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
+	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
 };
 use xcm_executor::XcmExecutor;
 
@@ -261,66 +251,66 @@ impl orml_xtokens::Config for Runtime {
 	type UniversalLocation = UniversalLocation;
 }
 
-// The pallet will be disabled for extarnal calls 
+// The pallet will be disabled for extarnal calls
 pub struct PalletXCMWeightInfo;
 impl pallet_xcm::WeightInfo for PalletXCMWeightInfo {
-    fn send() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn send() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn teleport_assets() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn teleport_assets() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn reserve_transfer_assets() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn reserve_transfer_assets() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn execute() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn execute() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn force_xcm_version() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn force_xcm_version() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn force_default_xcm_version() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn force_default_xcm_version() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn force_subscribe_version_notify() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn force_subscribe_version_notify() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn force_unsubscribe_version_notify() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn force_unsubscribe_version_notify() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn migrate_supported_version() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn migrate_supported_version() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn migrate_version_notifiers() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn migrate_version_notifiers() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn already_notified_target() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn already_notified_target() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn notify_current_targets() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn notify_current_targets() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn notify_target_migration_fail() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn notify_target_migration_fail() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn migrate_version_notify_targets() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn migrate_version_notify_targets() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 
-    fn migrate_and_notify_old_targets() -> XcmWeight {
-        XcmWeight::from_ref_time(0)
-    }
+	fn migrate_and_notify_old_targets() -> XcmWeight {
+		XcmWeight::from_ref_time(0)
+	}
 }

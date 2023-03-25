@@ -8,9 +8,7 @@ use jsonrpsee::RpcModule;
 
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
-use parachain_template_runtime::{
-	opaque::Block, Hash, RuntimeApi,
-};
+use parachain_template_runtime::{opaque::Block, Hash, RuntimeApi};
 
 // Cumulus Imports
 use cumulus_client_consensus_aura::{AuraConsensus, BuildAuraConsensusParams, SlotProportion};
@@ -25,6 +23,7 @@ use cumulus_primitives_core::ParaId;
 use cumulus_relay_chain_interface::{RelayChainInterface, RelayChainResult};
 
 // Substrate Imports
+use polkadot_service::CollatorPair;
 use sc_client_api::BlockBackend;
 use sc_consensus::ImportQueue;
 use sc_executor::NativeElseWasmExecutor;
@@ -36,7 +35,6 @@ use sp_api::ConstructRuntimeApi;
 use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
-use polkadot_service::CollatorPair;
 
 /// Native executor type.
 pub struct ParachainNativeExecutor;
@@ -208,16 +206,15 @@ async fn build_relay_chain_interface(
 			task_manager,
 			collator_options.relay_chain_rpc_urls,
 		)
-		.await
+		.await;
 	}
 	cumulus_relay_chain_inprocess_interface::build_inprocess_relay_chain(
-				polkadot_config,
-				parachain_config,
-				telemetry_worker_handle,
-				task_manager,
-				hwbench,
-			)
-
+		polkadot_config,
+		parachain_config,
+		telemetry_worker_handle,
+		task_manager,
+		hwbench,
+	)
 }
 
 /// Start a node with the given parachain `Configuration` and relay chain `Configuration`.
