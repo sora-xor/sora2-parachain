@@ -98,28 +98,28 @@ impl configuration::Config for Runtime {
 }
 
 parameter_types! {
-	pub KsmLocation: MultiLocation = Here.into();
-	pub const KusamaNetwork: NetworkId = NetworkId::Kusama;
+	pub RocLocation: MultiLocation = Here.into();
+	pub const RococoNetwork: NetworkId = NetworkId::Rococo;
 	pub Ancestry: MultiLocation = Here.into();
 }
 
 pub type SovereignAccountOf =
-	(ChildParachainConvertsVia<ParaId, AccountId>, AccountId32Aliases<KusamaNetwork, AccountId>);
+	(ChildParachainConvertsVia<ParaId, AccountId>, AccountId32Aliases<RococoNetwork, AccountId>);
 
 pub type LocalAssetTransactor =
-	XcmCurrencyAdapter<Balances, IsConcrete<KsmLocation>, SovereignAccountOf, AccountId, ()>;
+	XcmCurrencyAdapter<Balances, IsConcrete<RocLocation>, SovereignAccountOf, AccountId, ()>;
 
 type LocalOriginConverter = (
 	SovereignSignedViaLocation<SovereignAccountOf, RuntimeOrigin>,
 	ChildParachainAsNative<origin::Origin, RuntimeOrigin>,
-	SignedAccountId32AsNative<KusamaNetwork, RuntimeOrigin>,
+	SignedAccountId32AsNative<RococoNetwork, RuntimeOrigin>,
 );
 
 pub type XcmRouter = super::RelayChainXcmRouter;
 pub type Barrier = (TakeWeightCredit, AllowTopLevelPaidExecutionFrom<Everything>);
 
 parameter_types! {
-	pub Kusama: MultiAssetFilter = Wild(AllOf { fun: WildFungible, id: Concrete(KsmLocation::get()) });
+	pub Rococo: MultiAssetFilter = Wild(AllOf { fun: WildFungible, id: Concrete(RocLocation::get()) });
 	// pub const UnitWeightCost: Weight = Weight::from_ref_time(1_000_000_000);
 	// pub const UnitWeightCost: Weight = Weight::from_ref_time(10);
 	// pub const UnitWeightCost: Weight = Weight::from_parts(10, 10);
@@ -128,7 +128,7 @@ parameter_types! {
 	pub const BaseXcmWeight: Weight = Weight::from_parts(100_000_000, 100_000_000);
 	pub const MaxInstructions: u32 = 100;
 	pub const MaxAssetsIntoHolding: u32 = 64;
-	pub UniversalLocation: InteriorMultiLocation = X1(GlobalConsensus(KusamaNetwork::get()));
+	pub UniversalLocation: InteriorMultiLocation = X1(GlobalConsensus(RococoNetwork::get()));
 }
 
 pub struct XcmConfig;
@@ -142,7 +142,7 @@ impl Config for XcmConfig {
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
-	type Trader = UsingComponents<IdentityFee<Balance>, KsmLocation, AccountId, Balances, ()>;
+	type Trader = UsingComponents<IdentityFee<Balance>, RocLocation, AccountId, Balances, ()>;
 	type ResponseHandler = ();
 	type AssetTrap = ();
 	type AssetClaims = ();
@@ -158,7 +158,7 @@ impl Config for XcmConfig {
 	type SafeCallFilter = Everything;
 }
 
-pub type LocalOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, KusamaNetwork>;
+pub type LocalOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, RococoNetwork>;
 
 impl pallet_xcm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
