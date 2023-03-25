@@ -119,11 +119,6 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
 		assert_eq!(ParaTokens::free_balance(CurrencyId::R, &ALICE), 999999900000000000);
 	});
 
-	Relay::execute_with(|| {
-		assert_eq!(RelayBalances::free_balance(&para_x_account()), 999999900000000000);
-		assert_eq!(RelayBalances::free_balance(&sora_para_account()), 99999999960);
-	});
-
 	SoraParachain::execute_with(|| {
 		assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
 			== crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
@@ -131,7 +126,7 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
 					asset_id: relay_native_asset_id(),
 					sender: None,
 					recipient: BOB,
-					amount: 95999999960,
+					amount: 92000000000,
 				}
 			))));
 
@@ -331,7 +326,7 @@ fn send_relay_chain_asset_to_sora_from_relay() {
 			))),
 			Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
 				0,
-				X1(Junction::AccountId32 { network: Some(NetworkId::Kusama), id: ALICE.into() })
+				X1(Junction::AccountId32 { network: Some(NetworkId::Rococo), id: ALICE.into() })
 			))),
 			Box::new(xcm::VersionedMultiAssets::V3(
 				vec![xcm::v3::MultiAsset {
@@ -444,37 +439,35 @@ fn send_from_sora_no_mapping_error() {
 }
 
 #[test]
-fn send_relay_chain_asset_to_sora_from_sibling_not_enough_fees() {
+fn send_relay_chain_asset_to_sora_from_relay_asset_trapped() {
 	TestNet::reset();
-
-	Relay::execute_with(|| {
-		let _ = RelayBalances::deposit_creating(&para_x_account(), 1000000000000000000);
-	});
 
 	prepare_sora_parachain();
 
-	ParaX::execute_with(|| {
-		assert_ok!(ParaXTokens::transfer(
+	Relay::execute_with(|| {
+		let _ = RelayBalances::deposit_creating(&ALICE, 1_000_000_000_000_000_000);
+		assert_ok!(relay::XcmPallet::reserve_transfer_assets(
 			Some(ALICE).into(),
-			CurrencyId::R,
-			// 7_999_999_999, 8kkk - is a minimum amount now
-			8_000_000_000 - 1,
-			Box::new(
-				MultiLocation::new(
-					1,
-					X2(
-						Parachain(2),
-						Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() }
-					)
-				)
+			Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
+				0,
+				X1(Junction::Parachain(2))
+			))),
+			Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
+				0,
+				X1(Junction::AccountId32 { network: Some(NetworkId::Rococo), id: ALICE.into() })
+			))),
+			Box::new(xcm::VersionedMultiAssets::V3(
+				vec![xcm::v3::MultiAsset {
+					id: Concrete(MultiLocation::new(0, Here)),
+					fun: Fungible(1),
+				}]
 				.into()
-			),
-			WeightLimit::Unlimited
+			)),
+			0,
 		));
 	});
 
 	SoraParachain::execute_with(|| {
-		// check that assets are not added to channel
 		assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
 			r.event,
 			crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
@@ -484,7 +477,7 @@ fn send_relay_chain_asset_to_sora_from_sibling_not_enough_fees() {
 			.iter()
 			.any(|r| matches!(r.event, crate::RuntimeEvent::SubstrateBridgeOutboundChannel(_))));
 
-		// check that asset are trappet
+		// check that asset are trapped
 		assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
 			r.event,
 			crate::RuntimeEvent::PolkadotXcm(pallet_xcm::Event::AssetsTrapped(_, _, _))

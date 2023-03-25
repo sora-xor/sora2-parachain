@@ -120,7 +120,11 @@ pub type Barrier = (TakeWeightCredit, AllowTopLevelPaidExecutionFrom<Everything>
 
 parameter_types! {
 	pub Kusama: MultiAssetFilter = Wild(AllOf { fun: WildFungible, id: Concrete(KsmLocation::get()) });
-	pub const UnitWeightCost: Weight = Weight::from_parts(10, 10);
+	// pub const UnitWeightCost: Weight = Weight::from_ref_time(1_000_000_000);
+	// pub const UnitWeightCost: Weight = Weight::from_ref_time(10);
+	// pub const UnitWeightCost: Weight = Weight::from_parts(10, 10);
+
+	pub const UnitWeightCost: Weight = Weight::from_parts(1_000_000_000, 1_000_000_000);//XcmWeight::from_ref_time(1_000_000_000);
 	pub const BaseXcmWeight: Weight = Weight::from_parts(100_000_000, 100_000_000);
 	pub const MaxInstructions: u32 = 100;
 	pub const MaxAssetsIntoHolding: u32 = 64;
@@ -166,6 +170,7 @@ impl pallet_xcm::Config for Runtime {
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	type XcmTeleportFilter = Everything;
 	type XcmReserveTransferFilter = Everything;
+	// type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 	type UniversalLocation = UniversalLocation;
 	type RuntimeOrigin = RuntimeOrigin;
