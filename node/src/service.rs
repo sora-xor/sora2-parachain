@@ -221,7 +221,7 @@ async fn build_relay_chain_interface(
 ///
 /// This is the actual implementation that is abstract over the executor and the runtime api.
 #[sc_tracing::logging::prefix_logs_with("Parachain")]
-async fn start_node_impl</*RuntimeApi,*/ Executor, RB, BIQ, BIC>(
+async fn start_node_impl<Executor, RB, BIQ, BIC>(
 	parachain_config: Configuration,
 	polkadot_config: Configuration,
 	collator_options: CollatorOptions,
@@ -337,7 +337,6 @@ where
 			client: client.clone(),
 			transaction_pool: transaction_pool.clone(),
 			spawn_handle: task_manager.spawn_handle(),
-			// import_queue: import_queue.clone(),
 			import_queue: params.import_queue,
 			block_announce_validator_builder: Some(Box::new(|_| {
 				Box::new(block_announce_validator)
@@ -539,7 +538,7 @@ pub async fn start_parachain_node(
 	TaskManager,
 	Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<ParachainNativeExecutor>>>,
 )> {
-	start_node_impl::</*RuntimeApi,*/ ParachainNativeExecutor, _, _, _>(
+	start_node_impl::<ParachainNativeExecutor, _, _, _>(
 		parachain_config,
 		polkadot_config,
 		collator_options,
