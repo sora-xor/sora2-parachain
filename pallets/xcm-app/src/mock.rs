@@ -106,7 +106,6 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
 }
 
-// pub fn test_general_key() -> WeakBoundedVec<u8, frame_support::traits::ConstU32<32>> {
 pub fn test_general_key() -> [u8; 32] {
 	[3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3]
 }
