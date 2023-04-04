@@ -33,7 +33,7 @@ xcm = { git = "https://github.com/paritytech/polkadot.git", default-features = f
 parachain-common = { path = "../../parachain-common", default-features = false }
 
 # Sora
-bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "polkadot-v0.9.38", default-features = false } #todo 'develop' after PR 14
+bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "fix_imports_38", default-features = false } 
 
 # ORML
 orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.38" }

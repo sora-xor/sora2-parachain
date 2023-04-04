@@ -525,7 +525,7 @@ dependencies = [
 [[package]]
 name = "beefy-light-client"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=polkadot-v0.9.38#9b89be9bcf11f88b74541904667dcbca30cf9dd2"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=fix_imports_38#b8b47405893c1dbf17d0f5e3d87b32255f8ac61a"
 dependencies = [
  "beefy-merkle-tree",
  "bridge-common",
@@ -546,7 +546,7 @@ dependencies = [
 [[package]]
 name = "beefy-light-client-rpc"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=polkadot-v0.9.38#9b89be9bcf11f88b74541904667dcbca30cf9dd2"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=fix_imports_38#b8b47405893c1dbf17d0f5e3d87b32255f8ac61a"
 dependencies = [
  "beefy-light-client-runtime-api",
  "jsonrpsee",
@@ -563,7 +563,7 @@ dependencies = [
 [[package]]
 name = "beefy-light-client-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=polkadot-v0.9.38#9b89be9bcf11f88b74541904667dcbca30cf9dd2"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=fix_imports_38#b8b47405893c1dbf17d0f5e3d87b32255f8ac61a"
 dependencies = [
  "bridge-types",
  "parity-scale-codec",
@@ -744,7 +744,7 @@ dependencies = [
 [[package]]
 name = "bridge-common"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=polkadot-v0.9.38#9b89be9bcf11f88b74541904667dcbca30cf9dd2"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=fix_imports_38#b8b47405893c1dbf17d0f5e3d87b32255f8ac61a"
 dependencies = [
  "bitvec",
  "bridge-types",
@@ -757,12 +757,13 @@ dependencies = [
  "sp-beefy",
  "sp-core",
  "sp-io",
+ "sp-runtime",
 ]
 
 [[package]]
 name = "bridge-types"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=polkadot-v0.9.38#9b89be9bcf11f88b74541904667dcbca30cf9dd2"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=fix_imports_38#b8b47405893c1dbf17d0f5e3d87b32255f8ac61a"
 dependencies = [
  "enum-iterator",
  "ethabi",
@@ -2241,7 +2242,7 @@ dependencies = [
 [[package]]
 name = "dispatch"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=polkadot-v0.9.38#9b89be9bcf11f88b74541904667dcbca30cf9dd2"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=fix_imports_38#b8b47405893c1dbf17d0f5e3d87b32255f8ac61a"
 dependencies = [
  "bridge-types",
  "frame-benchmarking",
@@ -4139,7 +4140,7 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 [[package]]
 name = "leaf-provider"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=polkadot-v0.9.38#9b89be9bcf11f88b74541904667dcbca30cf9dd2"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=fix_imports_38#b8b47405893c1dbf17d0f5e3d87b32255f8ac61a"
 dependencies = [
  "beefy-merkle-tree",
  "bridge-types",
@@ -4162,7 +4163,7 @@ dependencies = [
 [[package]]
 name = "leaf-provider-rpc"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=polkadot-v0.9.38#9b89be9bcf11f88b74541904667dcbca30cf9dd2"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=fix_imports_38#b8b47405893c1dbf17d0f5e3d87b32255f8ac61a"
 dependencies = [
  "jsonrpsee",
  "leaf-provider-runtime-api",
@@ -4180,7 +4181,7 @@ dependencies = [
 [[package]]
 name = "leaf-provider-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=polkadot-v0.9.38#9b89be9bcf11f88b74541904667dcbca30cf9dd2"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=fix_imports_38#b8b47405893c1dbf17d0f5e3d87b32255f8ac61a"
 dependencies = [
  "bridge-types",
  "parity-scale-codec",
@@ -11608,7 +11609,7 @@ dependencies = [
 [[package]]
 name = "substrate-bridge-channel"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=polkadot-v0.9.38#9b89be9bcf11f88b74541904667dcbca30cf9dd2"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=fix_imports_38#b8b47405893c1dbf17d0f5e3d87b32255f8ac61a"
 dependencies = [
  "bridge-types",
  "ethabi",
@@ -11629,7 +11630,7 @@ dependencies = [
 [[package]]
 name = "substrate-bridge-channel-rpc"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor/sora2-common.git?branch=polkadot-v0.9.38#9b89be9bcf11f88b74541904667dcbca30cf9dd2"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=fix_imports_38#b8b47405893c1dbf17d0f5e3d87b32255f8ac61a"
 dependencies = [
  "anyhow",
  "bridge-types",
