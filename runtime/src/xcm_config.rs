@@ -253,62 +253,62 @@ impl orml_xtokens::Config for Runtime {
 pub struct PalletXCMWeightInfo;
 impl pallet_xcm::WeightInfo for PalletXCMWeightInfo {
 	fn send() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn teleport_assets() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn reserve_transfer_assets() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn execute() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn force_xcm_version() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn force_default_xcm_version() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn force_subscribe_version_notify() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn force_unsubscribe_version_notify() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn migrate_supported_version() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn migrate_version_notifiers() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn already_notified_target() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn notify_current_targets() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn notify_target_migration_fail() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn migrate_version_notify_targets() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 
 	fn migrate_and_notify_old_targets() -> XcmWeight {
-		XcmWeight::from_ref_time(0)
+		XcmWeight::zero()
 	}
 }
