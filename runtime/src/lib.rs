@@ -768,7 +768,7 @@ impl leaf_provider::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Hashing = Keccak256;
 	type Hash = <Keccak256 as sp_runtime::traits::Hash>::Output;
-	type Randomness = RandomnessCollectiveFlip;
+	type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -813,12 +813,10 @@ construct_runtime!(
 
 		XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
 		BeefyLightClient: beefy_light_client::{Pallet, Call, Storage, Event<T>, Config} = 103,
-		// Just for testing purposes
-		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 104,
-		SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Config, Storage, Event<T>} = 105,
-		SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 106,
-		SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 107,
-		LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 108,
+		SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Config, Storage, Event<T>} = 104,
+		SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 105,
+		SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
+		LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
 	}
 );
 
