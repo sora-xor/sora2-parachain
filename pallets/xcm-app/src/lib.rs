@@ -467,7 +467,7 @@ pub mod pallet {
             }
 
             Self::deposit_event(Event::<T>::AssetTransferred(sender, recipient, asset_id, amount));
-            Ok(())
+			Ok(())
         }
     }
 }
