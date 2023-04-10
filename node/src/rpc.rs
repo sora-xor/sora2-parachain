@@ -22,88 +22,88 @@ pub type RpcExtension = jsonrpsee::RpcModule<()>;
 
 /// Dependencies for BEEFY
 pub struct BeefyDeps {
-	/// Receives notifications about finality proof events from BEEFY.
-	pub beefy_finality_proof_stream:
-		beefy_gadget::communication::notification::BeefyVersionedFinalityProofStream<Block>,
-	/// Receives notifications about best block events from BEEFY.
-	pub beefy_best_block_stream:
-		beefy_gadget::communication::notification::BeefyBestBlockStream<Block>,
-	/// Executor to drive the subscription manager in the BEEFY RPC handler.
-	pub subscription_executor: sc_rpc::SubscriptionTaskExecutor,
+    /// Receives notifications about finality proof events from BEEFY.
+    pub beefy_finality_proof_stream:
+        beefy_gadget::communication::notification::BeefyVersionedFinalityProofStream<Block>,
+    /// Receives notifications about best block events from BEEFY.
+    pub beefy_best_block_stream:
+        beefy_gadget::communication::notification::BeefyBestBlockStream<Block>,
+    /// Executor to drive the subscription manager in the BEEFY RPC handler.
+    pub subscription_executor: sc_rpc::SubscriptionTaskExecutor,
 }
 
 /// Full client dependencies
 pub struct FullDeps<C, P, B> {
-	/// The client instance to use.
-	pub client: Arc<C>,
-	/// The backend instance to use.
-	pub backend: Arc<B>,
-	/// Transaction pool instance.
-	pub pool: Arc<P>,
-	/// Whether to deny unsafe calls
-	pub deny_unsafe: DenyUnsafe,
-	/// BEEFY specific dependencies.
-	pub beefy: BeefyDeps,
+    /// The client instance to use.
+    pub client: Arc<C>,
+    /// The backend instance to use.
+    pub backend: Arc<B>,
+    /// Transaction pool instance.
+    pub pool: Arc<P>,
+    /// Whether to deny unsafe calls
+    pub deny_unsafe: DenyUnsafe,
+    /// BEEFY specific dependencies.
+    pub beefy: BeefyDeps,
 }
 
 /// Instantiate all RPC extensions.
 pub fn create_full<C, P, B>(
-	deps: FullDeps<C, P, B>,
+    deps: FullDeps<C, P, B>,
 ) -> Result<RpcExtension, Box<dyn std::error::Error + Send + Sync>>
 where
-	C: ProvideRuntimeApi<Block>
-		+ HeaderBackend<Block>
-		+ AuxStore
-		+ HeaderMetadata<Block, Error = BlockChainError>
-		+ Send
-		+ Sync
-		+ 'static,
-	C::Api: beefy_light_client_rpc::BeefyLightClientRuntimeAPI<Block, beefy_light_client::BitField>,
-	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
-	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
-	C::Api: mmr_rpc::MmrRuntimeApi<Block, <Block as sp_runtime::traits::Block>::Hash, BlockNumber>,
-	C::Api: leaf_provider_rpc::LeafProviderRuntimeAPI<Block>,
-	C::Api: sp_beefy::BeefyApi<Block>,
-	C::Api: BlockBuilder<Block>,
-	P: TransactionPool + Sync + Send + 'static,
-	B: sc_client_api::Backend<Block> + Send + Sync + 'static,
-	B::State: sc_client_api::StateBackend<sp_runtime::traits::HashFor<Block>>,
+    C: ProvideRuntimeApi<Block>
+        + HeaderBackend<Block>
+        + AuxStore
+        + HeaderMetadata<Block, Error = BlockChainError>
+        + Send
+        + Sync
+        + 'static,
+    C::Api: beefy_light_client_rpc::BeefyLightClientRuntimeAPI<Block, beefy_light_client::BitField>,
+    C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
+    C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
+    C::Api: mmr_rpc::MmrRuntimeApi<Block, <Block as sp_runtime::traits::Block>::Hash, BlockNumber>,
+    C::Api: leaf_provider_rpc::LeafProviderRuntimeAPI<Block>,
+    C::Api: sp_beefy::BeefyApi<Block>,
+    C::Api: BlockBuilder<Block>,
+    P: TransactionPool + Sync + Send + 'static,
+    B: sc_client_api::Backend<Block> + Send + Sync + 'static,
+    B::State: sc_client_api::StateBackend<sp_runtime::traits::HashFor<Block>>,
 {
-	use beefy_gadget_rpc::{Beefy, BeefyApiServer};
-	use leaf_provider_rpc::{LeafProviderAPIServer, LeafProviderClient};
-	use mmr_rpc::{Mmr, MmrApiServer};
-	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
-	use substrate_bridge_channel_rpc::{
-		BridgeChannelAPIServer as SubstrateBridgeChannelAPIServer,
-		BridgeChannelClient as SubstrateBridgeChannelClient,
-	};
-	use substrate_frame_rpc_system::{System, SystemApiServer};
+    use beefy_gadget_rpc::{Beefy, BeefyApiServer};
+    use leaf_provider_rpc::{LeafProviderAPIServer, LeafProviderClient};
+    use mmr_rpc::{Mmr, MmrApiServer};
+    use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
+    use substrate_bridge_channel_rpc::{
+        BridgeChannelAPIServer as SubstrateBridgeChannelAPIServer,
+        BridgeChannelClient as SubstrateBridgeChannelClient,
+    };
+    use substrate_frame_rpc_system::{System, SystemApiServer};
 
-	let mut module = RpcExtension::new(());
-	let FullDeps { client, pool, deny_unsafe, beefy, backend } = deps;
+    let mut module = RpcExtension::new(());
+    let FullDeps { client, pool, deny_unsafe, beefy, backend } = deps;
 
-	// Default RPC:
-	module.merge(System::new(client.clone(), pool, deny_unsafe).into_rpc())?;
-	module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
+    // Default RPC:
+    module.merge(System::new(client.clone(), pool, deny_unsafe).into_rpc())?;
+    module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 
-	// Beefy and MMR:
-	module.merge(Mmr::new(client.clone()).into_rpc())?;
-	module.merge(
-		Beefy::<Block>::new(
-			beefy.beefy_finality_proof_stream,
-			beefy.beefy_best_block_stream,
-			beefy.subscription_executor,
-		)?
-		.into_rpc(),
-	)?;
-	if let Some(storage) = backend.offchain_storage() {
-		// io.merge(BridgeChannelClient::new(storage.clone()).into_rpc())?;
-		module.merge(<SubstrateBridgeChannelClient<_> as SubstrateBridgeChannelAPIServer<
-			Balance,
-		>>::into_rpc(SubstrateBridgeChannelClient::new(storage)))?;
-	}
+    // Beefy and MMR:
+    module.merge(Mmr::new(client.clone()).into_rpc())?;
+    module.merge(
+        Beefy::<Block>::new(
+            beefy.beefy_finality_proof_stream,
+            beefy.beefy_best_block_stream,
+            beefy.subscription_executor,
+        )?
+        .into_rpc(),
+    )?;
+    if let Some(storage) = backend.offchain_storage() {
+        // io.merge(BridgeChannelClient::new(storage.clone()).into_rpc())?;
+        module.merge(<SubstrateBridgeChannelClient<_> as SubstrateBridgeChannelAPIServer<
+            Balance,
+        >>::into_rpc(SubstrateBridgeChannelClient::new(storage)))?;
+    }
 
-	module.merge(LeafProviderClient::new(client.clone()).into_rpc())?;
-	module.merge(BeefyLightClientClient::new(client).into_rpc())?;
-	Ok(module)
+    module.merge(LeafProviderClient::new(client.clone()).into_rpc())?;
+    module.merge(BeefyLightClientClient::new(client).into_rpc())?;
+    Ok(module)
 }

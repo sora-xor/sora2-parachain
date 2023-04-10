@@ -29,12 +29,12 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use super::{
-	AccountId, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent,
-	RuntimeOrigin, XcmpQueue,
+    AccountId, ParachainInfo, ParachainSystem, PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent,
+    RuntimeOrigin, XcmpQueue,
 };
 use frame_support::{
-	match_types, parameter_types,
-	traits::{Everything, Nothing},
+    match_types, parameter_types,
+    traits::{Everything, Nothing},
 };
 use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
 use orml_xcm_support::{IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset};
@@ -45,116 +45,116 @@ use polkadot_parachain::primitives::Sibling;
 use sp_core::Get;
 use xcm::{latest::Weight as XcmWeight, prelude::*};
 use xcm_builder::{
-	AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
-	AllowTopLevelPaidExecutionFrom, EnsureXcmOrigin, FixedWeightBounds, ParentIsPreset,
-	RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
-	SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
+    AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
+    AllowTopLevelPaidExecutionFrom, EnsureXcmOrigin, FixedWeightBounds, ParentIsPreset,
+    RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
+    SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
 };
 use xcm_executor::XcmExecutor;
 
 parameter_types! {
-	pub const RelayLocation: MultiLocation = MultiLocation::parent();
-	pub const RelayNetwork: NetworkId = NetworkId::Rococo;
-	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
-	pub Ancestry: MultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
-	pub UniversalLocation: InteriorMultiLocation =
-		X2(GlobalConsensus(RelayNetwork::get()), Parachain(ParachainInfo::parachain_id().into()));
+    pub const RelayLocation: MultiLocation = MultiLocation::parent();
+    pub const RelayNetwork: NetworkId = NetworkId::Rococo;
+    pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
+    pub Ancestry: MultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
+    pub UniversalLocation: InteriorMultiLocation =
+        X2(GlobalConsensus(RelayNetwork::get()), Parachain(ParachainInfo::parachain_id().into()));
 }
 
 /// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
 /// when determining ownership of accounts for asset transacting and when attempting to use XCM
 /// `Transact` in order to determine the dispatch Origin.
 pub type LocationToAccountId = (
-	// The parent (Relay-chain) origin converts to the parent `AccountId`.
-	ParentIsPreset<AccountId>,
-	// Sibling parachain origins convert to AccountId via the `ParaId::into`.
-	SiblingParachainConvertsVia<Sibling, AccountId>,
-	// Straight up local `AccountId32` origins just alias directly to `AccountId`.
-	AccountId32Aliases<RelayNetwork, AccountId>,
+    // The parent (Relay-chain) origin converts to the parent `AccountId`.
+    ParentIsPreset<AccountId>,
+    // Sibling parachain origins convert to AccountId via the `ParaId::into`.
+    SiblingParachainConvertsVia<Sibling, AccountId>,
+    // Straight up local `AccountId32` origins just alias directly to `AccountId`.
+    AccountId32Aliases<RelayNetwork, AccountId>,
 );
 
 /// Means for transacting assets on this chain.
 pub type LocalAssetTransactor = MultiCurrencyAdapter<
-	crate::XCMApp,
-	(),
-	IsNativeConcrete<AssetId, crate::XCMApp>,
-	AccountId,
-	LocationToAccountId,
-	AssetId,
-	crate::XCMApp,
-	(),
+    crate::XCMApp,
+    (),
+    IsNativeConcrete<AssetId, crate::XCMApp>,
+    AccountId,
+    LocationToAccountId,
+    AssetId,
+    crate::XCMApp,
+    (),
 >;
 
 /// This is the type we use to convert an (incoming) XCM origin into a local `Origin` instance,
 /// ready for dispatching a transaction with Xcm's `Transact`. There is an `OriginKind` which can
 /// biases the kind of local `Origin` it will become.
 pub type XcmOriginToTransactDispatchOrigin = (
-	// Sovereign account converter; this attempts to derive an `AccountId` from the origin location
-	// using `LocationToAccountId` and then turn that into the usual `Signed` origin. Useful for
-	// foreign chains who want to have a local sovereign account on this chain which they control.
-	SovereignSignedViaLocation<LocationToAccountId, RuntimeOrigin>,
-	// Native converter for Relay-chain (Parent) location; will converts to a `Relay` origin when
-	// recognized.
-	RelayChainAsNative<RelayChainOrigin, RuntimeOrigin>,
-	// Native converter for sibling Parachains; will convert to a `SiblingPara` origin when
-	// recognized.
-	SiblingParachainAsNative<cumulus_pallet_xcm::Origin, RuntimeOrigin>,
-	// Native signed account converter; this just converts an `AccountId32` origin into a normal
-	// `Origin::Signed` origin of the same 32-byte value.
-	SignedAccountId32AsNative<RelayNetwork, RuntimeOrigin>,
-	// Xcm origins can be represented natively under the Xcm pallet's Xcm origin.
-	XcmPassthrough<RuntimeOrigin>,
+    // Sovereign account converter; this attempts to derive an `AccountId` from the origin location
+    // using `LocationToAccountId` and then turn that into the usual `Signed` origin. Useful for
+    // foreign chains who want to have a local sovereign account on this chain which they control.
+    SovereignSignedViaLocation<LocationToAccountId, RuntimeOrigin>,
+    // Native converter for Relay-chain (Parent) location; will converts to a `Relay` origin when
+    // recognized.
+    RelayChainAsNative<RelayChainOrigin, RuntimeOrigin>,
+    // Native converter for sibling Parachains; will convert to a `SiblingPara` origin when
+    // recognized.
+    SiblingParachainAsNative<cumulus_pallet_xcm::Origin, RuntimeOrigin>,
+    // Native signed account converter; this just converts an `AccountId32` origin into a normal
+    // `Origin::Signed` origin of the same 32-byte value.
+    SignedAccountId32AsNative<RelayNetwork, RuntimeOrigin>,
+    // Xcm origins can be represented natively under the Xcm pallet's Xcm origin.
+    XcmPassthrough<RuntimeOrigin>,
 );
 
 parameter_types! {
-	// One XCM operation is 1_000_000_000 weight - almost certainly a conservative estimate.
-	pub UnitWeightCost: XcmWeight  = XcmWeight::from_ref_time(1_000_000_000);
-	pub const MaxInstructions: u32 = 100;
-	pub const MaxAssetsIntoHolding: u32 = 64;
+    // One XCM operation is 1_000_000_000 weight - almost certainly a conservative estimate.
+    pub UnitWeightCost: XcmWeight  = XcmWeight::from_ref_time(1_000_000_000);
+    pub const MaxInstructions: u32 = 100;
+    pub const MaxAssetsIntoHolding: u32 = 64;
 }
 
 match_types! {
-	pub type ParentOrParentsExecutivePlurality: impl Contains<MultiLocation> = {
-		MultiLocation { parents: 1, interior: Here } |
-		MultiLocation { parents: 1, interior: X1(Plurality { id: BodyId::Executive, .. }) }
-	};
+    pub type ParentOrParentsExecutivePlurality: impl Contains<MultiLocation> = {
+        MultiLocation { parents: 1, interior: Here } |
+        MultiLocation { parents: 1, interior: X1(Plurality { id: BodyId::Executive, .. }) }
+    };
 }
 
 pub type Barrier = (
-	TakeWeightCredit,
-	AllowTopLevelPaidExecutionFrom<Everything>,
-	// Expected responses are OK.
-	AllowKnownQueryResponses<PolkadotXcm>,
-	// Subscriptions for version tracking are OK.
-	AllowSubscriptionsFrom<Everything>,
+    TakeWeightCredit,
+    AllowTopLevelPaidExecutionFrom<Everything>,
+    // Expected responses are OK.
+    AllowKnownQueryResponses<PolkadotXcm>,
+    // Subscriptions for version tracking are OK.
+    AllowSubscriptionsFrom<Everything>,
 );
 
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
-	type RuntimeCall = RuntimeCall;
-	type XcmSender = XcmRouter;
-	// How to withdraw and deposit an asset.
-	type AssetTransactor = LocalAssetTransactor;
-	type OriginConverter = XcmOriginToTransactDispatchOrigin;
-	type IsReserve = MultiNativeAsset<AbsoluteReserveProvider>;
-	type IsTeleporter = (); // Teleporting is disabled.
-	type Barrier = Barrier;
-	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
-	type Trader = crate::trader::ParachainTrader;
-	type ResponseHandler = PolkadotXcm;
-	type AssetTrap = PolkadotXcm;
-	type AssetClaims = PolkadotXcm;
-	type SubscriptionService = PolkadotXcm;
-	type UniversalLocation = UniversalLocation;
-	type AssetLocker = ();
-	type AssetExchanger = ();
-	type PalletInstancesInfo = ();
-	type MaxAssetsIntoHolding = MaxAssetsIntoHolding;
-	type FeeManager = ();
-	type MessageExporter = ();
-	type UniversalAliases = ();
-	type CallDispatcher = RuntimeCall;
-	type SafeCallFilter = ();
+    type RuntimeCall = RuntimeCall;
+    type XcmSender = XcmRouter;
+    // How to withdraw and deposit an asset.
+    type AssetTransactor = LocalAssetTransactor;
+    type OriginConverter = XcmOriginToTransactDispatchOrigin;
+    type IsReserve = MultiNativeAsset<AbsoluteReserveProvider>;
+    type IsTeleporter = (); // Teleporting is disabled.
+    type Barrier = Barrier;
+    type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+    type Trader = crate::trader::ParachainTrader;
+    type ResponseHandler = PolkadotXcm;
+    type AssetTrap = PolkadotXcm;
+    type AssetClaims = PolkadotXcm;
+    type SubscriptionService = PolkadotXcm;
+    type UniversalLocation = UniversalLocation;
+    type AssetLocker = ();
+    type AssetExchanger = ();
+    type PalletInstancesInfo = ();
+    type MaxAssetsIntoHolding = MaxAssetsIntoHolding;
+    type FeeManager = ();
+    type MessageExporter = ();
+    type UniversalAliases = ();
+    type CallDispatcher = RuntimeCall;
+    type SafeCallFilter = ();
 }
 
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.
@@ -163,152 +163,152 @@ pub type LocalOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, R
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
 pub type XcmRouter = (
-	// Two routers - use UMP to communicate with the relay chain:
-	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, (), ()>,
-	// ..and XCMP to communicate with the sibling chains.
-	XcmpQueue,
+    // Two routers - use UMP to communicate with the relay chain:
+    cumulus_primitives_utility::ParentAsUmp<ParachainSystem, (), ()>,
+    // ..and XCMP to communicate with the sibling chains.
+    XcmpQueue,
 );
 
 impl pallet_xcm::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
-	type XcmRouter = XcmRouter;
-	type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
-	type XcmExecuteFilter = Nothing;
-	// ^ Disable dispatchable execute on the XCM pallet.
-	// Needs to be `Everything` for local testing.
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type XcmTeleportFilter = Nothing;
-	type XcmReserveTransferFilter = Everything;
-	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
-	type RuntimeOrigin = RuntimeOrigin;
-	type RuntimeCall = RuntimeCall;
-	const VERSION_DISCOVERY_QUEUE_SIZE: u32 = 100;
-	// ^ Override for AdvertisedXcmVersion default
-	type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
-	type Currency = crate::Balances;
-	type CurrencyMatcher = ();
-	type UniversalLocation = UniversalLocation;
-	type TrustedLockers = ();
-	type SovereignAccountOf = ();
-	type MaxLockers = ();
-	type WeightInfo = PalletXCMWeightInfo;
+    type RuntimeEvent = RuntimeEvent;
+    type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
+    type XcmRouter = XcmRouter;
+    type ExecuteXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
+    type XcmExecuteFilter = Nothing;
+    // ^ Disable dispatchable execute on the XCM pallet.
+    // Needs to be `Everything` for local testing.
+    type XcmExecutor = XcmExecutor<XcmConfig>;
+    type XcmTeleportFilter = Nothing;
+    type XcmReserveTransferFilter = Everything;
+    type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+    type RuntimeOrigin = RuntimeOrigin;
+    type RuntimeCall = RuntimeCall;
+    const VERSION_DISCOVERY_QUEUE_SIZE: u32 = 100;
+    // ^ Override for AdvertisedXcmVersion default
+    type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
+    type Currency = crate::Balances;
+    type CurrencyMatcher = ();
+    type UniversalLocation = UniversalLocation;
+    type TrustedLockers = ();
+    type SovereignAccountOf = ();
+    type MaxLockers = ();
+    type WeightInfo = PalletXCMWeightInfo;
 }
 
 impl cumulus_pallet_xcm::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
+    type RuntimeEvent = RuntimeEvent;
+    type XcmExecutor = XcmExecutor<XcmConfig>;
 }
 
 #[cfg(not(feature = "parachain-gen"))]
 parameter_types! {
-	pub SelfLocation: MultiLocation = MultiLocation::new(1, X1(Parachain(ParachainInfo::get().into())));
+    pub SelfLocation: MultiLocation = MultiLocation::new(1, X1(Parachain(ParachainInfo::get().into())));
 }
 
 #[cfg(feature = "parachain-gen")]
 parameter_types! {
-	pub SelfLocation: MultiLocation = MultiLocation::new(1, X1(Parachain(2011)));
+    pub SelfLocation: MultiLocation = MultiLocation::new(1, X1(Parachain(2011)));
 }
 
 parameter_types! {
-	pub const BaseXcmWeight: XcmWeight = XcmWeight::from_ref_time(100_000_000); // TODO: recheck this
-	pub const MaxAssetsForTransfer: usize = 2;
+    pub const BaseXcmWeight: XcmWeight = XcmWeight::from_ref_time(100_000_000); // TODO: recheck this
+    pub const MaxAssetsForTransfer: usize = 2;
 }
 
 parameter_type_with_key! {
-	pub ParachainMinFee: |location: MultiLocation| -> Option<u128> {
-		#[allow(clippy::match_ref_pats)] // false positive
-		match (location.parents, location.first_interior()) {
-			(1, Some(_)) => Some(1_000_000),
-			_ => None,
-		}
-	};
+    pub ParachainMinFee: |location: MultiLocation| -> Option<u128> {
+        #[allow(clippy::match_ref_pats)] // false positive
+        match (location.parents, location.first_interior()) {
+            (1, Some(_)) => Some(1_000_000),
+            _ => None,
+        }
+    };
 }
 
 pub struct AccountIdToMultiLocation;
 impl sp_runtime::traits::Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
-	fn convert(account: AccountId) -> MultiLocation {
-		X1(AccountId32 { network: Some(NetworkId::Rococo), id: account.into() }).into()
-	}
+    fn convert(account: AccountId) -> MultiLocation {
+        X1(AccountId32 { network: Some(NetworkId::Rococo), id: account.into() }).into()
+    }
 }
 
 impl orml_xtokens::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Balance = crate::Balance;
-	type CurrencyId = AssetId;
-	type CurrencyIdConvert = crate::XCMApp;
-	type AccountIdToMultiLocation = AccountIdToMultiLocation;
-	type SelfLocation = SelfLocation;
-	type XcmExecutor = XcmExecutor<XcmConfig>;
-	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
-	type BaseXcmWeight = BaseXcmWeight;
-	type MaxAssetsForTransfer = MaxAssetsForTransfer;
-	type MinXcmFee = ParachainMinFee;
-	type MultiLocationsFilter = Everything;
-	type ReserveProvider = AbsoluteReserveProvider;
-	type UniversalLocation = UniversalLocation;
+    type RuntimeEvent = RuntimeEvent;
+    type Balance = crate::Balance;
+    type CurrencyId = AssetId;
+    type CurrencyIdConvert = crate::XCMApp;
+    type AccountIdToMultiLocation = AccountIdToMultiLocation;
+    type SelfLocation = SelfLocation;
+    type XcmExecutor = XcmExecutor<XcmConfig>;
+    type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
+    type BaseXcmWeight = BaseXcmWeight;
+    type MaxAssetsForTransfer = MaxAssetsForTransfer;
+    type MinXcmFee = ParachainMinFee;
+    type MultiLocationsFilter = Everything;
+    type ReserveProvider = AbsoluteReserveProvider;
+    type UniversalLocation = UniversalLocation;
 }
 
 // The pallet will be disabled for extarnal calls
 pub struct PalletXCMWeightInfo;
 impl pallet_xcm::WeightInfo for PalletXCMWeightInfo {
-	fn send() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn send() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn teleport_assets() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn teleport_assets() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn reserve_transfer_assets() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn reserve_transfer_assets() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn execute() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn execute() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn force_xcm_version() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn force_xcm_version() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn force_default_xcm_version() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn force_default_xcm_version() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn force_subscribe_version_notify() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn force_subscribe_version_notify() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn force_unsubscribe_version_notify() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn force_unsubscribe_version_notify() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn migrate_supported_version() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn migrate_supported_version() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn migrate_version_notifiers() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn migrate_version_notifiers() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn already_notified_target() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn already_notified_target() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn notify_current_targets() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn notify_current_targets() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn notify_target_migration_fail() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn notify_target_migration_fail() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn migrate_version_notify_targets() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn migrate_version_notify_targets() -> XcmWeight {
+        XcmWeight::zero()
+    }
 
-	fn migrate_and_notify_old_targets() -> XcmWeight {
-		XcmWeight::zero()
-	}
+    fn migrate_and_notify_old_targets() -> XcmWeight {
+        XcmWeight::zero()
+    }
 }
