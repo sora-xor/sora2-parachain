@@ -70,13 +70,11 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-pub use beefy_primitives::crypto::AuthorityId as BeefyId;
-use beefy_primitives::mmr::MmrLeafVersion;
 use frame_support::{
 	construct_runtime, parameter_types,
 	traits::Everything,
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_REF_TIME_PER_SECOND},
 		ConstantMultiplier, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
 		WeightToFeePolynomial,
 	},
@@ -86,6 +84,8 @@ use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot,
 };
+pub use sp_beefy::crypto::AuthorityId as BeefyId;
+use sp_beefy::mmr::MmrLeafVersion;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
@@ -262,7 +262,10 @@ const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(5);
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 /// We allow for 0.5 of a second of compute with a 12 second average block time.
-const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND.saturating_div(2).set_proof_size(2);
+const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
+	WEIGHT_REF_TIME_PER_SECOND.saturating_div(2),
+	cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
+);
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -370,8 +373,6 @@ parameter_types! {
 
 impl pallet_authorship::Config for Runtime {
 	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
-	type UncleGenerations = UncleGenerations;
-	type FilterUncle = ();
 	type EventHandler = (CollatorSelection,);
 }
 
@@ -486,6 +487,8 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ControllerOrigin = EnsureRoot<AccountId>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type WeightInfo = ();
+	// TODO! look at this parameter
+	type PriceForSiblingDelivery = ();
 }
 
 #[cfg(test)]
@@ -498,6 +501,7 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ControllerOrigin = EnsureRoot<AccountId>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type WeightInfo = ();
+	type PriceForSiblingDelivery = ();
 }
 
 impl cumulus_pallet_dmp_queue::Config for Runtime {
@@ -764,7 +768,7 @@ impl leaf_provider::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Hashing = Keccak256;
 	type Hash = <Keccak256 as sp_runtime::traits::Hash>::Output;
-	type Randomness = RandomnessCollectiveFlip;
+	type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -790,7 +794,7 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>} = 11,
 
 		// Collator support. The order of these 4 are important and shall not change.
-		Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
+		Authorship: pallet_authorship::{Pallet, Storage} = 20,
 		CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
 		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
 		Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
@@ -798,7 +802,7 @@ construct_runtime!(
 
 		// XCM helpers.
 		XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,
-		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin, Config} = 31,
+		PolkadotXcm: pallet_xcm::{Pallet, Event<T>, Origin, Config} = 31,
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 32,
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
 
@@ -809,12 +813,10 @@ construct_runtime!(
 
 		XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
 		BeefyLightClient: beefy_light_client::{Pallet, Call, Storage, Event<T>, Config} = 103,
-		// Just for testing purposes
-		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 104,
-		SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Config, Storage, Event<T>} = 105,
-		SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 106,
-		SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 107,
-		LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 108,
+		SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Config, Storage, Event<T>} = 104,
+		SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 105,
+		SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
+		LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
 	}
 );
 
@@ -915,62 +917,39 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl beefy_primitives::BeefyApi<Block> for Runtime {
-		fn validator_set() -> Option<beefy_primitives::ValidatorSet<BeefyId>> {
+	impl sp_beefy::BeefyApi<Block> for Runtime {
+		fn validator_set() -> Option<sp_beefy::ValidatorSet<BeefyId>> {
 			Beefy::validator_set()
 		}
 	}
 
 	impl sp_mmr_primitives::MmrApi<Block, Hash, BlockNumber> for Runtime {
-		fn generate_proof(block_number: BlockNumber)
-			-> Result<(sp_mmr_primitives::EncodableOpaqueLeaf, sp_mmr_primitives::Proof<Hash>), sp_mmr_primitives::Error>
-		{
-			Mmr::generate_batch_proof(vec![block_number])
-				.and_then(|(leaves, proof)| Ok((
-					sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaves[0]),
-					sp_mmr_primitives::BatchProof::into_single_leaf_proof(proof)?
-				)))
-		}
-
-		fn verify_proof(leaf: sp_mmr_primitives::EncodableOpaqueLeaf, proof: sp_mmr_primitives::Proof<Hash>)
-			-> Result<(), sp_mmr_primitives::Error>
-		{
-			pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as sp_mmr_primitives::LeafDataProvider>::LeafData;
-			let leaf: MmrLeaf = leaf
-				.into_opaque_leaf()
-				.try_decode()
-				.ok_or(sp_mmr_primitives::Error::Verify)?;
-			Mmr::verify_leaves(vec![leaf], sp_mmr_primitives::Proof::into_batch_proof(proof))
-		}
-
-		fn verify_proof_stateless(
-			root: Hash,
-			leaf: sp_mmr_primitives::EncodableOpaqueLeaf,
-			proof: sp_mmr_primitives::Proof<Hash>
-		) -> Result<(), sp_mmr_primitives::Error> {
-			let node = sp_mmr_primitives::DataOrHash::Data(leaf.into_opaque_leaf());
-			pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(root, vec![node], sp_mmr_primitives::Proof::into_batch_proof(proof))
-		}
-
 		fn mmr_root() -> Result<Hash, sp_mmr_primitives::Error> {
 			Ok(Mmr::mmr_root())
 		}
 
-		fn generate_batch_proof(block_numbers: Vec<BlockNumber>)
-			-> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::BatchProof<Hash>), sp_mmr_primitives::Error>
-		{
-			Mmr::generate_batch_proof(block_numbers)
-				.map(|(leaves, proof)| (leaves.into_iter().map(|leaf| sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaf)).collect(), proof))
+		fn mmr_leaf_count() -> Result<sp_mmr_primitives::LeafIndex, sp_mmr_primitives::Error> {
+			Ok(Mmr::mmr_leaves())
 		}
 
-		fn generate_historical_batch_proof(block_numbers: Vec<BlockNumber>, best_known_block_number: BlockNumber)
-			-> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::BatchProof<Hash>), sp_mmr_primitives::Error>
-		{
-			Mmr::generate_historical_batch_proof(block_numbers, best_known_block_number)
-				.map(|(leaves, proof)| (leaves.into_iter().map(|leaf| sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaf)).collect(), proof))
+		fn generate_proof(
+			block_numbers: Vec<BlockNumber>,
+			best_known_block_number: Option<BlockNumber>,
+		) -> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::Proof<Hash>), sp_mmr_primitives::Error> {
+			Mmr::generate_proof(block_numbers, best_known_block_number).map(
+				|(leaves, proof)| {
+					(
+						leaves
+							.into_iter()
+							.map(|leaf| sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaf))
+							.collect(),
+						proof,
+					)
+				},
+			)
 		}
 
-		fn verify_batch_proof(leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, proof: sp_mmr_primitives::BatchProof<Hash>)
+		fn verify_proof(leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, proof: sp_mmr_primitives::Proof<Hash>)
 			-> Result<(), sp_mmr_primitives::Error>
 		{
 			pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as sp_mmr_primitives::LeafDataProvider>::LeafData;
@@ -981,10 +960,10 @@ impl_runtime_apis! {
 			Mmr::verify_leaves(leaves, proof)
 		}
 
-		fn verify_batch_proof_stateless(
+		fn verify_proof_stateless(
 			root: Hash,
 			leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>,
-			proof: sp_mmr_primitives::BatchProof<Hash>
+			proof: sp_mmr_primitives::Proof<Hash>
 		) -> Result<(), sp_mmr_primitives::Error> {
 			let nodes = leaves.into_iter().map(|leaf|sp_mmr_primitives::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
 			pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(root, nodes, proof)
@@ -1022,6 +1001,12 @@ impl_runtime_apis! {
 			len: u32,
 		) -> pallet_transaction_payment::FeeDetails<Balance> {
 			TransactionPayment::query_fee_details(uxt, len)
+		}
+		fn query_weight_to_fee(weight: Weight) -> Balance {
+			TransactionPayment::weight_to_fee(weight)
+		}
+		fn query_length_to_fee(length: u32) -> Balance {
+			TransactionPayment::length_to_fee(length)
 		}
 	}
 

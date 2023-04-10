@@ -36,7 +36,7 @@ use xcm::{
 		Junction::{GeneralKey, Parachain},
 		Junctions::X2,
 	},
-	v1::MultiLocation,
+	v3::MultiLocation,
 };
 
 #[test]
@@ -55,7 +55,7 @@ fn it_works_register_change_delete() {
 		let multilocation = MultiLocation::parent();
 		let new_multilocation = MultiLocation {
 			parents: 1,
-			interior: X2(Parachain(666), GeneralKey(test_general_key())),
+			interior: X2(Parachain(666), GeneralKey { length: 6, data: test_general_key() }),
 		};
 
 		// Create:
@@ -131,7 +131,7 @@ fn it_fails_create_existing_multilocation_mapping() {
 		let multilocation = MultiLocation::parent();
 		let new_multilocation = MultiLocation {
 			parents: 1,
-			interior: X2(Parachain(666), GeneralKey(test_general_key())),
+			interior: X2(Parachain(666), GeneralKey { length: 6, data: test_general_key() }),
 		};
 
 		assert_ok!(XCMApp::register_mapping(
@@ -231,7 +231,7 @@ fn it_fails_change_multilocation_non_existing_mapping() {
 		let multilocation = MultiLocation::parent();
 		let new_multilocation = MultiLocation {
 			parents: 1,
-			interior: X2(Parachain(666), GeneralKey(test_general_key())),
+			interior: X2(Parachain(666), GeneralKey { length: 6, data: test_general_key() }),
 		};
 
 		assert_noop!(
