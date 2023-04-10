@@ -292,7 +292,7 @@ pub mod pallet {
             );
             AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
             MultilocationToAssetId::<T>::insert(multilocation.clone(), asset_id);
-			Self::deposit_event(Event::<T>::MappingCreated(asset_id, multilocation));
+            Self::deposit_event(Event::<T>::MappingCreated(asset_id, multilocation));
             Ok(().into())
         }
 
@@ -467,7 +467,7 @@ pub mod pallet {
             }
 
             Self::deposit_event(Event::<T>::AssetTransferred(sender, recipient, asset_id, amount));
-			Ok(())
+            Ok(())
         }
     }
 }
