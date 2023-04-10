@@ -225,7 +225,7 @@ fn send_relay_chain_asset_to_sibling() {
 			xcm::VersionedMultiLocation::V3(location.clone()),
 			10000000,
 		));
-		let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransfered(
+		let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransferred(
 			ALICE,
 			location.clone(),
 			assetid,
@@ -269,7 +269,7 @@ fn send_sibling_chain_asset_to_sibling() {
 			xcm::VersionedMultiLocation::V3(location.clone()),
 			10000000,
 		));
-		let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransfered(
+		let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransferred(
 			ALICE, location, assetid, 10000000,
 		));
 		assert!(frame_system::Pallet::<crate::Runtime>::events()
@@ -307,7 +307,7 @@ fn send_relay_chain_asset_to_relay_chain() {
 			xcm::VersionedMultiLocation::V3(location.clone()),
 			1_000_000_000_000_000,
 		));
-		let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransfered(
+		let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransferred(
 			ALICE,
 			location,
 			assetid,
@@ -445,7 +445,7 @@ fn send_from_sora_no_mapping_error() {
 		// check that assets are not transferred
 		assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
 			r.clone().event,
-			crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransfered(_, _, _, _))
+			crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransferred(_, _, _, _))
 		)));
 	});
 }

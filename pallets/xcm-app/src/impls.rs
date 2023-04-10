@@ -144,13 +144,21 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 
 impl<T: Config> sp_runtime::traits::Convert<AssetId, Option<MultiLocation>> for Pallet<T> {
 	fn convert(id: AssetId) -> Option<MultiLocation> {
-		Pallet::<T>::get_multilocation_from_asset_id(id)
+		let maybe_multilocation = Pallet::<T>::get_multilocation_from_asset_id(id);
+		if maybe_multilocation.is_none(){
+			Self::deposit_event(Event::<T>::AssetIdMappingError(id));
+		}
+		maybe_multilocation
 	}
 }
 
 impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<AssetId>> for Pallet<T> {
 	fn convert(multilocation: MultiLocation) -> Option<AssetId> {
-		Pallet::<T>::get_asset_id_from_multilocation(multilocation)
+		let maybe_asset_id = Pallet::<T>::get_asset_id_from_multilocation(multilocation.clone());
+		if maybe_asset_id.is_none(){
+			Self::deposit_event(Event::<T>::MultilocationMappingError(multilocation));
+		}
+		maybe_asset_id
 	}
 }
 
@@ -159,6 +167,7 @@ impl<T: Config> sp_runtime::traits::Convert<MultiAsset, Option<AssetId>> for Pal
 		if let MultiAsset { fun: Fungible(_), id: Concrete(ml) } = ma {
 			Self::convert(ml)
 		} else {
+			Self::deposit_event(Event::<T>::MultiAssetMappingError(ma));
 			Option::None
 		}
 	}
