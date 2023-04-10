@@ -28,6 +28,7 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use sp_runtime::traits::Zero;
 use sp_std::prelude::*;
 use xcm::{latest::Weight as XcmWeight, prelude::*};
 use xcm_executor::{traits::WeightTrader, Assets};
@@ -40,7 +41,7 @@ pub struct ParachainTrader {
 impl WeightTrader for ParachainTrader {
 	fn new() -> Self {
 		log::trace!(target: "xcm::weight", "creating new WeightTrader instance");
-		Self { weight: 0, multi_location: None }
+		Self { weight: XcmWeight::zero(), multi_location: None }
 	}
 
 	fn buy_weight(&mut self, weight: XcmWeight, payment: Assets) -> Result<Assets, XcmError> {
@@ -51,7 +52,8 @@ impl WeightTrader for ParachainTrader {
 			.next()
 			.map_or(Err(XcmError::TooExpensive), |v| Ok(v.0))?;
 
-		let required = MultiAsset { id: asset_id.clone(), fun: Fungible(weight as u128) };
+		let required =
+			MultiAsset { id: asset_id.clone(), fun: Fungible(weight.ref_time() as u128) };
 
 		if let MultiAsset { fun: _, id: Concrete(ref id) } = &required {
 			self.multi_location = Some(id.clone());
@@ -70,10 +72,10 @@ impl WeightTrader for ParachainTrader {
 		match &self.multi_location {
 			None => None,
 			Some(ml) => {
-				if weight == 0 {
+				if weight.is_zero() {
 					None
 				} else {
-					Some((ml.clone(), weight as u128).into())
+					Some((ml.clone(), weight.ref_time() as u128).into())
 				}
 			},
 		}

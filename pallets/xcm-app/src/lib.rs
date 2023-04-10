@@ -49,7 +49,7 @@ use orml_traits::MultiCurrency;
 use parachain_common::primitives::AssetId;
 use xcm::{
 	opaque::latest::{AssetId::Concrete, Fungibility::Fungible},
-	v1::{MultiAsset, MultiLocation},
+	v3::{MultiAsset, MultiLocation},
 };
 
 pub type ParachainAssetId = xcm::VersionedMultiAsset;
@@ -152,11 +152,11 @@ pub mod pallet {
 		/// [Sora AssetId, XCM Multilocation]
 		MappingDeleted(AssetId, MultiLocation),
 		/// Asset Added to channel
-		/// [Currency Id, amount]
+		/// [SubstrateAppMessage]
 		AssetAddedToChannel(SubstrateAppMessage<T::AccountId, AssetId, T::Balance>),
 		/// Asset transfered from this parachain
 		/// [From, To, AssedId, amount]
-		AssetTransfered(T::AccountId, MultiLocation, AssetId, T::Balance),
+		AssetTransferred(T::AccountId, MultiLocation, AssetId, T::Balance),
 
 		// Error events:
 		/// Error while submitting to outbound channel
@@ -190,6 +190,7 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+		#[pallet::call_index(0)]
 		#[pallet::weight(<T as Config>::WeightInfo::transfer())]
 		#[frame_support::transactional]
 		pub fn test_xcm_transfer(
@@ -208,6 +209,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		#[pallet::call_index(1)]
 		#[pallet::weight(<T as Config>::WeightInfo::transfer())]
 		#[frame_support::transactional]
 		pub fn transfer(
@@ -227,12 +229,13 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		#[pallet::call_index(2)]
 		#[pallet::weight(<T as Config>::WeightInfo::register_asset())]
 		#[frame_support::transactional]
 		pub fn register_asset(
 			origin: OriginFor<T>,
 			asset_id: AssetId,
-			multiasset: xcm::v2::AssetId,
+			multiasset: xcm::v3::AssetId,
 			asset_kind: bridge_types::types::AssetKind,
 		) -> DispatchResultWithPostInfo {
 			let res = T::CallOrigin::ensure_origin(origin)?;
@@ -242,8 +245,8 @@ pub mod pallet {
 				res
 			);
 			let multilocation = match multiasset {
-				xcm::v2::AssetId::Concrete(location) => location,
-				xcm::v2::AssetId::Abstract(_) => fail!(Error::<T>::WrongXCMVersion),
+				xcm::v3::AssetId::Concrete(location) => location,
+				xcm::v3::AssetId::Abstract(_) => fail!(Error::<T>::WrongXCMVersion),
 			};
 			ensure!(
 				AssetIdToMultilocation::<T>::get(asset_id).is_none()
@@ -273,6 +276,7 @@ pub mod pallet {
 		/// - `origin`: the root account on whose behalf the transaction is being executed,
 		/// - `asset_id`: asset id in Sora Network,
 		/// - `multilocation`: XCM multilocation of an asset,
+		#[pallet::call_index(3)]
 		#[pallet::weight(<T as Config>::WeightInfo::register_mapping())]
 		#[frame_support::transactional]
 		pub fn register_mapping(
@@ -297,6 +301,7 @@ pub mod pallet {
 		/// - `origin`: the root account on whose behalf the transaction is being executed,
 		/// - `asset_id`: asset id in Sora Network,
 		/// - `new_multilocation`: new XCM multilocation of an asset,
+		#[pallet::call_index(4)]
 		#[pallet::weight(<T as Config>::WeightInfo::change_asset_mapping())]
 		#[frame_support::transactional]
 		pub fn change_asset_mapping(
@@ -333,6 +338,7 @@ pub mod pallet {
 		/// - `origin`: the root account on whose behalf the transaction is being executed,
 		/// - `multilocation`: XCM multilocation of an asset,
 		/// - `new_asset_id`: new asset id in Sora Network,
+		#[pallet::call_index(5)]
 		#[pallet::weight(<T as Config>::WeightInfo::change_multilocation_mapping())]
 		#[frame_support::transactional]
 		pub fn change_multilocation_mapping(
@@ -378,6 +384,7 @@ pub mod pallet {
 		///
 		/// - `origin`: the root account on whose behalf the transaction is being executed,
 		/// - `asset_id`: asset id in Sora Network,
+		#[pallet::call_index(6)]
 		#[pallet::weight(<T as Config>::WeightInfo::delete_mapping())]
 		#[frame_support::transactional]
 		pub fn delete_mapping(
@@ -396,6 +403,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		#[pallet::call_index(7)]
 		#[pallet::weight(<T as Config>::WeightInfo::delete_mapping())]
 		#[frame_support::transactional]
 		pub fn fake_transfer(
@@ -444,7 +452,7 @@ pub mod pallet {
 			amount: T::Balance,
 		) -> sp_runtime::DispatchResult {
 			let recipient = match recipient {
-				xcm::VersionedMultiLocation::V1(m) => m,
+				xcm::VersionedMultiLocation::V3(m) => m,
 				_ => fail!(Error::<T>::WrongXCMVersion),
 			};
 			if let Err(e) = <T as Config>::XcmTransfer::transfer(
@@ -452,12 +460,13 @@ pub mod pallet {
 				asset_id,
 				amount,
 				recipient.clone(),
-				xcm::v2::WeightLimit::Unlimited,
+				xcm::v3::WeightLimit::Unlimited,
 			) {
 				Self::deposit_event(Event::<T>::TrasferringAssetError(e, asset_id));
 				return Err(e);
 			}
-			Self::deposit_event(Event::<T>::AssetTransfered(sender, recipient, asset_id, amount));
+
+			Self::deposit_event(Event::<T>::AssetTransferred(sender, recipient, asset_id, amount));
 			Ok(())
 		}
 	}

@@ -30,7 +30,7 @@
 
 use crate as xcm_app;
 use bridge_types::{traits::OutboundChannel, SubNetworkId};
-use frame_support::{parameter_types, traits::Everything, WeakBoundedVec};
+use frame_support::{parameter_types, traits::Everything};
 use frame_system as system;
 use orml_traits::XcmTransfer;
 use parachain_common::primitives::AssetId;
@@ -106,8 +106,8 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
 }
 
-pub fn test_general_key() -> WeakBoundedVec<u8, frame_support::traits::ConstU32<32>> {
-	WeakBoundedVec::try_from(b"TEST_ASSET".to_vec()).unwrap()
+pub fn test_general_key() -> [u8; 32] {
+	[3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3]
 }
 
 pub struct TestOutboundChannel;
@@ -134,29 +134,90 @@ impl sp_runtime::traits::Convert<AccountId, MultiLocation> for TestAccountIdToMu
 			.concat()
 			.try_into()
 			.expect("Failed to convert account if to xcm multilocaton");
-		X1(AccountId32 { network: xcm::v1::NetworkId::Any, id: arrarr.into() }).into()
+		X1(AccountId32 { network: Some(xcm::v3::NetworkId::Rococo), id: arrarr.into() }).into()
 	}
 }
 
 pub struct TestXcmTransfer;
 impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
-	fn transfer(
-		_who: AccountId,
-		_currency_id: AssetId,
-		_amount: Balance,
-		_dest: MultiLocation,
+	fn transfer_multiasset(
+		sender: AccountId,
+		_asset: MultiAsset,
+		dest: MultiLocation,
 		_dest_weight_limit: WeightLimit,
-	) -> frame_support::pallet_prelude::DispatchResult {
-		Ok(())
+	) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
+		Ok(orml_traits::xcm_transfer::Transferred {
+			sender,
+			dest,
+			assets: vec![].into(),
+			fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) },
+		})
 	}
 
-	fn transfer_multi_asset(
-		_who: AccountId,
-		_asset: MultiAsset,
-		_dest: MultiLocation,
+	fn transfer_with_fee(
+		sender: AccountId,
+		_currency_id: AssetId,
+		_amount: Balance,
+		_fee: Balance,
+		dest: MultiLocation,
 		_dest_weight_limit: WeightLimit,
-	) -> frame_support::pallet_prelude::DispatchResult {
-		Ok(())
+	) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
+		Ok(orml_traits::xcm_transfer::Transferred {
+			sender,
+			dest,
+			assets: vec![].into(),
+			fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) },
+		})
+	}
+
+	fn transfer_multiasset_with_fee(
+		sender: AccountId,
+		_asset: MultiAsset,
+		fee: MultiAsset,
+		dest: MultiLocation,
+		_dest_weight_limit: WeightLimit,
+	) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
+		Ok(orml_traits::xcm_transfer::Transferred { sender, dest, assets: vec![].into(), fee })
+	}
+
+	fn transfer_multicurrencies(
+		sender: AccountId,
+		_currencies: Vec<(AssetId, Balance)>,
+		_fee_item: u32,
+		dest: MultiLocation,
+		_dest_weight_limit: WeightLimit,
+	) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
+		Ok(orml_traits::xcm_transfer::Transferred {
+			sender,
+			dest,
+			assets: vec![].into(),
+			fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) },
+		})
+	}
+
+	fn transfer_multiassets(
+		sender: AccountId,
+		assets: MultiAssets,
+		fee: MultiAsset,
+		dest: MultiLocation,
+		_dest_weight_limit: WeightLimit,
+	) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
+		Ok(orml_traits::xcm_transfer::Transferred { sender, dest, assets, fee })
+	}
+
+	fn transfer(
+		sender: AccountId,
+		_currency_id: AssetId,
+		_amount: Balance,
+		dest: MultiLocation,
+		_dest_weight_limit: WeightLimit,
+	) -> Result<orml_traits::xcm_transfer::Transferred<AccountId>, sp_runtime::DispatchError> {
+		Ok(orml_traits::xcm_transfer::Transferred {
+			sender,
+			dest,
+			assets: vec![].into(),
+			fee: MultiAsset { id: Concrete(dest), fun: Fungible(0) },
+		})
 	}
 }
 
