@@ -38,7 +38,6 @@ use crate::{AccountId, Aura, BeefyId, RuntimeBlockWeights, Session};
 
 pub type Migrations = (
     pallet_xcm::migration::v1::MigrateToV1<Runtime>,
-
     pallet_balances::migration::MigrateManyToTrackInactive<Runtime, EmptyAccountList>,
     DummyMigration,
     SuperDummyMigration,
