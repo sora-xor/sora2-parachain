@@ -28,11 +28,11 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::*;
 use frame_support::{traits::OnRuntimeUpgrade, weights::Weight};
 use sp_core::ecdsa;
 use sp_runtime::impl_opaque_keys;
 use sp_std::vec::Vec;
-use crate::*;
 
 use crate::{AccountId, Aura, BeefyId, RuntimeBlockWeights, Session};
 
@@ -115,7 +115,6 @@ impl OnRuntimeUpgrade for SuperDummyMigration {
         Weight::zero()
     }
 }
-
 
 pub struct EmptyAccountList;
 
