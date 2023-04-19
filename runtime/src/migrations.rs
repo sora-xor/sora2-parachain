@@ -32,10 +32,16 @@ use frame_support::{traits::OnRuntimeUpgrade, weights::Weight};
 use sp_core::ecdsa;
 use sp_runtime::impl_opaque_keys;
 use sp_std::vec::Vec;
+use crate::*;
 
 use crate::{AccountId, Aura, BeefyId, RuntimeBlockWeights, Session};
 
-pub type Migrations = SessionKeysMigration;
+// pub type Migrations = SessionKeysMigration;
+pub type Migrations = (
+    pallet_balances::migration::MigrateManyToTrackInactive<Runtime, EmptyAccountList>,
+    DummyMigration,
+    SuperDummyMigration,
+);
 
 impl_opaque_keys! {
     pub struct SessionKeysOld {
@@ -65,5 +71,56 @@ impl OnRuntimeUpgrade for SessionKeysMigration {
             beefy: dummy_beefy_id_from_account_id(id),
         });
         RuntimeBlockWeights::get().max_block
+    }
+}
+
+pub struct DummyMigration;
+
+impl OnRuntimeUpgrade for DummyMigration {
+    fn on_runtime_upgrade() -> Weight {
+        // Session::upgrade_keys::<SessionKeysOld, _>(|id, keys| crate::SessionKeys {
+        //     aura: keys.aura,
+        //     beefy: dummy_beefy_id_from_account_id(id),
+        // });
+        // RuntimeBlockWeights::get().max_block
+        // 0.into()
+        log::warn!(target: "runtime::xcm", "=============================");
+        log::warn!(target: "runtime::xcm", "=============================");
+        log::warn!(target: "runtime::xcm", "=============================");
+        log::warn!(target: "runtime::xcm", "UPGRADE");
+        log::warn!(target: "runtime::xcm", "=============================");
+        log::warn!(target: "runtime::xcm", "=============================");
+        log::warn!(target: "runtime::xcm", "=============================");
+        Weight::zero()
+    }
+}
+
+pub struct SuperDummyMigration;
+
+impl OnRuntimeUpgrade for SuperDummyMigration {
+    fn on_runtime_upgrade() -> Weight {
+        // Session::upgrade_keys::<SessionKeysOld, _>(|id, keys| crate::SessionKeys {
+        //     aura: keys.aura,
+        //     beefy: dummy_beefy_id_from_account_id(id),
+        // });
+        // RuntimeBlockWeights::get().max_block
+        // 0.into()
+        log::warn!(target: "runtime::xcm", "++++++++++++++++++++++++++++");
+        log::warn!(target: "runtime::xcm", "++++++++++++++++++++++++++++");
+        log::warn!(target: "runtime::xcm", "++++++++++++++++++++++++++++");
+        log::warn!(target: "runtime::xcm", "SUPER UPGRAGE");
+        log::warn!(target: "runtime::xcm", "++++++++++++++++++++++++++++");
+        log::warn!(target: "runtime::xcm", "++++++++++++++++++++++++++++");
+        log::warn!(target: "runtime::xcm", "++++++++++++++++++++++++++++");
+        Weight::zero()
+    }
+}
+
+
+pub struct EmptyAccountList;
+
+impl sp_core::Get<Vec<AccountId>> for EmptyAccountList {
+    fn get() -> Vec<AccountId> {
+        Default::default()
     }
 }
