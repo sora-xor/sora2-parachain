@@ -36,8 +36,9 @@ use sp_std::vec::Vec;
 
 use crate::{AccountId, Aura, BeefyId, RuntimeBlockWeights, Session};
 
-// pub type Migrations = SessionKeysMigration;
 pub type Migrations = (
+    pallet_xcm::migration::v1::MigrateToV1<Runtime>,
+
     pallet_balances::migration::MigrateManyToTrackInactive<Runtime, EmptyAccountList>,
     DummyMigration,
     SuperDummyMigration,
