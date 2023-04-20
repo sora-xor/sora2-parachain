@@ -39,8 +39,6 @@ use crate::{AccountId, Aura, BeefyId, RuntimeBlockWeights, Session};
 pub type Migrations = (
     pallet_xcm::migration::v1::MigrateToV1<Runtime>,
     pallet_balances::migration::MigrateManyToTrackInactive<Runtime, EmptyAccountList>,
-    DummyMigration,
-    SuperDummyMigration,
 );
 
 impl_opaque_keys! {
@@ -73,49 +71,6 @@ impl OnRuntimeUpgrade for SessionKeysMigration {
         RuntimeBlockWeights::get().max_block
     }
 }
-
-pub struct DummyMigration;
-
-impl OnRuntimeUpgrade for DummyMigration {
-    fn on_runtime_upgrade() -> Weight {
-        // Session::upgrade_keys::<SessionKeysOld, _>(|id, keys| crate::SessionKeys {
-        //     aura: keys.aura,
-        //     beefy: dummy_beefy_id_from_account_id(id),
-        // });
-        // RuntimeBlockWeights::get().max_block
-        // 0.into()
-        log::warn!(target: "runtime::xcm", "=============================");
-        log::warn!(target: "runtime::xcm", "=============================");
-        log::warn!(target: "runtime::xcm", "=============================");
-        log::warn!(target: "runtime::xcm", "UPGRADE");
-        log::warn!(target: "runtime::xcm", "=============================");
-        log::warn!(target: "runtime::xcm", "=============================");
-        log::warn!(target: "runtime::xcm", "=============================");
-        Weight::zero()
-    }
-}
-
-pub struct SuperDummyMigration;
-
-impl OnRuntimeUpgrade for SuperDummyMigration {
-    fn on_runtime_upgrade() -> Weight {
-        // Session::upgrade_keys::<SessionKeysOld, _>(|id, keys| crate::SessionKeys {
-        //     aura: keys.aura,
-        //     beefy: dummy_beefy_id_from_account_id(id),
-        // });
-        // RuntimeBlockWeights::get().max_block
-        // 0.into()
-        log::warn!(target: "runtime::xcm", "++++++++++++++++++++++++++++");
-        log::warn!(target: "runtime::xcm", "++++++++++++++++++++++++++++");
-        log::warn!(target: "runtime::xcm", "++++++++++++++++++++++++++++");
-        log::warn!(target: "runtime::xcm", "SUPER UPGRAGE");
-        log::warn!(target: "runtime::xcm", "++++++++++++++++++++++++++++");
-        log::warn!(target: "runtime::xcm", "++++++++++++++++++++++++++++");
-        log::warn!(target: "runtime::xcm", "++++++++++++++++++++++++++++");
-        Weight::zero()
-    }
-}
-
 pub struct EmptyAccountList;
 
 impl sp_core::Get<Vec<AccountId>> for EmptyAccountList {
