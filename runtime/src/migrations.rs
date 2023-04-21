@@ -28,6 +28,7 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::*;
 use frame_support::{traits::OnRuntimeUpgrade, weights::Weight};
 use sp_core::ecdsa;
 use sp_runtime::impl_opaque_keys;
@@ -35,7 +36,10 @@ use sp_std::vec::Vec;
 
 use crate::{AccountId, Aura, BeefyId, RuntimeBlockWeights, Session};
 
-pub type Migrations = SessionKeysMigration;
+pub type Migrations = (
+    pallet_xcm::migration::v1::MigrateToV1<Runtime>,
+    pallet_balances::migration::MigrateManyToTrackInactive<Runtime, EmptyAccountList>,
+);
 
 impl_opaque_keys! {
     pub struct SessionKeysOld {
@@ -65,5 +69,12 @@ impl OnRuntimeUpgrade for SessionKeysMigration {
             beefy: dummy_beefy_id_from_account_id(id),
         });
         RuntimeBlockWeights::get().max_block
+    }
+}
+pub struct EmptyAccountList;
+
+impl sp_core::Get<Vec<AccountId>> for EmptyAccountList {
+    fn get() -> Vec<AccountId> {
+        Default::default()
     }
 }
