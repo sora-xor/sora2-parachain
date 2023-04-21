@@ -2,6 +2,7 @@
 
 String agentLabel = 'docker-build-agent'
 String registry = 'docker.soramitsu.co.jp'
+String cargoAuditImage        = registry + '/build-tools/cargo_audit'
 String dockerBuildToolsUserId = 'bot-build-tools-ro'
 String dockerRegistryRWUserId = 'bot-sora2-rw'
 String baseImageName = 'docker.soramitsu.co.jp/sora2/parachain-env:latest'
@@ -30,6 +31,21 @@ pipeline {
                 }
             }
         }
+        stage('Audit') {
+            steps {
+                script {
+                    docker.withRegistry( 'https://' + registry, dockerBuildToolsUserId) {
+                        docker.image(cargoAuditImage + ':latest').inside(){
+                            sh '''
+                                rm -rf ~/.cargo/registry/*
+                                cargo audit  > cargoAuditReport.txt || exit 0
+                            '''
+                            archiveArtifacts artifacts: "cargoAuditReport.txt"
+                        }
+                    }
+                }
+            }
+        }   
         stage('Build & Tests') {
             steps{
                 script {
@@ -38,7 +54,11 @@ pipeline {
                             sh '''
                                 cargo build --release
                                 cp target/release/parachain-collator housekeeping/parachain-collator
+                                mv ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm ./parachain_template_runtime.compact.compressed.wasm
                             '''
+                            archiveArtifacts artifacts:
+                                "parachain_template_runtime.compact.compressed.wasm"
+                            
                         }
                     }
                 }
