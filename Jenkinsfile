@@ -52,6 +52,7 @@ pipeline {
                     docker.withRegistry( 'https://' + registry, dockerRegistryRWUserId) {
                         docker.image(baseImageName).inside() {
                             sh '''
+                                cargo test -r
                                 cargo build --release
                                 cp target/release/parachain-collator housekeeping/parachain-collator
                                 mv ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm ./parachain_template_runtime.compact.compressed.wasm
