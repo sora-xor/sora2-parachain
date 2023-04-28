@@ -629,9 +629,7 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
         origin: Self::RuntimeOrigin,
     ) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {
         match self.0 {
-            bridge_types::substrate::BridgeCall::SubstrateApp(_msg) => {
-                Ok(().into())
-            },
+            bridge_types::substrate::BridgeCall::SubstrateApp(_msg) => Ok(().into()),
             bridge_types::substrate::BridgeCall::XCMApp(msg) => {
                 let call: xcm_app::Call<crate::Runtime> = msg.into();
                 let call: crate::RuntimeCall = call.into();
@@ -641,10 +639,8 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
                 let call: bridge_data_signer::Call<crate::Runtime> = msg.into();
                 let call: crate::RuntimeCall = call.into();
                 call.dispatch(origin)
-            }
-            bridge_types::substrate::BridgeCall::MultisigVerifier(_) => {
-                Ok(().into())
-            }
+            },
+            bridge_types::substrate::BridgeCall::MultisigVerifier(_) => Ok(().into()),
         }
     }
 }
