@@ -105,6 +105,7 @@ bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = 
 leaf-provider = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer", default-features = false } 
 leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer", default-features = false } 
 bridge-data-signer = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer", default-features = false } 
+multisig-verifier = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer", default-features = false } 
 
 [dev-dependencies]
 #Polkadot
@@ -181,6 +182,7 @@ std = [
 	"dispatch/std",
 	"leaf-provider/std",
 	"leaf-provider-runtime-api/std",
+	"multisig-verifier/std",
 ]
 
 runtime-benchmarks = [

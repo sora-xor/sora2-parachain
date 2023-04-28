@@ -29,7 +29,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use super::*;
-use bridge_types::substrate::SubstrateAppMessage;
+// use bridge_types::substrate::SubstrateAppMessage;
 use bridge_types::SubNetworkId;
 use cumulus_primitives_core::ParaId;
 use frame_support::{assert_noop, assert_ok, traits::Currency};

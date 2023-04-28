@@ -5202,6 +5202,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5ce46fe64a9d73be07dcbe690a38ce1b293be448fd8ce1e6c1b8062c9f72c6a"
 
 [[package]]
+name = "multisig-verifier"
+version = "0.1.0"
+source = "git+https://github.com/sora-xor/sora2-common.git?branch=bridge-data-signer#d2c25327e00a438107cc36430cabbdd71bbf1c30"
+dependencies = [
+ "bridge-common",
+ "bridge-types",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-beefy",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "multistream-select"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6804,6 +6824,7 @@ dependencies = [
  "leaf-provider",
  "leaf-provider-runtime-api",
  "log",
+ "multisig-verifier",
  "orml-tokens",
  "orml-traits",
  "orml-xcm",

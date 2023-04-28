@@ -43,7 +43,7 @@ mod trader;
 mod weights;
 pub mod xcm_config;
 
-use bridge_types::{substrate::SubstrateAppCall, SubNetworkId, CHANNEL_INDEXING_PREFIX, U256};
+use bridge_types::{SubNetworkId, CHANNEL_INDEXING_PREFIX, U256};
 use codec::{Decode, Encode};
 use frame_support::{
     dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
@@ -589,7 +589,6 @@ parameter_types! {
 }
 
 impl beefy_light_client::Config for Runtime {
-    // type Message = Vec<bridge_types::types::ParachainMessage<Balance>>;
     type RuntimeEvent = RuntimeEvent;
     type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
 }
@@ -671,10 +670,7 @@ parameter_types! {
 
 impl substrate_bridge_channel::inbound::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type Verifier = BeefyLightClient;
-    // type ProvedMessage = beefy_light_client::ProvedSubstrateBridgeMessage<
-    //     Vec<bridge_types::types::ParachainMessage<Balance>>,
-    // >;
+    type Verifier = MultisigVerifier;
     type MessageDispatch = SubstrateDispatch;
     type WeightInfo = ();
     type FeeAssetId = ();
@@ -793,6 +789,16 @@ impl bridge_data_signer::Config for Runtime {
     type MaxPeers = BridgeMaxPeers;
 }
 
+impl multisig_verifier::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type CallOrigin = dispatch::EnsureAccount<
+        SubNetworkId,
+        (),
+        bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
+    >;
+    type OutboundChannel = SubstrateBridgeOutboundChannel;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -839,8 +845,8 @@ construct_runtime!(
         SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 105,
         SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
         LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
-
         BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call} = 108,
+        MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
     }
 );
 
