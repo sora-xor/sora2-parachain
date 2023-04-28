@@ -104,6 +104,7 @@ dispatch = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bri
 bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer", default-features = false } 
 leaf-provider = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer", default-features = false } 
 leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer", default-features = false } 
+bridge-data-signer = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer", default-features = false } 
 
 [dev-dependencies]
 #Polkadot
@@ -120,6 +121,7 @@ default = ["std"]
 std = [
 	"beefy-light-client/std",
 	"beefy-light-client-runtime-api/std",
+	"bridge-data-signer/std",
 	"codec/std",
 	"cumulus-pallet-aura-ext/std",
 	"cumulus-pallet-dmp-queue/std",

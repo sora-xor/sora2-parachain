@@ -580,6 +580,8 @@ impl xcm_app::Config for Runtime {
         bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
     >;
     type XcmTransfer = XTokens;
+    type AccountIdConverter = sp_runtime::traits::Identity;
+    type BalanceConverter = sp_runtime::traits::Identity;
 }
 
 parameter_types! {
@@ -614,7 +616,7 @@ impl dispatch::Config for Runtime {
 }
 
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug, TypeInfo)]
-pub struct DispatchableSubstrateBridgeCall(SubstrateBridgeMessage<AccountId, H256, Balance>);
+pub struct DispatchableSubstrateBridgeCall(bridge_types::substrate::BridgeCall);
 
 impl Dispatchable for DispatchableSubstrateBridgeCall {
     type RuntimeOrigin = crate::RuntimeOrigin;
@@ -627,14 +629,22 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
         origin: Self::RuntimeOrigin,
     ) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {
         match self.0 {
-            bridge_types::substrate::SubstrateBridgeMessage::SubstrateApp(_msg) => {
-                unimplemented!()
+            bridge_types::substrate::BridgeCall::SubstrateApp(_msg) => {
+                Ok(().into())
             },
-            bridge_types::substrate::SubstrateBridgeMessage::XCMApp(msg) => {
+            bridge_types::substrate::BridgeCall::XCMApp(msg) => {
                 let call: xcm_app::Call<crate::Runtime> = msg.into();
                 let call: crate::RuntimeCall = call.into();
                 call.dispatch(origin)
             },
+            bridge_types::substrate::BridgeCall::DataSigner(msg) => {
+                let call: bridge_data_signer::Call<crate::Runtime> = msg.into();
+                let call: crate::RuntimeCall = call.into();
+                call.dispatch(origin)
+            }
+            bridge_types::substrate::BridgeCall::MultisigVerifier(_) => {
+                Ok(().into())
+            }
         }
     }
 }
@@ -643,8 +653,10 @@ pub struct SubstrateBridgeCallFilter;
 impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
     fn contains(call: &DispatchableSubstrateBridgeCall) -> bool {
         match &call.0 {
-            bridge_types::substrate::SubstrateBridgeMessage::SubstrateApp(_) => false,
-            bridge_types::substrate::SubstrateBridgeMessage::XCMApp(_) => true,
+            bridge_types::substrate::BridgeCall::SubstrateApp(_) => false,
+            bridge_types::substrate::BridgeCall::XCMApp(_) => true,
+            bridge_types::substrate::BridgeCall::DataSigner(_) => true,
+            bridge_types::substrate::BridgeCall::MultisigVerifier(_) => true,
         }
     }
 }
@@ -664,9 +676,9 @@ parameter_types! {
 impl substrate_bridge_channel::inbound::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Verifier = BeefyLightClient;
-    type ProvedMessage = beefy_light_client::ProvedSubstrateBridgeMessage<
-        Vec<bridge_types::types::ParachainMessage<Balance>>,
-    >;
+    // type ProvedMessage = beefy_light_client::ProvedSubstrateBridgeMessage<
+    //     Vec<bridge_types::types::ParachainMessage<Balance>>,
+    // >;
     type MessageDispatch = SubstrateDispatch;
     type WeightInfo = ();
     type FeeAssetId = ();
@@ -760,6 +772,7 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
     type Currency = MultiCurrencyImpl;
     type AuxiliaryDigestHandler = LeafProvider;
     type WeightInfo = ();
+    type BalanceConverter = sp_runtime::traits::Identity;
 }
 
 impl leaf_provider::Config for Runtime {
@@ -767,6 +780,21 @@ impl leaf_provider::Config for Runtime {
     type Hashing = Keccak256;
     type Hash = <Keccak256 as sp_runtime::traits::Hash>::Output;
     type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
+}
+
+parameter_types! {
+    pub const BridgeMaxPeers: u32 = 50;
+}
+
+impl bridge_data_signer::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type OutboundChannel = SubstrateBridgeOutboundChannel;
+    type CallOrigin = dispatch::EnsureAccount<
+        SubNetworkId,
+        (),
+        bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
+    >;
+    type MaxPeers = BridgeMaxPeers;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -815,6 +843,8 @@ construct_runtime!(
         SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 105,
         SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
         LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
+
+        BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call} = 108,
     }
 );
 
