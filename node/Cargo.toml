@@ -29,13 +29,13 @@ hex-literal = "0.3.1"
 jsonrpsee = { version = "0.16.2", features = ["server"] }
 
 # Sora common 
-beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
-beefy-light-client-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
-beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
-substrate-bridge-channel-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
-leaf-provider-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
-leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
-bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false }
+beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer" }
+beefy-light-client-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer" }
+beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer" }
+substrate-bridge-channel-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer" }
+leaf-provider-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer" }
+leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer" }
+bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "bridge-data-signer", default-features = false }
 
 # Local
 parachain-template-runtime = { path = "../runtime" }

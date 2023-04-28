@@ -43,9 +43,7 @@ mod trader;
 mod weights;
 pub mod xcm_config;
 
-use bridge_types::{
-    substrate::SubstrateBridgeMessage, SubNetworkId, CHANNEL_INDEXING_PREFIX, U256,
-};
+use bridge_types::{substrate::SubstrateAppCall, SubNetworkId, CHANNEL_INDEXING_PREFIX, U256};
 use codec::{Decode, Encode};
 use frame_support::{
     dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
@@ -589,7 +587,7 @@ parameter_types! {
 }
 
 impl beefy_light_client::Config for Runtime {
-    type Message = Vec<bridge_types::types::ParachainMessage<Balance>>;
+    // type Message = Vec<bridge_types::types::ParachainMessage<Balance>>;
     type RuntimeEvent = RuntimeEvent;
     type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
 }
