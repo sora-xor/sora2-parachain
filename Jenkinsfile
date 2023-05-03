@@ -7,7 +7,7 @@ def pipeline = new org.rust.substratePipeline(steps: this,
       parachain: true,
       staticScanner: false,
       envImageName: 'docker.soramitsu.co.jp/sora2/parachain-env:latest',
-      appImageName: 'docker.soramitsu.co.jp/sora2/parachain'
+      appImageName: 'docker.soramitsu.co.jp/sora2/parachain',
       buildTestCmds: [
             'rm -rf ~/.cargo/registry/',
             'cargo test -r',
