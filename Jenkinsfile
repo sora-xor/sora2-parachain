@@ -5,7 +5,7 @@ def pipeline = new org.rust.substratePipeline(steps: this,
       pushTags: ['develop': 'dev', 'master': 'latest'],
       parachain: true,
       buildTestCmds: [
-            rm -rf \~/.cargo/registry/
+            // rm -rf \~/.cargo/registry//
             cargo test -r
             cargo build --release
             cp target/release/parachain-collator housekeeping/parachain-collator
