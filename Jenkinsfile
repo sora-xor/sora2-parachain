@@ -2,7 +2,7 @@
 
 def pipeline = new org.rust.substratePipeline(steps: this,
       secretScannerExclusion: '.*Cargo.toml\$|.*pr.sh\$',
-      pushTags: ['develop': 'dev', 'master': 'latest'],
+      dockerImageTags: ['develop': 'dev', 'master': 'latest'],
       parachain: true,
       buildTestCmds: [
             'rm -rf ~/.cargo/registry/',
