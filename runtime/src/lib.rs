@@ -54,6 +54,7 @@ use scale_info::TypeInfo;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H256};
+use sp_runtime::transaction_validity::{TransactionLongevity, TransactionPriority};
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
@@ -62,7 +63,6 @@ use sp_runtime::{
     transaction_validity::{TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, DispatchResult, MultiSignature, RuntimeDebug,
 };
-use sp_runtime::transaction_validity::{TransactionPriority, TransactionLongevity};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
