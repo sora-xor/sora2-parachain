@@ -62,7 +62,7 @@ use sp_runtime::{
     transaction_validity::{TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, DispatchResult, MultiSignature, RuntimeDebug,
 };
-
+use sp_runtime::transaction_validity::{TransactionPriority, TransactionLongevity};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -264,6 +264,8 @@ const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
     WEIGHT_REF_TIME_PER_SECOND.saturating_div(2),
     cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
 );
+
+pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 1 * HOURS;
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -776,6 +778,11 @@ impl leaf_provider::Config for Runtime {
 
 parameter_types! {
     pub const BridgeMaxPeers: u32 = 50;
+    // Not as important as some essential transactions (e.g. im_online or similar ones)
+    pub DataSignerPriority: TransactionPriority = Perbill::from_percent(10) * TransactionPriority::max_value();
+    // We don't want to have not relevant imports be stuck in transaction pool
+    // for too long
+    pub DataSignerLongevity: TransactionLongevity = EPOCH_DURATION_IN_BLOCKS as u64;
 }
 
 impl bridge_data_signer::Config for Runtime {
@@ -787,6 +794,8 @@ impl bridge_data_signer::Config for Runtime {
         bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
     >;
     type MaxPeers = BridgeMaxPeers;
+    type UnsignedPriority = DataSignerPriority;
+    type UnsignedLongevity = DataSignerLongevity;
 }
 
 impl multisig_verifier::Config for Runtime {
@@ -797,6 +806,7 @@ impl multisig_verifier::Config for Runtime {
         bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
     >;
     type OutboundChannel = SubstrateBridgeOutboundChannel;
+    type MaxPeers = BridgeMaxPeers;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
