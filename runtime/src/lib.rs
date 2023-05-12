@@ -43,9 +43,7 @@ mod trader;
 mod weights;
 pub mod xcm_config;
 
-use bridge_types::{
-    substrate::SubstrateBridgeMessage, SubNetworkId, CHANNEL_INDEXING_PREFIX, U256,
-};
+use bridge_types::{SubNetworkId, CHANNEL_INDEXING_PREFIX, U256};
 use codec::{Decode, Encode};
 use frame_support::{
     dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
@@ -56,6 +54,7 @@ use scale_info::TypeInfo;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H256};
+use sp_runtime::transaction_validity::{TransactionLongevity, TransactionPriority};
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
@@ -64,7 +63,6 @@ use sp_runtime::{
     transaction_validity::{TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, DispatchResult, MultiSignature, RuntimeDebug,
 };
-
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -266,6 +264,8 @@ const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
     WEIGHT_REF_TIME_PER_SECOND.saturating_div(2),
     cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
 );
+
+pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 1 * HOURS;
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -582,6 +582,8 @@ impl xcm_app::Config for Runtime {
         bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
     >;
     type XcmTransfer = XTokens;
+    type AccountIdConverter = sp_runtime::traits::Identity;
+    type BalanceConverter = sp_runtime::traits::Identity;
 }
 
 parameter_types! {
@@ -589,7 +591,6 @@ parameter_types! {
 }
 
 impl beefy_light_client::Config for Runtime {
-    type Message = Vec<bridge_types::types::ParachainMessage<Balance>>;
     type RuntimeEvent = RuntimeEvent;
     type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
 }
@@ -616,7 +617,7 @@ impl dispatch::Config for Runtime {
 }
 
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug, TypeInfo)]
-pub struct DispatchableSubstrateBridgeCall(SubstrateBridgeMessage<AccountId, H256, Balance>);
+pub struct DispatchableSubstrateBridgeCall(bridge_types::substrate::BridgeCall);
 
 impl Dispatchable for DispatchableSubstrateBridgeCall {
     type RuntimeOrigin = crate::RuntimeOrigin;
@@ -629,14 +630,18 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
         origin: Self::RuntimeOrigin,
     ) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {
         match self.0 {
-            bridge_types::substrate::SubstrateBridgeMessage::SubstrateApp(_msg) => {
-                unimplemented!()
-            },
-            bridge_types::substrate::SubstrateBridgeMessage::XCMApp(msg) => {
+            bridge_types::substrate::BridgeCall::SubstrateApp(_msg) => Ok(().into()),
+            bridge_types::substrate::BridgeCall::XCMApp(msg) => {
                 let call: xcm_app::Call<crate::Runtime> = msg.into();
                 let call: crate::RuntimeCall = call.into();
                 call.dispatch(origin)
             },
+            bridge_types::substrate::BridgeCall::DataSigner(msg) => {
+                let call: bridge_data_signer::Call<crate::Runtime> = msg.into();
+                let call: crate::RuntimeCall = call.into();
+                call.dispatch(origin)
+            },
+            bridge_types::substrate::BridgeCall::MultisigVerifier(_) => Ok(().into()),
         }
     }
 }
@@ -645,8 +650,10 @@ pub struct SubstrateBridgeCallFilter;
 impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
     fn contains(call: &DispatchableSubstrateBridgeCall) -> bool {
         match &call.0 {
-            bridge_types::substrate::SubstrateBridgeMessage::SubstrateApp(_) => false,
-            bridge_types::substrate::SubstrateBridgeMessage::XCMApp(_) => true,
+            bridge_types::substrate::BridgeCall::SubstrateApp(_) => false,
+            bridge_types::substrate::BridgeCall::XCMApp(_) => true,
+            bridge_types::substrate::BridgeCall::DataSigner(_) => true,
+            bridge_types::substrate::BridgeCall::MultisigVerifier(_) => true,
         }
     }
 }
@@ -665,10 +672,7 @@ parameter_types! {
 
 impl substrate_bridge_channel::inbound::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type Verifier = BeefyLightClient;
-    type ProvedMessage = beefy_light_client::ProvedSubstrateBridgeMessage<
-        Vec<bridge_types::types::ParachainMessage<Balance>>,
-    >;
+    type Verifier = MultisigVerifier;
     type MessageDispatch = SubstrateDispatch;
     type WeightInfo = ();
     type FeeAssetId = ();
@@ -762,6 +766,7 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
     type Currency = MultiCurrencyImpl;
     type AuxiliaryDigestHandler = LeafProvider;
     type WeightInfo = ();
+    type BalanceConverter = sp_runtime::traits::Identity;
 }
 
 impl leaf_provider::Config for Runtime {
@@ -769,6 +774,39 @@ impl leaf_provider::Config for Runtime {
     type Hashing = Keccak256;
     type Hash = <Keccak256 as sp_runtime::traits::Hash>::Output;
     type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
+}
+
+parameter_types! {
+    pub const BridgeMaxPeers: u32 = 50;
+    // Not as important as some essential transactions (e.g. im_online or similar ones)
+    pub DataSignerPriority: TransactionPriority = Perbill::from_percent(10) * TransactionPriority::max_value();
+    // We don't want to have not relevant imports be stuck in transaction pool
+    // for too long
+    pub DataSignerLongevity: TransactionLongevity = EPOCH_DURATION_IN_BLOCKS as u64;
+}
+
+impl bridge_data_signer::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type OutboundChannel = SubstrateBridgeOutboundChannel;
+    type CallOrigin = dispatch::EnsureAccount<
+        SubNetworkId,
+        (),
+        bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
+    >;
+    type MaxPeers = BridgeMaxPeers;
+    type UnsignedPriority = DataSignerPriority;
+    type UnsignedLongevity = DataSignerLongevity;
+}
+
+impl multisig_verifier::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type CallOrigin = dispatch::EnsureAccount<
+        SubNetworkId,
+        (),
+        bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
+    >;
+    type OutboundChannel = SubstrateBridgeOutboundChannel;
+    type MaxPeers = BridgeMaxPeers;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -817,6 +855,8 @@ construct_runtime!(
         SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 105,
         SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
         LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
+        BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call} = 108,
+        MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
     }
 );
 

@@ -29,7 +29,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use super::*;
-use bridge_types::substrate::SubstrateAppMessage;
+use bridge_types::substrate::SubstrateAppCall;
 use bridge_types::SubNetworkId;
 use cumulus_primitives_core::ParaId;
 use frame_support::{assert_noop, assert_ok, traits::Currency};
@@ -125,7 +125,7 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
     SoraParachain::execute_with(|| {
         assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
             == crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
-                SubstrateAppMessage::Transfer {
+                SubstrateAppCall::Transfer {
                     asset_id: relay_native_asset_id(),
                     sender: None,
                     recipient: BOB,
@@ -179,7 +179,7 @@ fn send_sibling_asset_to_sora_from_sibling() {
     SoraParachain::execute_with(|| {
         assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
             == crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
-                SubstrateAppMessage::Transfer {
+                SubstrateAppCall::Transfer {
                     asset_id: para_x_asset_id(),
                     sender: None,
                     recipient: BOB,
