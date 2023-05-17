@@ -54,13 +54,14 @@ use scale_info::TypeInfo;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H256};
-use sp_runtime::transaction_validity::{TransactionLongevity, TransactionPriority};
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, Convert, IdentifyAccount, Keccak256, Verify,
     },
-    transaction_validity::{TransactionSource, TransactionValidity},
+    transaction_validity::{
+        TransactionLongevity, TransactionPriority, TransactionSource, TransactionValidity,
+    },
     ApplyExtrinsicResult, DispatchResult, MultiSignature, RuntimeDebug,
 };
 use sp_std::prelude::*;
@@ -855,7 +856,7 @@ construct_runtime!(
         SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 105,
         SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
         LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
-        BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call} = 108,
+        BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
         MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
     }
 );
