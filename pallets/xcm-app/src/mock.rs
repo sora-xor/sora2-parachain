@@ -243,7 +243,7 @@ impl<OuterOrigin> frame_support::traits::EnsureOrigin<OuterOrigin> for TestCallO
                 1, 1, 1, 1,
             ]
             .into(),
-            timestamp: 0,
+            timepoint: bridge_types::GenericTimepoint::Sora(1),
             additional: (),
         })
     }

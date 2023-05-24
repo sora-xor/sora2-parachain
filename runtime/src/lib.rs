@@ -755,6 +755,14 @@ impl MultiCurrency<AccountId> for MultiCurrencyImpl {
     }
 }
 
+pub struct TimepointProvider;
+
+impl bridge_types::traits::TimepointProvider for TimepointProvider {
+    fn get_timepoint() -> bridge_types::GenericTimepoint {
+        bridge_types::GenericTimepoint::Parachain(System::block_number())
+    }
+}
+
 impl substrate_bridge_channel::outbound::Config for Runtime {
     const INDEXING_PREFIX: &'static [u8] = CHANNEL_INDEXING_PREFIX;
     type RuntimeEvent = RuntimeEvent;
@@ -768,6 +776,7 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
     type AuxiliaryDigestHandler = LeafProvider;
     type WeightInfo = ();
     type BalanceConverter = sp_runtime::traits::Identity;
+    type TimepointProvider = TimepointProvider;
 }
 
 impl leaf_provider::Config for Runtime {
