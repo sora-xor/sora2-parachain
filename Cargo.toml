@@ -15,19 +15,19 @@ panic = "unwind"
 # multisig-verifier = { path = "../sora2-common-2/pallets/multisig-verifier" }
 # substrate-bridge-channel = { path = "../sora2-common-2/pallets/substrate-channel" }
 # substrate-bridge-channel-rpc = { path = "../sora2-common-2/pallets/substrate-channel/rpc" }
-beefy-light-client = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.2" }
-beefy-light-client-rpc = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.2" }
-beefy-light-client-runtime-api = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.2" }
-leaf-provider = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.2" }
-leaf-provider-rpc = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.2" }
-leaf-provider-runtime-api = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.2" }
-bridge-common = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.2" }
-dispatch = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.2" }
-bridge-types = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.2" }
-bridge-data-signer = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.2" }
-multisig-verifier = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.2" }
-substrate-bridge-channel  = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.2" }
-substrate-bridge-channel-rpc  = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.2" }
+beefy-light-client = { git = "https://github.com/sora-xor//sora2-common.git", branch = "unsigned-submit-for-inbound-channel" }
+beefy-light-client-rpc = { git = "https://github.com/sora-xor//sora2-common.git", branch = "unsigned-submit-for-inbound-channel" }
+beefy-light-client-runtime-api = { git = "https://github.com/sora-xor//sora2-common.git", branch = "unsigned-submit-for-inbound-channel" }
+leaf-provider = { git = "https://github.com/sora-xor//sora2-common.git", branch = "unsigned-submit-for-inbound-channel" }
+leaf-provider-rpc = { git = "https://github.com/sora-xor//sora2-common.git", branch = "unsigned-submit-for-inbound-channel" }
+leaf-provider-runtime-api = { git = "https://github.com/sora-xor//sora2-common.git", branch = "unsigned-submit-for-inbound-channel" }
+bridge-common = { git = "https://github.com/sora-xor//sora2-common.git", branch = "unsigned-submit-for-inbound-channel" }
+dispatch = { git = "https://github.com/sora-xor//sora2-common.git", branch = "unsigned-submit-for-inbound-channel" }
+bridge-types = { git = "https://github.com/sora-xor//sora2-common.git", branch = "unsigned-submit-for-inbound-channel" }
+bridge-data-signer = { git = "https://github.com/sora-xor//sora2-common.git", branch = "unsigned-submit-for-inbound-channel" }
+multisig-verifier = { git = "https://github.com/sora-xor//sora2-common.git", branch = "unsigned-submit-for-inbound-channel" }
+substrate-bridge-channel  = { git = "https://github.com/sora-xor//sora2-common.git", branch = "unsigned-submit-for-inbound-channel" }
+substrate-bridge-channel-rpc  = { git = "https://github.com/sora-xor//sora2-common.git", branch = "unsigned-submit-for-inbound-channel" }
 
 [workspace]
 members = ["node", "pallets/*", "runtime", "parachain-gen", "parachain-common"]

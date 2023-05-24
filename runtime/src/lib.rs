@@ -43,26 +43,23 @@ mod trader;
 mod weights;
 pub mod xcm_config;
 
-use bridge_types::{SubNetworkId, CHANNEL_INDEXING_PREFIX, U256};
+use bridge_types::{SubNetworkId, CHANNEL_INDEXING_PREFIX};
 use codec::{Decode, Encode};
 use frame_support::{
     dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
-    traits::{Contains, Currency, ExistenceRequirement},
+    traits::Contains,
 };
-use orml_traits::MultiCurrency;
 use scale_info::TypeInfo;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H256};
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
-    traits::{
-        AccountIdLookup, BlakeTwo256, Block as BlockT, Convert, IdentifyAccount, Keccak256, Verify,
-    },
+    traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Keccak256, Verify},
     transaction_validity::{
         TransactionLongevity, TransactionPriority, TransactionSource, TransactionValidity,
     },
-    ApplyExtrinsicResult, DispatchResult, MultiSignature, RuntimeDebug,
+    ApplyExtrinsicResult, MultiSignature, RuntimeDebug,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -565,12 +562,6 @@ impl pallet_collator_selection::Config for Runtime {
     type WeightInfo = ();
 }
 
-orml_traits::parameter_type_with_key! {
-    pub ExistentialDeposits: |_currency_id: parachain_common::primitives::AssetId| -> Balance {
-        Default::default()
-    };
-}
-
 impl xcm_app::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type WeightInfo = xcm_app::weights::WeightInfo<Runtime>;
@@ -659,100 +650,13 @@ impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
     }
 }
 
-pub struct FeeConverter;
-impl Convert<U256, Balance> for FeeConverter {
-    fn convert(fee: U256) -> Balance {
-        fee.low_u128() as Balance
-    }
-}
-
-parameter_types! {
-    pub const GetTreasuryAccountId: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([0u8; 32]);
-    pub const GetTrustlessBridgeFeesAccountId: sp_runtime::AccountId32 = sp_runtime::AccountId32::new([1u8; 32]);
-}
-
 impl substrate_bridge_channel::inbound::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Verifier = MultisigVerifier;
     type MessageDispatch = SubstrateDispatch;
     type WeightInfo = ();
-    type FeeAssetId = ();
-    type FeeAccountId = GetTrustlessBridgeFeesAccountId;
-    type TreasuryAccountId = GetTreasuryAccountId;
-    type FeeConverter = FeeConverter;
-    type Currency = MultiCurrencyImpl;
-}
-
-pub struct MultiCurrencyImpl;
-
-impl MultiCurrency<AccountId> for MultiCurrencyImpl {
-    type CurrencyId = ();
-    type Balance = Balance;
-    fn minimum_balance(_currency_id: Self::CurrencyId) -> Self::Balance {
-        unimplemented!()
-    }
-
-    fn total_issuance(_currency_id: Self::CurrencyId) -> Self::Balance {
-        unimplemented!()
-    }
-
-    fn total_balance(_currency_id: Self::CurrencyId, _who: &AccountId) -> Self::Balance {
-        unimplemented!()
-    }
-
-    fn free_balance(_currency_id: Self::CurrencyId, _who: &AccountId) -> Self::Balance {
-        unimplemented!()
-    }
-
-    fn ensure_can_withdraw(
-        _currency_id: Self::CurrencyId,
-        _who: &AccountId,
-        _amount: Self::Balance,
-    ) -> DispatchResult {
-        unimplemented!()
-    }
-
-    fn transfer(
-        _currency_id: Self::CurrencyId,
-        from: &AccountId,
-        to: &AccountId,
-        amount: Self::Balance,
-    ) -> DispatchResult {
-        <Balances as Currency<AccountId>>::transfer(
-            from,
-            to,
-            amount,
-            ExistenceRequirement::KeepAlive,
-        )
-    }
-
-    fn deposit(
-        _currency_id: Self::CurrencyId,
-        _who: &AccountId,
-        _amount: Self::Balance,
-    ) -> DispatchResult {
-        unimplemented!()
-    }
-
-    fn withdraw(
-        _currency_id: Self::CurrencyId,
-        _who: &AccountId,
-        _amount: Self::Balance,
-    ) -> DispatchResult {
-        unimplemented!()
-    }
-
-    fn can_slash(_currency_id: Self::CurrencyId, _who: &AccountId, _value: Self::Balance) -> bool {
-        unimplemented!()
-    }
-
-    fn slash(
-        _currency_id: Self::CurrencyId,
-        _who: &AccountId,
-        _amount: Self::Balance,
-    ) -> Self::Balance {
-        unimplemented!()
-    }
+    type UnsignedPriority = DataSignerPriority;
+    type UnsignedLongevity = DataSignerLongevity;
 }
 
 pub struct TimepointProvider;
@@ -767,16 +671,15 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
     const INDEXING_PREFIX: &'static [u8] = CHANNEL_INDEXING_PREFIX;
     type RuntimeEvent = RuntimeEvent;
     type Hashing = Keccak256;
-    type FeeCurrency = ();
-    type FeeAccountId = GetTrustlessBridgeFeesAccountId;
     type MessageStatusNotifier = ();
     type MaxMessagePayloadSize = BridgeMaxMessagePayloadSize;
     type MaxMessagesPerCommit = BridgeMaxMessagesPerCommit;
-    type Currency = MultiCurrencyImpl;
     type AuxiliaryDigestHandler = LeafProvider;
     type WeightInfo = ();
-    type BalanceConverter = sp_runtime::traits::Identity;
     type TimepointProvider = TimepointProvider;
+    // Required for MessageStatusNotifier and actually not used
+    type AssetId = ();
+    type Balance = ();
 }
 
 impl leaf_provider::Config for Runtime {
@@ -861,7 +764,7 @@ construct_runtime!(
 
         XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
         BeefyLightClient: beefy_light_client::{Pallet, Call, Storage, Event<T>, Config} = 103,
-        SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Config, Storage, Event<T>} = 104,
+        SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Storage, Event<T>, ValidateUnsigned} = 104,
         SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 105,
         SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
         LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
