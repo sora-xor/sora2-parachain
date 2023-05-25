@@ -502,7 +502,6 @@ fn testnet_genesis(
         multisig_verifier: MultisigVerifierConfig {
             network_id: bridge_types::GenericNetworkId::Sub(bridge_network_id),
         },
-        substrate_bridge_inbound_channel: Default::default(),
         substrate_bridge_outbound_channel: Default::default(),
         system: parachain_template_runtime::SystemConfig {
             code: parachain_template_runtime::WASM_BINARY

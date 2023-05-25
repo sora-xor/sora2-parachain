@@ -69,10 +69,6 @@ fn message_id() -> crate::H256 {
 
 fn prepare_sora_parachain() {
     SoraParachain::execute_with(|| {
-        let _ = SoraBalances::deposit_creating(
-            &crate::GetTrustlessBridgeFeesAccountId::get(),
-            1000000000000000000,
-        );
         let _ = SoraBalances::deposit_creating(&ALICE, 1000000000000000000);
         let _ = SoraBalances::deposit_creating(&BOB, 1000000000000000000);
         assert_ok!(crate::XCMApp::register_mapping(
