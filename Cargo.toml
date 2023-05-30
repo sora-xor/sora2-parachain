@@ -15,19 +15,19 @@ panic = "unwind"
 # multisig-verifier = { path = "../sora2-common-2/pallets/multisig-verifier" }
 # substrate-bridge-channel = { path = "../sora2-common-2/pallets/substrate-channel" }
 # substrate-bridge-channel-rpc = { path = "../sora2-common-2/pallets/substrate-channel/rpc" }
-beefy-light-client = { git = "https://github.com/sora-xor//sora2-common.git", branch = "fixed-asset-decimals" }
-beefy-light-client-rpc = { git = "https://github.com/sora-xor//sora2-common.git", branch = "fixed-asset-decimals" }
-beefy-light-client-runtime-api = { git = "https://github.com/sora-xor//sora2-common.git", branch = "fixed-asset-decimals" }
-leaf-provider = { git = "https://github.com/sora-xor//sora2-common.git", branch = "fixed-asset-decimals" }
-leaf-provider-rpc = { git = "https://github.com/sora-xor//sora2-common.git", branch = "fixed-asset-decimals" }
-leaf-provider-runtime-api = { git = "https://github.com/sora-xor//sora2-common.git", branch = "fixed-asset-decimals" }
-bridge-common = { git = "https://github.com/sora-xor//sora2-common.git", branch = "fixed-asset-decimals" }
-dispatch = { git = "https://github.com/sora-xor//sora2-common.git", branch = "fixed-asset-decimals" }
-bridge-types = { git = "https://github.com/sora-xor//sora2-common.git", branch = "fixed-asset-decimals" }
-bridge-data-signer = { git = "https://github.com/sora-xor//sora2-common.git", branch = "fixed-asset-decimals" }
-multisig-verifier = { git = "https://github.com/sora-xor//sora2-common.git", branch = "fixed-asset-decimals" }
-substrate-bridge-channel  = { git = "https://github.com/sora-xor//sora2-common.git", branch = "fixed-asset-decimals" }
-substrate-bridge-channel-rpc  = { git = "https://github.com/sora-xor//sora2-common.git", branch = "fixed-asset-decimals" }
+beefy-light-client = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.4" }
+beefy-light-client-rpc = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.4" }
+beefy-light-client-runtime-api = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.4" }
+leaf-provider = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.4" }
+leaf-provider-rpc = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.4" }
+leaf-provider-runtime-api = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.4" }
+bridge-common = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.4" }
+dispatch = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.4" }
+bridge-types = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.4" }
+bridge-data-signer = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.4" }
+multisig-verifier = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.4" }
+substrate-bridge-channel  = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.4" }
+substrate-bridge-channel-rpc  = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.4" }
 
 [workspace]
 members = ["node", "pallets/*", "runtime", "parachain-gen", "parachain-common"]
