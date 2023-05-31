@@ -2,7 +2,7 @@
 
 def pipeline = new org.rust.substratePipeline(steps: this,
       parachain: true,
-      disableSecretScanner: true,
+      disableSecretScanner: false,
       initSubmodules: false,
       staticScanner: false,
       secretScannerExclusion: '.*Cargo.toml\$|.*pr.sh\$|.*Jenkinsfile\$',
@@ -10,11 +10,7 @@ def pipeline = new org.rust.substratePipeline(steps: this,
       envImageName: 'docker.soramitsu.co.jp/sora2/parachain-env:latest',
       appImageName: 'docker.soramitsu.co.jp/sora2/parachain',
       buildTestCmds: [
-            'rm -rf ~/.cargo/registry/',
-            'cargo test -r',
-            'cargo build --release',
-            'cp target/release/parachain-collator housekeeping/parachain-collator',
-            'mv ./target/release/wbuild/parachain-template-runtime/parachain_template_runtime.compact.compressed.wasm ./parachain_template_runtime.compact.compressed.wasm'
+            'housekeeping/scripts/build.sh'
       ]
 )
 pipeline.runPipeline()
