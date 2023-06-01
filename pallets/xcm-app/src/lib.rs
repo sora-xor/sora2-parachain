@@ -144,6 +144,11 @@ pub mod pallet {
     pub type MultilocationToAssetId<T: Config> =
         StorageMap<_, Blake2_256, MultiLocation, AssetId, OptionQuery>;
 
+    #[pallet::storage]
+    #[pallet::getter(fn is_locked)]
+    pub type IsLocked<T: Config> =
+        StorageValue<_, bool, ValueQuery>;
+
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
@@ -419,6 +424,34 @@ pub mod pallet {
         ) -> DispatchResultWithPostInfo {
             ensure_root(origin)?;
             Self::add_to_channel(account_id, asset_id, amount)?;
+            Ok(().into())
+        }
+
+        #[pallet::call_index(8)]
+        #[pallet::weight(<T as Config>::WeightInfo::delete_mapping())]
+        pub fn lock_pallet(
+            origin: OriginFor<T>,
+        ) -> DispatchResultWithPostInfo {
+            let res = T::CallOrigin::ensure_origin(origin)?;
+            frame_support::log::info!(
+                "Lock Pallet initiated by {:?}",
+                res
+            );
+            IsLocked::<T>::set(true);
+            Ok(().into())
+        }
+
+        #[pallet::call_index(9)]
+        #[pallet::weight(<T as Config>::WeightInfo::delete_mapping())]
+        pub fn unlock_pallet(
+            origin: OriginFor<T>,
+        ) -> DispatchResultWithPostInfo {
+            let res = T::CallOrigin::ensure_origin(origin)?;
+            frame_support::log::info!(
+                "Unock Pallet initiated by {:?}",
+                res
+            );
+            IsLocked::<T>::set(false);
             Ok(().into())
         }
     }
