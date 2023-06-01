@@ -81,6 +81,8 @@ where
             XCMAppCall::RegisterAsset { asset_id, sidechain_asset, asset_kind } => {
                 Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind }
             },
+            XCMAppCall::SwitchOffBridge => Call::lock_pallet {},
+            XCMAppCall::SwitchOnBridge => Call::unlock_pallet {},
         }
     }
 }
@@ -196,6 +198,8 @@ pub mod pallet {
         WrongXCMVersion,
         /// Error with mapping during tranfer assets from parachain to other parachans
         InvalidMultilocationMapping,
+        /// The pallet is temorary locked due to substrate bridge swtich off
+        PalletIsLocked,
     }
 
     #[pallet::hooks]
@@ -233,6 +237,7 @@ pub mod pallet {
             amount: u128,
         ) -> DispatchResultWithPostInfo {
             let res = T::CallOrigin::ensure_origin(origin)?;
+            ensure!(!Self::is_locked(), Error::<T>::PalletIsLocked);
             frame_support::log::info!(
                 "Call transfer with params: {:?} by {:?}",
                 (asset_id, sender.clone(), recipient.clone(), amount),
@@ -252,6 +257,7 @@ pub mod pallet {
             asset_kind: bridge_types::types::AssetKind,
         ) -> DispatchResultWithPostInfo {
             let res = T::CallOrigin::ensure_origin(origin)?;
+            ensure!(!Self::is_locked(), Error::<T>::PalletIsLocked);
             frame_support::log::info!(
                 "Call register_asset with params: {:?} by {:?}",
                 (asset_id, multiasset.clone()),
@@ -462,6 +468,9 @@ pub mod pallet {
             asset_id: AssetId,
             amount: u128,
         ) -> sp_runtime::DispatchResult {
+            frame_support::ensure!(!Self::is_locked(), {
+                Error::<T>::PalletIsLocked
+            });
             let raw_origin = Some(account_id.clone()).into();
             let xcm_mes = SubstrateAppCall::Transfer {
                 asset_id,
@@ -489,6 +498,9 @@ pub mod pallet {
             recipient: xcm::VersionedMultiLocation,
             amount: u128,
         ) -> sp_runtime::DispatchResult {
+            frame_support::ensure!(!Self::is_locked(), {
+                Error::<T>::PalletIsLocked
+            });
             let recipient = match recipient {
                 xcm::VersionedMultiLocation::V3(m) => m,
                 _ => fail!(Error::<T>::WrongXCMVersion),
