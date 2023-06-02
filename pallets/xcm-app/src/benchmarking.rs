@@ -38,107 +38,17 @@ use xcm::{
         Junction::{GeneralKey, Parachain},
         Junctions::X2,
     },
-    v1::MultiLocation,
+    // v1::MultiLocation,
 };
 
 benchmarks! {
-    register_mapping {
-        let asset_id = [
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1,
-        ].into();
-        let multilocation = MultiLocation {
-            parents: 1,
-            interior: X2(Parachain(666), GeneralKey(test_general_key())),
-        };
-    }: _(RawOrigin::Root, asset_id, multilocation.clone())
+    lock_pallet {
+    }: _(RawOrigin::Root)
     verify {
-        assert_eq!(
-            XCMApp::<T>::get_multilocation_from_asset_id(asset_id)
-                .expect("register_mapping: multilocation is None"),
-            multilocation.clone()
+        assert!(
+            XCMApp::<T>::is_locked()
+                // .expect("register_mapping: multilocation is None"),
         );
-        assert_eq!(
-            XCMApp::<T>::get_asset_id_from_multilocation(multilocation)
-                .expect("register_mapping: asset id is None"),
-            asset_id
-        );
-    }
-
-    change_asset_mapping {
-        let asset_id = [
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1,
-        ].into();
-        let multilocation = MultiLocation::parent();
-        let new_multilocation = MultiLocation {
-            parents: 1,
-            interior: X2(Parachain(666), GeneralKey(test_general_key())),
-        };
-        XCMApp::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
-        .expect("change_asset_mapping: failed to create a map");
-    }: _(RawOrigin::Root, asset_id, new_multilocation.clone())
-    verify {
-        assert_eq!(
-            XCMApp::<T>::get_multilocation_from_asset_id(asset_id)
-                .expect("change_asset_mapping: new_multilocation is None"),
-            new_multilocation.clone()
-        );
-        assert_eq!(
-            XCMApp::<T>::get_asset_id_from_multilocation(new_multilocation).expect(
-                "change_asset_mapping: asset_id is None"
-            ),
-            asset_id
-        );
-        assert_eq!(XCMApp::<T>::get_asset_id_from_multilocation(multilocation), None);
-    }
-
-    change_multilocation_mapping {
-        let asset_id = [
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1,
-        ].into();
-        let new_asset_id = [
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-            2, 2, 2,
-        ].into();
-        let multilocation = MultiLocation {
-            parents: 1,
-            interior: X2(Parachain(666), GeneralKey(test_general_key())),
-        };
-        XCMApp::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
-        .expect("change_multilocation_mapping: failed to create a map");
-    }: _(RawOrigin::Root, multilocation.clone(), new_asset_id)
-    verify {
-        assert_eq!(
-            XCMApp::<T>::get_multilocation_from_asset_id(new_asset_id)
-                .expect("change_multilocation_mapping: new_multilocation is None"),
-                multilocation.clone()
-        );
-        assert_eq!(
-            XCMApp::<T>::get_asset_id_from_multilocation(multilocation).expect(
-                "change_multilocation_mapping: asset_id is None"
-            ),
-            new_asset_id
-        );
-        assert_eq!(XCMApp::<T>::get_multilocation_from_asset_id(asset_id), None);
-    }
-
-    delete_mapping {
-        let asset_id = [
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1,
-        ].into();
-        let multilocation = MultiLocation {
-            parents: 1,
-            interior: X2(Parachain(666), GeneralKey(test_general_key())),
-        };
-        XCMApp::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
-        .expect("change_multilocation_mapping: failed to create a map");
-    }: _(RawOrigin::Root, asset_id)
-    verify {
-        assert_eq!(XCMApp::<T>::get_multilocation_from_asset_id(asset_id), None);
-        assert_eq!(XCMApp::<T>::get_asset_id_from_multilocation(multilocation), None);
     }
 }
 
