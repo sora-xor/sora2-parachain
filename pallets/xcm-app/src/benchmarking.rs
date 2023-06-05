@@ -38,7 +38,6 @@ use xcm::{
         Junction::{GeneralKey, Parachain},
         Junctions::X2,
     },
-    // v1::MultiLocation,
 };
 
 benchmarks! {
@@ -47,7 +46,6 @@ benchmarks! {
     verify {
         assert!(
             XCMApp::<T>::is_locked()
-                // .expect("register_mapping: multilocation is None"),
         );
     }
 }

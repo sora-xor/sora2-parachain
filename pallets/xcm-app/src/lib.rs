@@ -172,6 +172,9 @@ pub mod pallet {
         /// Asset transfered from this parachain
         /// [From, To, AssedId, amount]
         AssetTransferred(T::AccountId, MultiLocation, AssetId, u128),
+        /// The pallet is locked due to bridge lock
+        XCMAppLocked,
+        XCMAppUnlocked,
 
         // Error events:
         /// Error while submitting to outbound channel
@@ -279,6 +282,13 @@ pub mod pallet {
                 res
             );
             IsLocked::<T>::set(true);
+            T::OutboundChannel::submit(
+                SubNetworkId::Mainnet,
+                &RawOrigin::Root,
+                &SubstrateAppCall::FinalizeSwitchOffBridge.prepare_message(),
+                (),
+            )?;
+            Self::deposit_event(Event::<T>::XCMAppLocked);
             Ok(().into())
         }
 
@@ -293,6 +303,14 @@ pub mod pallet {
                 res
             );
             IsLocked::<T>::set(false);
+            T::OutboundChannel::submit(
+                SubNetworkId::Mainnet,
+                &RawOrigin::Root,
+                &SubstrateAppCall::FinalizeSwitchOnBridge.prepare_message(),
+                (),
+            )?;
+            Self::deposit_event(Event::<T>::XCMAppUnlocked);
+
             Ok(().into())
         }
     }
