@@ -289,15 +289,17 @@ where
     let genesis_hash =
         params.client.block_hash(0).ok().flatten().expect("Genesis block exists; qed");
 
-    let gossip_protocol_name = beefy_gadget::gossip_protocol_name(
-        &genesis_hash,
-        None, // todo change to fork id
-    );
+    // TEMPORARY COMMENT BEEFY
 
-    parachain_config
-        .network
-        .extra_sets
-        .push(beefy_gadget::communication::beefy_peers_set_config(gossip_protocol_name.clone()));
+    // let gossip_protocol_name = beefy_gadget::gossip_protocol_name(
+    //     &genesis_hash,
+    //     None, // todo change to fork id
+    // );
+
+    // parachain_config
+    //     .network
+    //     .extra_sets
+    //     .push(beefy_gadget::communication::beefy_peers_set_config(gossip_protocol_name.clone()));
 
     let client = params.client.clone();
     let backend = params.backend.clone();
@@ -371,23 +373,24 @@ where
 
     let payload_provider = sp_beefy::mmr::MmrRootProvider::new(client.clone());
 
-    let beefy_params = beefy_gadget::BeefyParams {
-        client: client.clone(),
-        runtime: client.clone(),
-        backend: backend.clone(),
-        payload_provider,
-        key_store: Some(params.keystore_container.sync_keystore()),
-        network_params: beefy_gadget::BeefyNetworkParams {
-            network: network.clone(),
-            gossip_protocol_name,
-            justifications_protocol_name,
-            _phantom: core::marker::PhantomData::<Block>,
-        },
-        links: beefy_voter_links,
-        min_block_delta: 8,
-        prometheus_registry: prometheus_registry.clone(),
-        on_demand_justifications_handler: beefy_on_demand_justifications_handler, // todo BeefyJustifsRequestHandler
-    };
+    // TEMPORARY COMMENT BEEFY
+    // let beefy_params = beefy_gadget::BeefyParams {
+    //     client: client.clone(),
+    //     runtime: client.clone(),
+    //     backend: backend.clone(),
+    //     payload_provider,
+    //     key_store: Some(params.keystore_container.sync_keystore()),
+    //     network_params: beefy_gadget::BeefyNetworkParams {
+    //         network: network.clone(),
+    //         gossip_protocol_name,
+    //         justifications_protocol_name,
+    //         _phantom: core::marker::PhantomData::<Block>,
+    //     },
+    //     links: beefy_voter_links,
+    //     min_block_delta: 8,
+    //     prometheus_registry: prometheus_registry.clone(),
+    //     on_demand_justifications_handler: beefy_on_demand_justifications_handler, // todo BeefyJustifsRequestHandler
+    // };
 
     sc_service::spawn_tasks(sc_service::SpawnTasksParams {
         rpc_builder,
@@ -442,13 +445,14 @@ where
             force_authoring,
         )?;
 
-        let gadget = beefy_gadget::start_beefy_gadget::<_, _, _, _, _, _>(beefy_params);
+        // TEMPORARY COMMENT BEEFY
+        // let gadget = beefy_gadget::start_beefy_gadget::<_, _, _, _, _, _>(beefy_params);
 
-        task_manager.spawn_essential_handle().spawn_blocking(
-            "beefy-gadget",
-            Some("beefy-gadget"),
-            gadget,
-        );
+        // task_manager.spawn_essential_handle().spawn_blocking(
+        //     "beefy-gadget",
+        //     Some("beefy-gadget"),
+        //     gadget,
+        // );
 
         let spawner = task_manager.spawn_handle();
 
