@@ -305,15 +305,16 @@ where
     let backend = params.backend.clone();
     let mut task_manager = params.task_manager;
 
-    let (beefy_on_demand_justifications_handler, beefy_req_resp_cfg) =
-        beefy_gadget::communication::request_response::BeefyJustifsRequestHandler::new(
-            &genesis_hash,
-            parachain_config.chain_spec.fork_id(),
-            client.clone(),
-        );
-    parachain_config.network.request_response_protocols.push(beefy_req_resp_cfg);
+    // TEMPORARY COMMENT BEEFY
+    // let (beefy_on_demand_justifications_handler, beefy_req_resp_cfg) =
+    //     beefy_gadget::communication::request_response::BeefyJustifsRequestHandler::new(
+    //         &genesis_hash,
+    //         parachain_config.chain_spec.fork_id(),
+    //         client.clone(),
+    //     );
+    // parachain_config.network.request_response_protocols.push(beefy_req_resp_cfg);
 
-    let justifications_protocol_name = beefy_on_demand_justifications_handler.protocol_name();
+    // let justifications_protocol_name = beefy_on_demand_justifications_handler.protocol_name();
 
     let (relay_chain_interface, collator_key) = build_relay_chain_interface(
         polkadot_config,
