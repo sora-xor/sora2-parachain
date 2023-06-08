@@ -9,7 +9,7 @@ String baseImageName = 'docker.soramitsu.co.jp/sora2/parachain-env:latest'
 String appImageName = 'docker.soramitsu.co.jp/sora2/parachain'
 String secretScannerExclusion = '.*Cargo.toml'
 Boolean disableSecretScanner = false
-def pushTags=['master': 'latest', 'develop': 'dev', 'rococo_v3': 'rococo_v3']
+def pushTags=['master': 'latest', 'develop': 'dev']
 
 pipeline {
     options {
