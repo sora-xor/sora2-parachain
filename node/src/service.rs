@@ -290,8 +290,10 @@ where
     let genesis_hash =
         params.client.block_hash(0).ok().flatten().expect("Genesis block exists; qed");
 
-    let gossip_protocol_name =
-        beefy_gadget::gossip_protocol_name(&genesis_hash, parachain_config.chain_spec.fork_id());
+    let gossip_protocol_name = beefy_gadget::gossip_protocol_name(
+        &genesis_hash,
+        None, // todo change to fork id
+    );
 
     if !disable_beefy {
         parachain_config.network.extra_sets.push(
