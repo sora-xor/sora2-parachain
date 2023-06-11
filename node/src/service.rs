@@ -206,7 +206,7 @@ async fn build_relay_chain_interface(
             task_manager,
             collator_options.relay_chain_rpc_urls,
         )
-        .await;
+        .await
     }
     cumulus_relay_chain_inprocess_interface::build_inprocess_relay_chain(
         polkadot_config,
@@ -230,6 +230,7 @@ async fn start_node_impl<Executor, RB, BIQ, BIC>(
     build_import_queue: BIQ,
     build_consensus: BIC,
     hwbench: Option<sc_sysinfo::HwBench>,
+    disable_beefy: bool,
 ) -> sc_service::error::Result<(
     TaskManager,
     Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
@@ -289,15 +290,14 @@ where
     let genesis_hash =
         params.client.block_hash(0).ok().flatten().expect("Genesis block exists; qed");
 
-    let gossip_protocol_name = beefy_gadget::gossip_protocol_name(
-        &genesis_hash,
-        None, // todo change to fork id
-    );
+    let gossip_protocol_name =
+        beefy_gadget::gossip_protocol_name(&genesis_hash, parachain_config.chain_spec.fork_id());
 
-    parachain_config
-        .network
-        .extra_sets
-        .push(beefy_gadget::communication::beefy_peers_set_config(gossip_protocol_name.clone()));
+    if !disable_beefy {
+        parachain_config.network.extra_sets.push(
+            beefy_gadget::communication::beefy_peers_set_config(gossip_protocol_name.clone()),
+        );
+    }
 
     let client = params.client.clone();
     let backend = params.backend.clone();
@@ -310,8 +310,6 @@ where
             client.clone(),
         );
     parachain_config.network.request_response_protocols.push(beefy_req_resp_cfg);
-
-    let justifications_protocol_name = beefy_on_demand_justifications_handler.protocol_name();
 
     let (relay_chain_interface, collator_key) = build_relay_chain_interface(
         polkadot_config,
@@ -347,6 +345,37 @@ where
     let (beefy_block_import, beefy_voter_links, beefy_rpc_links) =
         beefy_gadget::beefy_block_import_and_links(client.clone(), backend.clone(), client.clone());
 
+    if !disable_beefy {
+        let justifications_protocol_name = beefy_on_demand_justifications_handler.protocol_name();
+        let payload_provider = sp_beefy::mmr::MmrRootProvider::new(client.clone());
+
+        let beefy_params = beefy_gadget::BeefyParams {
+            client: client.clone(),
+            runtime: client.clone(),
+            backend: backend.clone(),
+            payload_provider,
+            key_store: Some(params.keystore_container.sync_keystore()),
+            network_params: beefy_gadget::BeefyNetworkParams {
+                network: network.clone(),
+                gossip_protocol_name,
+                justifications_protocol_name,
+                _phantom: core::marker::PhantomData::<Block>,
+            },
+            links: beefy_voter_links,
+            min_block_delta: 8,
+            prometheus_registry: prometheus_registry.clone(),
+            on_demand_justifications_handler: beefy_on_demand_justifications_handler, // todo BeefyJustifsRequestHandler
+        };
+
+        let gadget = beefy_gadget::start_beefy_gadget::<_, _, _, _, _, _>(beefy_params);
+
+        task_manager.spawn_essential_handle().spawn_blocking(
+            "beefy-gadget",
+            Some("beefy-gadget"),
+            gadget,
+        );
+    }
+
     let rpc_builder = {
         let client = client.clone();
         let backend = backend.clone();
@@ -367,26 +396,6 @@ where
 
             crate::rpc::create_full(deps).map_err(Into::into)
         })
-    };
-
-    let payload_provider = sp_beefy::mmr::MmrRootProvider::new(client.clone());
-
-    let beefy_params = beefy_gadget::BeefyParams {
-        client: client.clone(),
-        runtime: client.clone(),
-        backend: backend.clone(),
-        payload_provider,
-        key_store: Some(params.keystore_container.sync_keystore()),
-        network_params: beefy_gadget::BeefyNetworkParams {
-            network: network.clone(),
-            gossip_protocol_name,
-            justifications_protocol_name,
-            _phantom: core::marker::PhantomData::<Block>,
-        },
-        links: beefy_voter_links,
-        min_block_delta: 8,
-        prometheus_registry: prometheus_registry.clone(),
-        on_demand_justifications_handler: beefy_on_demand_justifications_handler, // todo BeefyJustifsRequestHandler
     };
 
     sc_service::spawn_tasks(sc_service::SpawnTasksParams {
@@ -441,14 +450,6 @@ where
             params.keystore_container.sync_keystore(),
             force_authoring,
         )?;
-
-        let gadget = beefy_gadget::start_beefy_gadget::<_, _, _, _, _, _>(beefy_params);
-
-        task_manager.spawn_essential_handle().spawn_blocking(
-            "beefy-gadget",
-            Some("beefy-gadget"),
-            gadget,
-        );
 
         let spawner = task_manager.spawn_handle();
 
@@ -534,6 +535,7 @@ pub async fn start_parachain_node(
     collator_options: CollatorOptions,
     id: ParaId,
     hwbench: Option<sc_sysinfo::HwBench>,
+    disable_beefy: bool,
 ) -> sc_service::error::Result<(
     TaskManager,
     Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<ParachainNativeExecutor>>>,
@@ -610,6 +612,7 @@ pub async fn start_parachain_node(
             ))
         },
         hwbench,
+        disable_beefy,
     )
     .await
 }

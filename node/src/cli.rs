@@ -71,6 +71,10 @@ pub struct Cli {
     /// Relay chain arguments
     #[clap(raw = true)]
     pub relay_chain_args: Vec<String>,
+
+    /// Disable BEEFY gadget. Enabled by default
+    #[clap(long)]
+    pub disable_beefy: bool,
 }
 
 #[derive(Debug)]
