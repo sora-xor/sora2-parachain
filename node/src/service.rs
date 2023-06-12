@@ -206,7 +206,7 @@ async fn build_relay_chain_interface(
             task_manager,
             collator_options.relay_chain_rpc_urls,
         )
-        .await
+        .await;
     }
     cumulus_relay_chain_inprocess_interface::build_inprocess_relay_chain(
         polkadot_config,
@@ -295,12 +295,6 @@ where
         None, // todo change to fork id
     );
 
-    if !disable_beefy {
-        parachain_config.network.extra_sets.push(
-            beefy_gadget::communication::beefy_peers_set_config(gossip_protocol_name.clone()),
-        );
-    }
-
     let client = params.client.clone();
     let backend = params.backend.clone();
     let mut task_manager = params.task_manager;
@@ -311,7 +305,13 @@ where
             parachain_config.chain_spec.fork_id(),
             client.clone(),
         );
-    parachain_config.network.request_response_protocols.push(beefy_req_resp_cfg);
+
+    if !disable_beefy {
+        parachain_config.network.extra_sets.push(
+            beefy_gadget::communication::beefy_peers_set_config(gossip_protocol_name.clone()),
+        );
+        parachain_config.network.request_response_protocols.push(beefy_req_resp_cfg);
+    }
 
     let (relay_chain_interface, collator_key) = build_relay_chain_interface(
         polkadot_config,
