@@ -27,6 +27,7 @@ serde = { version = "1.0.119", optional = true, features = ["derive"] }
 smallvec = "1.6.1"
 
 xcm-app = { path = "../pallets/xcm-app", default-features = false }
+xcm-app-sudo-wrapper = { path = "../pallets/xcm-app-sudo-wrapper", default-features = false }
 parachain-common = { path = "../parachain-common", default-features = false }
 beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false } 
 beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false } 
@@ -175,6 +176,7 @@ std = [
 	"sp-transaction-pool/std",
 	"sp-version/std",
 	"xcm-app/std",
+	"xcm-app-sudo-wrapper/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
 	"xcm/std",

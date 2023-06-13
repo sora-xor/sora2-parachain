@@ -6953,6 +6953,7 @@ dependencies = [
  "substrate-wasm-builder",
  "xcm",
  "xcm-app",
+ "xcm-app-sudo-wrapper",
  "xcm-builder",
  "xcm-executor",
  "xcm-simulator",
