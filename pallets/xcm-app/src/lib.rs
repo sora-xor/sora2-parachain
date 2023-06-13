@@ -255,8 +255,6 @@ pub mod pallet {
             Self::deposit_event(Event::<T>::MappingCreated(asset_id, multilocation));
             Ok(().into())
         }
-
-
     }
 
     impl<T: Config> Pallet<T> {
@@ -310,7 +308,6 @@ pub mod pallet {
             Self::deposit_event(Event::<T>::AssetTransferred(sender, recipient, asset_id, amount));
             Ok(())
         }
-
 
         /// Perform registration for mapping of an AssetId <-> Multilocation
         ///
@@ -405,9 +402,7 @@ pub mod pallet {
         /// Perform delete of mapping of an AssetId -> Multilocation
         ///
         /// - `asset_id`: asset id in Sora Network,
-        pub fn delete_mapping(
-            asset_id: AssetId,
-        ) -> DispatchResultWithPostInfo {
+        pub fn delete_mapping(asset_id: AssetId) -> DispatchResultWithPostInfo {
             match AssetIdToMultilocation::<T>::get(asset_id) {
                 None => fail!(Error::<T>::MappingNotExist),
                 Some(multilocation) => {

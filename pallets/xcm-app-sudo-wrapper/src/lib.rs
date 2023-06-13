@@ -35,7 +35,7 @@ pub use pallet::*;
 pub mod pallet {
     use super::*;
     use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
-    use frame_system::{pallet_prelude::*};
+    use frame_system::pallet_prelude::*;
     use parachain_common::primitives::AssetId;
 
     #[pallet::config]

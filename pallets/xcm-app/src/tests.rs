@@ -29,7 +29,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::{mock::*, Error};
-use bridge_types::{H256, types::AssetKind};
+use bridge_types::{types::AssetKind, H256};
 use frame_support::{assert_noop, assert_ok};
 use xcm::{
     opaque::latest::{
@@ -42,10 +42,8 @@ use xcm::{
 #[test]
 fn it_works_register_change_delete() {
     new_test_ext().execute_with(|| {
-        let asset_id = [1; 32]
-        .into();
-        let new_asset_id = [2; 32]
-        .into();
+        let asset_id = [1; 32].into();
+        let new_asset_id = [2; 32].into();
         let multilocation = MultiLocation::parent();
         let new_multilocation = MultiLocation {
             parents: 1,
@@ -53,10 +51,7 @@ fn it_works_register_change_delete() {
         };
 
         // Create:
-        assert_ok!(XCMApp::register_mapping(
-            asset_id,
-            multilocation.clone()
-        ));
+        assert_ok!(XCMApp::register_mapping(asset_id, multilocation.clone()));
         assert_eq!(
             XCMApp::get_multilocation_from_asset_id::<H256>(asset_id.into())
                 .expect("it_works_register_change_delete, Create: multilocation is None"),
@@ -69,10 +64,7 @@ fn it_works_register_change_delete() {
         );
 
         // Change Asset's Multilocation:
-        assert_ok!(XCMApp::change_asset_mapping(
-            asset_id,
-            new_multilocation.clone()
-        ));
+        assert_ok!(XCMApp::change_asset_mapping(asset_id, new_multilocation.clone()));
         assert_eq!(
 			XCMApp::get_multilocation_from_asset_id(asset_id)
 				.expect("it_works_register_change_delete, Change Asset's Multilocation: new_multilocation is None"),
@@ -87,10 +79,7 @@ fn it_works_register_change_delete() {
         assert_eq!(XCMApp::get_asset_id_from_multilocation(multilocation.clone()), None);
 
         // Change Multilocation's Asset
-        assert_ok!(XCMApp::change_multilocation_mapping(
-            new_multilocation.clone(),
-            new_asset_id,
-        ));
+        assert_ok!(XCMApp::change_multilocation_mapping(new_multilocation.clone(), new_asset_id,));
         assert_eq!(
 			XCMApp::get_multilocation_from_asset_id(new_asset_id)
 				.expect("it_works_register_change_delete, Change Multilocation's Asset: new_multilocation is None"),
@@ -114,18 +103,14 @@ fn it_works_register_change_delete() {
 #[test]
 fn it_fails_create_existing_multilocation_mapping() {
     new_test_ext().execute_with(|| {
-        let asset_id = [1; 32]
-        .into();
+        let asset_id = [1; 32].into();
         let multilocation = MultiLocation::parent();
         let new_multilocation = MultiLocation {
             parents: 1,
             interior: X2(Parachain(666), GeneralKey { length: 6, data: test_general_key() }),
         };
 
-        assert_ok!(XCMApp::register_mapping(
-            asset_id,
-            multilocation.clone()
-        ));
+        assert_ok!(XCMApp::register_mapping(asset_id, multilocation.clone()));
 
         assert_noop!(
             XCMApp::register_mapping(asset_id, multilocation.clone()),
@@ -141,16 +126,11 @@ fn it_fails_create_existing_multilocation_mapping() {
 #[test]
 fn it_fails_create_existing_asset_id_mapping() {
     new_test_ext().execute_with(|| {
-        let asset_id = [1; 32]
-        .into();
-        let new_asset_id = [2; 32]
-        .into();
+        let asset_id = [1; 32].into();
+        let new_asset_id = [2; 32].into();
         let multilocation = MultiLocation::parent();
 
-        assert_ok!(XCMApp::register_mapping(
-            asset_id,
-            multilocation.clone()
-        ));
+        assert_ok!(XCMApp::register_mapping(asset_id, multilocation.clone()));
 
         assert_noop!(
             XCMApp::register_mapping(asset_id, multilocation.clone()),
@@ -166,10 +146,8 @@ fn it_fails_create_existing_asset_id_mapping() {
 #[test]
 fn it_fails_change_asset_non_existing_mapping() {
     new_test_ext().execute_with(|| {
-        let asset_id = [1; 32]
-        .into();
-        let new_asset_id = [2; 32]
-        .into();
+        let asset_id = [1; 32].into();
+        let new_asset_id = [2; 32].into();
         let multilocation = MultiLocation::parent();
 
         assert_noop!(
@@ -177,10 +155,7 @@ fn it_fails_change_asset_non_existing_mapping() {
             Error::<Test>::MappingNotExist
         );
 
-        assert_ok!(XCMApp::register_mapping(
-            new_asset_id,
-            multilocation.clone()
-        ));
+        assert_ok!(XCMApp::register_mapping(new_asset_id, multilocation.clone()));
         assert_noop!(
             XCMApp::change_asset_mapping(asset_id, multilocation.clone()),
             Error::<Test>::MappingNotExist
@@ -196,8 +171,7 @@ fn it_fails_change_asset_non_existing_mapping() {
 #[test]
 fn it_fails_change_multilocation_non_existing_mapping() {
     new_test_ext().execute_with(|| {
-        let asset_id = [1; 32]
-        .into();
+        let asset_id = [1; 32].into();
         let multilocation = MultiLocation::parent();
         let new_multilocation = MultiLocation {
             parents: 1,
@@ -209,15 +183,9 @@ fn it_fails_change_multilocation_non_existing_mapping() {
             Error::<Test>::MappingNotExist
         );
 
-        assert_ok!(XCMApp::register_mapping(
-            asset_id,
-            new_multilocation.clone()
-        ));
+        assert_ok!(XCMApp::register_mapping(asset_id, new_multilocation.clone()));
         assert_noop!(
-            XCMApp::change_multilocation_mapping(
-                multilocation.clone(),
-                asset_id
-            ),
+            XCMApp::change_multilocation_mapping(multilocation.clone(), asset_id),
             Error::<Test>::MappingNotExist
         );
         assert_eq!(
@@ -231,12 +199,8 @@ fn it_fails_change_multilocation_non_existing_mapping() {
 #[test]
 fn it_fails_delete_mapping_non_existing_mapping() {
     new_test_ext().execute_with(|| {
-        let asset_id = [1; 32]
-        .into();
-        assert_noop!(
-            XCMApp::delete_mapping(asset_id),
-            Error::<Test>::MappingNotExist
-        );
+        let asset_id = [1; 32].into();
+        assert_noop!(XCMApp::delete_mapping(asset_id), Error::<Test>::MappingNotExist);
     });
 }
 
@@ -257,7 +221,7 @@ fn it_works_register_asset() {
         assert_eq!(
             XCMApp::get_multilocation_from_asset_id::<H256>(asset_id.into())
                 .expect("it_works_register_asset, Create: multilocation is None"),
-                multiasset.clone()
+            multiasset.clone()
         );
         assert_eq!(
             XCMApp::get_asset_id_from_multilocation(multiasset.clone())
@@ -265,16 +229,19 @@ fn it_works_register_asset() {
             asset_id
         );
         let new_asset_id = [2; 32].into();
-        assert_noop!(XCMApp::register_asset(
-            RuntimeOrigin::root(),
-            new_asset_id,
-            multiasset.clone().into(),
-            AssetKind::Sidechain,
-        ), Error::<Test>::MappingAlreadyExists);
+        assert_noop!(
+            XCMApp::register_asset(
+                RuntimeOrigin::root(),
+                new_asset_id,
+                multiasset.clone().into(),
+                AssetKind::Sidechain,
+            ),
+            Error::<Test>::MappingAlreadyExists
+        );
         assert_eq!(
             XCMApp::get_multilocation_from_asset_id::<H256>(asset_id.into())
                 .expect("it_works_register_asset, Create: multilocation is None"),
-                multiasset.clone()
+            multiasset.clone()
         );
         assert_eq!(
             XCMApp::get_asset_id_from_multilocation(multiasset)
@@ -283,4 +250,3 @@ fn it_works_register_asset() {
         );
     });
 }
-
