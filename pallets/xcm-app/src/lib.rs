@@ -201,25 +201,6 @@ pub mod pallet {
         #[pallet::call_index(0)]
         #[pallet::weight(<T as Config>::WeightInfo::transfer())]
         #[frame_support::transactional]
-        pub fn test_xcm_transfer(
-            origin: OriginFor<T>,
-            asset_id: AssetId,
-            sender: T::AccountId,
-            recipient: xcm::VersionedMultiLocation,
-            amount: u128,
-        ) -> DispatchResultWithPostInfo {
-            ensure_root(origin)?;
-            frame_support::log::info!(
-                "Call transfer with params: {:?}",
-                (asset_id, sender.clone(), recipient.clone(), amount),
-            );
-            Self::do_xcm_asset_transfer(asset_id, sender, recipient, amount)?;
-            Ok(().into())
-        }
-
-        #[pallet::call_index(1)]
-        #[pallet::weight(<T as Config>::WeightInfo::transfer())]
-        #[frame_support::transactional]
         pub fn transfer(
             origin: OriginFor<T>,
             asset_id: AssetId,
@@ -237,7 +218,7 @@ pub mod pallet {
             Ok(().into())
         }
 
-        #[pallet::call_index(2)]
+        #[pallet::call_index(1)]
         #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
         #[frame_support::transactional]
         pub fn register_asset(
@@ -258,7 +239,7 @@ pub mod pallet {
             };
             ensure!(
                 AssetIdToMultilocation::<T>::get(asset_id).is_none()
-                    || MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
+                    && MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
                 Error::<T>::MappingAlreadyExists
             );
             AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
@@ -276,151 +257,7 @@ pub mod pallet {
             Ok(().into())
         }
 
-        /// Perform registration for mapping of an AssetId <-> Multilocation
-        ///
-        /// - `origin`: the root account on whose behalf the transaction is being executed,
-        /// - `asset_id`: asset id in Sora Network,
-        /// - `multilocation`: XCM multilocation of an asset,
-        #[pallet::call_index(3)]
-        #[pallet::weight(<T as Config>::WeightInfo::register_mapping())]
-        #[frame_support::transactional]
-        pub fn register_mapping(
-            origin: OriginFor<T>,
-            asset_id: AssetId,
-            multilocation: MultiLocation,
-        ) -> DispatchResultWithPostInfo {
-            let _ = ensure_root(origin)?;
-            ensure!(
-                AssetIdToMultilocation::<T>::get(asset_id).is_none()
-                    && MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
-                Error::<T>::MappingAlreadyExists
-            );
-            AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
-            MultilocationToAssetId::<T>::insert(multilocation.clone(), asset_id);
-            Self::deposit_event(Event::<T>::MappingCreated(asset_id, multilocation));
-            Ok(().into())
-        }
 
-        /// Perform change of mapping of an AssetId -> Multilocation
-        ///
-        /// - `origin`: the root account on whose behalf the transaction is being executed,
-        /// - `asset_id`: asset id in Sora Network,
-        /// - `new_multilocation`: new XCM multilocation of an asset,
-        #[pallet::call_index(4)]
-        #[pallet::weight(<T as Config>::WeightInfo::change_asset_mapping())]
-        #[frame_support::transactional]
-        pub fn change_asset_mapping(
-            origin: OriginFor<T>,
-            asset_id: AssetId,
-            new_multilocation: MultiLocation,
-        ) -> DispatchResultWithPostInfo {
-            let _ = ensure_root(origin)?;
-            AssetIdToMultilocation::<T>::try_mutate(asset_id, |ml_opt| -> DispatchResult {
-                match ml_opt {
-                    None => fail!(Error::<T>::MappingNotExist),
-                    Some(ml) => {
-                        // ensure that new_multilocation mapping does not exist
-                        ensure!(
-                            MultilocationToAssetId::<T>::get(new_multilocation.clone()).is_none(),
-                            Error::<T>::MappingAlreadyExists
-                        );
-                        MultilocationToAssetId::<T>::insert(new_multilocation.clone(), asset_id);
-
-                        // remove old multilocation
-                        MultilocationToAssetId::<T>::remove(ml.clone());
-
-                        *ml = new_multilocation.clone();
-                    },
-                }
-                Ok(())
-            })?;
-            Self::deposit_event(Event::<T>::AssetMappingChanged(asset_id, new_multilocation));
-            Ok(().into())
-        }
-
-        /// Perform change of mapping of an Multilocation -> AssetId
-        ///
-        /// - `origin`: the root account on whose behalf the transaction is being executed,
-        /// - `multilocation`: XCM multilocation of an asset,
-        /// - `new_asset_id`: new asset id in Sora Network,
-        #[pallet::call_index(5)]
-        #[pallet::weight(<T as Config>::WeightInfo::change_multilocation_mapping())]
-        #[frame_support::transactional]
-        pub fn change_multilocation_mapping(
-            origin: OriginFor<T>,
-            multilocation: MultiLocation,
-            new_asset_id: AssetId,
-        ) -> DispatchResultWithPostInfo {
-            let _ = ensure_root(origin)?;
-            MultilocationToAssetId::<T>::try_mutate(
-                multilocation.clone(),
-                |asset_opt| -> DispatchResult {
-                    match asset_opt {
-                        None => fail!(Error::<T>::MappingNotExist),
-                        Some(asset_id) => {
-                            // ensure that new_assetid mapping does not exist
-                            ensure!(
-                                AssetIdToMultilocation::<T>::get(new_asset_id.clone()).is_none(),
-                                Error::<T>::MappingAlreadyExists
-                            );
-
-                            AssetIdToMultilocation::<T>::insert(
-                                new_asset_id,
-                                multilocation.clone(),
-                            );
-
-                            // remove old assetid
-                            AssetIdToMultilocation::<T>::remove(asset_id.clone());
-
-                            *asset_id = new_asset_id;
-                        },
-                    };
-                    Ok(())
-                },
-            )?;
-            Self::deposit_event(Event::<T>::MultilocationtMappingChanged(
-                new_asset_id,
-                multilocation,
-            ));
-            Ok(().into())
-        }
-
-        /// Perform delete of mapping of an AssetId -> Multilocation
-        ///
-        /// - `origin`: the root account on whose behalf the transaction is being executed,
-        /// - `asset_id`: asset id in Sora Network,
-        #[pallet::call_index(6)]
-        #[pallet::weight(<T as Config>::WeightInfo::delete_mapping())]
-        #[frame_support::transactional]
-        pub fn delete_mapping(
-            origin: OriginFor<T>,
-            asset_id: AssetId,
-        ) -> DispatchResultWithPostInfo {
-            let _ = ensure_root(origin)?;
-            match AssetIdToMultilocation::<T>::get(asset_id) {
-                None => fail!(Error::<T>::MappingNotExist),
-                Some(multilocation) => {
-                    AssetIdToMultilocation::<T>::remove(asset_id);
-                    MultilocationToAssetId::<T>::remove(multilocation.clone());
-                    Self::deposit_event(Event::<T>::MappingDeleted(asset_id, multilocation));
-                },
-            };
-            Ok(().into())
-        }
-
-        #[pallet::call_index(7)]
-        #[pallet::weight(<T as Config>::WeightInfo::delete_mapping())]
-        #[frame_support::transactional]
-        pub fn fake_transfer(
-            origin: OriginFor<T>,
-            account_id: T::AccountId,
-            asset_id: AssetId,
-            amount: u128,
-        ) -> DispatchResultWithPostInfo {
-            ensure_root(origin)?;
-            Self::add_to_channel(account_id, asset_id, amount)?;
-            Ok(().into())
-        }
     }
 
     impl<T: Config> Pallet<T> {
@@ -473,6 +310,138 @@ pub mod pallet {
 
             Self::deposit_event(Event::<T>::AssetTransferred(sender, recipient, asset_id, amount));
             Ok(())
+        }
+
+
+        /// Perform registration for mapping of an AssetId <-> Multilocation
+        ///
+        /// - `asset_id`: asset id in Sora Network,
+        /// - `multilocation`: XCM multilocation of an asset,
+        pub fn register_mapping(
+            asset_id: AssetId,
+            multilocation: MultiLocation,
+        ) -> DispatchResultWithPostInfo {
+            ensure!(
+                AssetIdToMultilocation::<T>::get(asset_id).is_none()
+                    && MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
+                Error::<T>::MappingAlreadyExists
+            );
+            AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
+            MultilocationToAssetId::<T>::insert(multilocation.clone(), asset_id);
+            Self::deposit_event(Event::<T>::MappingCreated(asset_id, multilocation));
+            Ok(().into())
+        }
+
+        /// Perform change of mapping of an AssetId -> Multilocation
+        ///
+        /// - `asset_id`: asset id in Sora Network,
+        /// - `new_multilocation`: new XCM multilocation of an asset,
+        pub fn change_asset_mapping(
+            asset_id: AssetId,
+            new_multilocation: MultiLocation,
+        ) -> DispatchResultWithPostInfo {
+            AssetIdToMultilocation::<T>::try_mutate(asset_id, |ml_opt| -> DispatchResult {
+                match ml_opt {
+                    None => fail!(Error::<T>::MappingNotExist),
+                    Some(ml) => {
+                        // ensure that new_multilocation mapping does not exist
+                        ensure!(
+                            MultilocationToAssetId::<T>::get(new_multilocation.clone()).is_none(),
+                            Error::<T>::MappingAlreadyExists
+                        );
+                        MultilocationToAssetId::<T>::insert(new_multilocation.clone(), asset_id);
+
+                        // remove old multilocation
+                        MultilocationToAssetId::<T>::remove(ml.clone());
+
+                        *ml = new_multilocation.clone();
+                    },
+                }
+                Ok(())
+            })?;
+            Self::deposit_event(Event::<T>::AssetMappingChanged(asset_id, new_multilocation));
+            Ok(().into())
+        }
+
+        /// Perform change of mapping of an Multilocation -> AssetId
+        ///
+        /// - `multilocation`: XCM multilocation of an asset,
+        /// - `new_asset_id`: new asset id in Sora Network,
+        pub fn change_multilocation_mapping(
+            multilocation: MultiLocation,
+            new_asset_id: AssetId,
+        ) -> DispatchResultWithPostInfo {
+            MultilocationToAssetId::<T>::try_mutate(
+                multilocation.clone(),
+                |asset_opt| -> DispatchResult {
+                    match asset_opt {
+                        None => fail!(Error::<T>::MappingNotExist),
+                        Some(asset_id) => {
+                            // ensure that new_assetid mapping does not exist
+                            ensure!(
+                                AssetIdToMultilocation::<T>::get(new_asset_id.clone()).is_none(),
+                                Error::<T>::MappingAlreadyExists
+                            );
+
+                            AssetIdToMultilocation::<T>::insert(
+                                new_asset_id,
+                                multilocation.clone(),
+                            );
+
+                            // remove old assetid
+                            AssetIdToMultilocation::<T>::remove(asset_id.clone());
+
+                            *asset_id = new_asset_id;
+                        },
+                    };
+                    Ok(())
+                },
+            )?;
+            Self::deposit_event(Event::<T>::MultilocationtMappingChanged(
+                new_asset_id,
+                multilocation,
+            ));
+            Ok(().into())
+        }
+
+        /// Perform delete of mapping of an AssetId -> Multilocation
+        ///
+        /// - `asset_id`: asset id in Sora Network,
+        pub fn delete_mapping(
+            asset_id: AssetId,
+        ) -> DispatchResultWithPostInfo {
+            match AssetIdToMultilocation::<T>::get(asset_id) {
+                None => fail!(Error::<T>::MappingNotExist),
+                Some(multilocation) => {
+                    AssetIdToMultilocation::<T>::remove(asset_id);
+                    MultilocationToAssetId::<T>::remove(multilocation.clone());
+                    Self::deposit_event(Event::<T>::MappingDeleted(asset_id, multilocation));
+                },
+            };
+            Ok(().into())
+        }
+
+        pub fn test_channel_transfer(
+            account_id: T::AccountId,
+            asset_id: AssetId,
+            amount: u128,
+        ) -> DispatchResultWithPostInfo {
+            Self::add_to_channel(account_id, asset_id, amount)?;
+            Ok(().into())
+        }
+
+        pub fn test_xcm_transfer(
+            asset_id: AssetId,
+            sender: T::AccountId,
+            recipient: xcm::VersionedMultiLocation,
+            amount: u128,
+        ) -> DispatchResultWithPostInfo {
+            frame_support::log::info!(
+                "Call transfer with params: {:?}",
+                (asset_id, sender.clone(), recipient.clone(), amount),
+            );
+            Self::do_xcm_asset_transfer(asset_id, sender, recipient, amount)?;
+            Ok(().into())
         }
     }
 }

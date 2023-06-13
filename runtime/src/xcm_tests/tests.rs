@@ -72,12 +72,10 @@ fn prepare_sora_parachain() {
         let _ = SoraBalances::deposit_creating(&ALICE, 1000000000000000000);
         let _ = SoraBalances::deposit_creating(&BOB, 1000000000000000000);
         assert_ok!(crate::XCMApp::register_mapping(
-            crate::RuntimeOrigin::root(),
             relay_native_asset_id(),
             MultiLocation::new(1, Here)
         ));
         assert_ok!(crate::XCMApp::register_mapping(
-            crate::RuntimeOrigin::root(),
             para_x_asset_id(),
             MultiLocation::new(
                 1,
