@@ -200,7 +200,6 @@ pub mod pallet {
     impl<T: Config> Pallet<T> {
         #[pallet::call_index(0)]
         #[pallet::weight(<T as Config>::WeightInfo::transfer())]
-        #[frame_support::transactional]
         pub fn transfer(
             origin: OriginFor<T>,
             asset_id: AssetId,
@@ -220,7 +219,6 @@ pub mod pallet {
 
         #[pallet::call_index(1)]
         #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
-        #[frame_support::transactional]
         pub fn register_asset(
             origin: OriginFor<T>,
             asset_id: AssetId,
@@ -237,13 +235,14 @@ pub mod pallet {
                 xcm::v3::AssetId::Concrete(location) => location,
                 xcm::v3::AssetId::Abstract(_) => fail!(Error::<T>::WrongXCMVersion),
             };
-            ensure!(
-                AssetIdToMultilocation::<T>::get(asset_id).is_none()
-                    && MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
-                Error::<T>::MappingAlreadyExists
-            );
-            AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
-            MultilocationToAssetId::<T>::insert(multilocation.clone(), asset_id);
+            // ensure!(
+            //     AssetIdToMultilocation::<T>::get(asset_id).is_none()
+            //         && MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
+            //     Error::<T>::MappingAlreadyExists
+            // );
+            // AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
+            // MultilocationToAssetId::<T>::insert(multilocation.clone(), asset_id);
+            Self::register_mapping(asset_id, multilocation)?;
 
             T::OutboundChannel::submit(
                 SubNetworkId::Mainnet,
@@ -328,7 +327,6 @@ pub mod pallet {
             );
             AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
             MultilocationToAssetId::<T>::insert(multilocation.clone(), asset_id);
-            Self::deposit_event(Event::<T>::MappingCreated(asset_id, multilocation));
             Ok(().into())
         }
 

@@ -29,7 +29,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::{mock::*, Error};
-use bridge_types::H256;
+use bridge_types::{H256, types::AssetKind};
 use frame_support::{assert_noop, assert_ok};
 use xcm::{
     opaque::latest::{
@@ -239,3 +239,48 @@ fn it_fails_delete_mapping_non_existing_mapping() {
         );
     });
 }
+
+#[test]
+fn it_works_register_asset() {
+    new_test_ext().execute_with(|| {
+        let asset_id = [1; 32].into();
+        let multiasset = MultiLocation {
+            parents: 1,
+            interior: X2(Parachain(666), GeneralKey { length: 6, data: test_general_key() }),
+        };
+        assert_ok!(XCMApp::register_asset(
+            RuntimeOrigin::root(),
+            asset_id,
+            multiasset.clone().into(),
+            AssetKind::Sidechain,
+        ));
+        assert_eq!(
+            XCMApp::get_multilocation_from_asset_id::<H256>(asset_id.into())
+                .expect("it_works_register_asset, Create: multilocation is None"),
+                multiasset.clone()
+        );
+        assert_eq!(
+            XCMApp::get_asset_id_from_multilocation(multiasset.clone())
+                .expect("it_works_register_asset, Create: asset id is None"),
+            asset_id
+        );
+        let new_asset_id = [2; 32].into();
+        assert_noop!(XCMApp::register_asset(
+            RuntimeOrigin::root(),
+            new_asset_id,
+            multiasset.clone().into(),
+            AssetKind::Sidechain,
+        ), Error::<Test>::MappingAlreadyExists);
+        assert_eq!(
+            XCMApp::get_multilocation_from_asset_id::<H256>(asset_id.into())
+                .expect("it_works_register_asset, Create: multilocation is None"),
+                multiasset.clone()
+        );
+        assert_eq!(
+            XCMApp::get_asset_id_from_multilocation(multiasset)
+                .expect("it_works_register_asset, Create: asset id is None"),
+            asset_id
+        );
+    });
+}
+
