@@ -235,13 +235,7 @@ pub mod pallet {
                 xcm::v3::AssetId::Concrete(location) => location,
                 xcm::v3::AssetId::Abstract(_) => fail!(Error::<T>::WrongXCMVersion),
             };
-            // ensure!(
-            //     AssetIdToMultilocation::<T>::get(asset_id).is_none()
-            //         && MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
-            //     Error::<T>::MappingAlreadyExists
-            // );
-            // AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
-            // MultilocationToAssetId::<T>::insert(multilocation.clone(), asset_id);
+
             Self::register_mapping(asset_id, multilocation)?;
 
             T::OutboundChannel::submit(
@@ -411,29 +405,6 @@ pub mod pallet {
                     Self::deposit_event(Event::<T>::MappingDeleted(asset_id, multilocation));
                 },
             };
-            Ok(().into())
-        }
-
-        pub fn test_channel_transfer(
-            account_id: T::AccountId,
-            asset_id: AssetId,
-            amount: u128,
-        ) -> DispatchResultWithPostInfo {
-            Self::add_to_channel(account_id, asset_id, amount)?;
-            Ok(().into())
-        }
-
-        pub fn test_xcm_transfer(
-            asset_id: AssetId,
-            sender: T::AccountId,
-            recipient: xcm::VersionedMultiLocation,
-            amount: u128,
-        ) -> DispatchResultWithPostInfo {
-            frame_support::log::info!(
-                "Call transfer with params: {:?}",
-                (asset_id, sender.clone(), recipient.clone(), amount),
-            );
-            Self::do_xcm_asset_transfer(asset_id, sender, recipient, amount)?;
             Ok(().into())
         }
     }
