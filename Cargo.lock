@@ -13846,6 +13846,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "xcm-app-sudo-wrapper"
+version = "0.1.0"
+dependencies = [
+ "bridge-types",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "orml-traits",
+ "parachain-common",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "xcm",
+ "xcm-app",
+]
+
+[[package]]
 name = "xcm-builder"
 version = "0.9.38"
 source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.38#097ffd245c42aeff28cf80f8a3568e1bee2e7da7"
