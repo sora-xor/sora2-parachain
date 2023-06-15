@@ -67,7 +67,7 @@ pub mod pallet {
             asset_id: AssetId,
             amount: u128,
         ) -> DispatchResultWithPostInfo {
-            let _ = ensure_root(origin)?;
+            ensure_root(origin)?;
             xcm_app::Pallet::<T>::add_to_channel(account_id, asset_id, amount)?;
             Ok(().into())
         }
@@ -81,7 +81,7 @@ pub mod pallet {
             recipient: xcm::VersionedMultiLocation,
             amount: u128,
         ) -> DispatchResultWithPostInfo {
-            let _ = ensure_root(origin)?;
+            ensure_root(origin)?;
             xcm_app::Pallet::<T>::do_xcm_asset_transfer(asset_id, sender, recipient, amount)?;
             Ok(().into())
         }
