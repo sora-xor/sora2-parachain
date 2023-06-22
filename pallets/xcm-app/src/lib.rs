@@ -213,7 +213,28 @@ pub mod pallet {
                 (asset_id, sender.clone(), recipient.clone(), amount),
                 res
             );
-            Self::do_xcm_asset_transfer(asset_id, sender, recipient, amount)?;
+            let message_id = res.message_id;
+            match Self::do_xcm_asset_transfer(asset_id, sender.clone(), recipient, amount) {
+                Ok(_) => {
+                    let message = SubstrateAppCall::VerifySuccessTransfer {
+                        message_id,
+                    };
+                    let xcm_mes_bytes = message.clone().prepare_message();
+                    let raw_origin = Some(sender.clone()).into();
+                    if let Err(e) = <T as Config>::OutboundChannel::submit(
+                        SubNetworkId::Mainnet,
+                        &raw_origin,
+                        &xcm_mes_bytes,
+                        (),
+                    ) {
+                        Self::deposit_event(Event::<T>::SubmittingToChannelError(e, asset_id));
+                        return Err(e.into());
+                    }
+                },
+                Err(_) => {
+                    Self::refund(sender, asset_id, amount, message_id)?;
+                },
+            }
             Ok(().into())
         }
 
@@ -275,6 +296,33 @@ pub mod pallet {
                 return Err(e);
             }
             Self::deposit_event(Event::<T>::AssetAddedToChannel(xcm_mes));
+            Ok(())
+        }
+
+        pub fn refund(
+            account_id: T::AccountId,
+            asset_id: AssetId,
+            amount: u128,
+            message_id: H256,
+        ) -> DispatchResult {
+            let raw_origin = Some(account_id.clone()).into();
+            let message = SubstrateAppCall::Refund {
+                asset_id,
+                recipient: T::AccountIdConverter::convert(account_id),
+                amount,
+                message_id,
+            };
+            let xcm_mes_bytes = message.clone().prepare_message();
+            if let Err(e) = <T as Config>::OutboundChannel::submit(
+                SubNetworkId::Mainnet,
+                &raw_origin,
+                &xcm_mes_bytes,
+                (),
+            ) {
+                Self::deposit_event(Event::<T>::SubmittingToChannelError(e, asset_id));
+                return Err(e);
+            }
+            Self::deposit_event(Event::<T>::AssetAddedToChannel(message));
             Ok(())
         }
 
