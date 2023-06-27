@@ -310,9 +310,9 @@ pub mod pallet {
         ) -> DispatchResult {
             let raw_origin = Some(account_id.clone()).into();
             let message = SubstrateAppCall::Refund {
-                asset_id,
-                recipient: T::AccountIdConverter::convert(account_id),
-                amount,
+                // asset_id,
+                // recipient: T::AccountIdConverter::convert(account_id),
+                // amount,
                 transaction_nonce,
             };
             let xcm_mes_bytes = message.clone().prepare_message();
