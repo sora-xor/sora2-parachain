@@ -217,6 +217,7 @@ fn send_relay_chain_asset_to_sibling() {
             ALICE,
             xcm::VersionedMultiLocation::V3(location.clone()),
             10000000,
+            0,
         ));
         let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransferred(
             ALICE,

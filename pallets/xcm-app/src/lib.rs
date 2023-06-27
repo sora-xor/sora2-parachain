@@ -75,8 +75,8 @@ where
 {
     fn from(value: XCMAppCall) -> Self {
         match value {
-            XCMAppCall::Transfer { sender, recipient, amount, asset_id } => {
-                Call::transfer { sender: sender.into(), recipient, amount, asset_id }
+            XCMAppCall::Transfer { sender, recipient, amount, asset_id, transaction_nonce } => {
+                Call::transfer { sender: sender.into(), recipient, amount, asset_id, transaction_nonce }
             },
             XCMAppCall::RegisterAsset { asset_id, sidechain_asset, asset_kind } => {
                 Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind }
@@ -177,6 +177,9 @@ pub mod pallet {
         AssetIdMappingError(AssetId),
         /// No mapping for MultiAsset
         MultiAssetMappingError(MultiAsset),
+        ///
+        /// [SubstrateAppMessage]
+        AssetRefundAddedToChannel(SubstrateAppCall),
     }
 
     #[pallet::error]
@@ -206,6 +209,7 @@ pub mod pallet {
             sender: T::AccountId,
             recipient: xcm::VersionedMultiLocation,
             amount: u128,
+            transaction_nonce: u128,
         ) -> DispatchResultWithPostInfo {
             let res = T::CallOrigin::ensure_origin(origin)?;
             frame_support::log::info!(
@@ -213,11 +217,10 @@ pub mod pallet {
                 (asset_id, sender.clone(), recipient.clone(), amount),
                 res
             );
-            let message_id = res.message_id;
             match Self::do_xcm_asset_transfer(asset_id, sender.clone(), recipient, amount) {
                 Ok(_) => {
                     let message = SubstrateAppCall::VerifySuccessTransfer {
-                        message_id,
+                        transaction_nonce,
                     };
                     let xcm_mes_bytes = message.clone().prepare_message();
                     let raw_origin = Some(sender.clone()).into();
@@ -232,7 +235,7 @@ pub mod pallet {
                     }
                 },
                 Err(_) => {
-                    Self::refund(sender, asset_id, amount, message_id)?;
+                    Self::refund(sender, asset_id, amount, transaction_nonce)?;
                 },
             }
             Ok(().into())
@@ -303,14 +306,14 @@ pub mod pallet {
             account_id: T::AccountId,
             asset_id: AssetId,
             amount: u128,
-            message_id: H256,
+            transaction_nonce: u128,
         ) -> DispatchResult {
             let raw_origin = Some(account_id.clone()).into();
             let message = SubstrateAppCall::Refund {
                 asset_id,
                 recipient: T::AccountIdConverter::convert(account_id),
                 amount,
-                message_id,
+                transaction_nonce,
             };
             let xcm_mes_bytes = message.clone().prepare_message();
             if let Err(e) = <T as Config>::OutboundChannel::submit(
@@ -322,7 +325,7 @@ pub mod pallet {
                 Self::deposit_event(Event::<T>::SubmittingToChannelError(e, asset_id));
                 return Err(e);
             }
-            Self::deposit_event(Event::<T>::AssetAddedToChannel(message));
+            Self::deposit_event(Event::<T>::AssetRefundAddedToChannel(message));
             Ok(())
         }
 
