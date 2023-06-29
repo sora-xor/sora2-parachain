@@ -296,6 +296,7 @@ pub mod pallet {
                 xcm::v3::WeightLimit::Unlimited,
             ) {
                 Self::deposit_event(Event::<T>::TrasferringAssetError(e, asset_id));
+                // dbushuev: the refund will be done via https://app.zenhub.com/workspaces/sora2-backend-62b9c0e3e9b9e600201273e3/issues/gh/sora-xor/sora2-parachain/106
                 return Err(e);
             }
 
