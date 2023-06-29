@@ -6974,6 +6974,7 @@ dependencies = [
  "substrate-wasm-builder",
  "xcm",
  "xcm-app",
+ "xcm-app-sudo-wrapper",
  "xcm-builder",
  "xcm-executor",
  "xcm-simulator",
@@ -13843,6 +13844,27 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "xcm",
+]
+
+[[package]]
+name = "xcm-app-sudo-wrapper"
+version = "0.1.0"
+dependencies = [
+ "bridge-types",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "orml-traits",
+ "parachain-common",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "xcm",
+ "xcm-app",
 ]
 
 [[package]]

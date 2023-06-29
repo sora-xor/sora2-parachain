@@ -578,6 +578,10 @@ impl xcm_app::Config for Runtime {
     type BalanceConverter = sp_runtime::traits::Identity;
 }
 
+impl xcm_app_sudo_wrapper::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+}
+
 parameter_types! {
     pub const SidechainRandomnessNetwork: SubNetworkId = SubNetworkId::Mainnet;
 }
@@ -770,6 +774,8 @@ construct_runtime!(
         LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
         BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
         MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
+
+        XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
     }
 );
 
