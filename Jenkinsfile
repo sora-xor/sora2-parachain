@@ -1,6 +1,6 @@
 @Library('jenkins-library@feature/dops-2395/rust_library') _
 
-def pipeline = new org.rust.substratePipeline(steps: this,
+def pipeline = new org.rust.AppPipeline(steps: this,
       disableSecretScanner: false,
       initSubmodules: false,
       staticScanner: false,
