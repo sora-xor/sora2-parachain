@@ -638,6 +638,11 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
                 call.dispatch(origin)
             },
             bridge_types::substrate::BridgeCall::MultisigVerifier(_) => Ok(().into()),
+            bridge_types::substrate::BridgeCall::InboundChannel(msg) => {
+                let call: substrate_bridge_channel::inbound::Call<crate::Runtime> = msg.into();
+                let call: crate::RuntimeCall = call.into();
+                call.dispatch(origin)
+            },
         }
     }
 }
@@ -650,6 +655,7 @@ impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
             bridge_types::substrate::BridgeCall::XCMApp(_) => true,
             bridge_types::substrate::BridgeCall::DataSigner(_) => true,
             bridge_types::substrate::BridgeCall::MultisigVerifier(_) => true,
+            bridge_types::substrate::BridgeCall::InboundChannel(_) => true,
         }
     }
 }
@@ -663,6 +669,16 @@ impl substrate_bridge_channel::inbound::Config for Runtime {
     type UnsignedLongevity = DataSignerLongevity;
     type MaxMessagePayloadSize = BridgeMaxMessagePayloadSize;
     type MaxMessagesPerCommit = BridgeMaxMessagesPerCommit;
+    type Hashing = Keccak256;
+    type AssetId = AssetId;
+    type Balance = Balance;
+    type OutboundChannel = SubstrateBridgeOutboundChannel;
+    type CallOrigin = dispatch::EnsureAccount<
+        SubNetworkId,
+        (),
+        bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
+    >;
+    type MessageStatusNotifier = ();
 }
 
 pub struct TimepointProvider;
