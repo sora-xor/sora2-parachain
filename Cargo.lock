@@ -583,7 +583,7 @@ dependencies = [
 [[package]]
 name = "beefy-light-client"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.4#c7ad8b7e6d95c9986f1970e08f308192831f28fd"
+source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.7#2f0aeec218e7646c295f371c4f553f4260e59eff"
 dependencies = [
  "beefy-merkle-tree",
  "bridge-common",
@@ -604,7 +604,7 @@ dependencies = [
 [[package]]
 name = "beefy-light-client-rpc"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.4#c7ad8b7e6d95c9986f1970e08f308192831f28fd"
+source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.7#2f0aeec218e7646c295f371c4f553f4260e59eff"
 dependencies = [
  "beefy-light-client-runtime-api",
  "jsonrpsee",
@@ -621,7 +621,7 @@ dependencies = [
 [[package]]
 name = "beefy-light-client-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.4#c7ad8b7e6d95c9986f1970e08f308192831f28fd"
+source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.7#2f0aeec218e7646c295f371c4f553f4260e59eff"
 dependencies = [
  "bridge-types",
  "parity-scale-codec",
@@ -800,9 +800,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "bridge-channel-rpc"
+version = "0.1.0"
+source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.7#2f0aeec218e7646c295f371c4f553f4260e59eff"
+dependencies = [
+ "anyhow",
+ "bridge-types",
+ "jsonrpsee",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-api",
+ "sp-blockchain",
+ "sp-core",
+ "sp-offchain",
+ "sp-rpc",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "bridge-common"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.4#c7ad8b7e6d95c9986f1970e08f308192831f28fd"
+source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.7#2f0aeec218e7646c295f371c4f553f4260e59eff"
 dependencies = [
  "bitvec",
  "bridge-types",
@@ -821,7 +841,7 @@ dependencies = [
 [[package]]
 name = "bridge-data-signer"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.4#c7ad8b7e6d95c9986f1970e08f308192831f28fd"
+source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.7#2f0aeec218e7646c295f371c4f553f4260e59eff"
 dependencies = [
  "bridge-types",
  "frame-support",
@@ -838,8 +858,9 @@ dependencies = [
 [[package]]
 name = "bridge-types"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.4#c7ad8b7e6d95c9986f1970e08f308192831f28fd"
+source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.7#2f0aeec218e7646c295f371c4f553f4260e59eff"
 dependencies = [
+ "derivative",
  "enum-iterator",
  "ethabi",
  "ethash",
@@ -850,6 +871,7 @@ dependencies = [
  "getrandom 0.2.9",
  "hex-literal",
  "libsecp256k1",
+ "orml-traits",
  "parity-bytes",
  "parity-scale-codec",
  "rlp",
@@ -2328,7 +2350,7 @@ dependencies = [
 [[package]]
 name = "dispatch"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.4#c7ad8b7e6d95c9986f1970e08f308192831f28fd"
+source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.7#2f0aeec218e7646c295f371c4f553f4260e59eff"
 dependencies = [
  "bridge-types",
  "frame-benchmarking",
@@ -4237,7 +4259,7 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 [[package]]
 name = "leaf-provider"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.4#c7ad8b7e6d95c9986f1970e08f308192831f28fd"
+source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.7#2f0aeec218e7646c295f371c4f553f4260e59eff"
 dependencies = [
  "beefy-merkle-tree",
  "bridge-types",
@@ -4260,7 +4282,7 @@ dependencies = [
 [[package]]
 name = "leaf-provider-rpc"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.4#c7ad8b7e6d95c9986f1970e08f308192831f28fd"
+source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.7#2f0aeec218e7646c295f371c4f553f4260e59eff"
 dependencies = [
  "jsonrpsee",
  "leaf-provider-runtime-api",
@@ -4278,7 +4300,7 @@ dependencies = [
 [[package]]
 name = "leaf-provider-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.4#c7ad8b7e6d95c9986f1970e08f308192831f28fd"
+source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.7#2f0aeec218e7646c295f371c4f553f4260e59eff"
 dependencies = [
  "bridge-types",
  "parity-scale-codec",
@@ -5292,7 +5314,7 @@ checksum = "e5ce46fe64a9d73be07dcbe690a38ce1b293be448fd8ce1e6c1b8062c9f72c6a"
 [[package]]
 name = "multisig-verifier"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.4#c7ad8b7e6d95c9986f1970e08f308192831f28fd"
+source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.7#2f0aeec218e7646c295f371c4f553f4260e59eff"
 dependencies = [
  "bridge-common",
  "bridge-types",
@@ -6806,6 +6828,7 @@ dependencies = [
  "beefy-light-client",
  "beefy-light-client-rpc",
  "beefy-light-client-runtime-api",
+ "bridge-channel-rpc",
  "bridge-types",
  "clap",
  "cumulus-client-cli",
@@ -6869,7 +6892,6 @@ dependencies = [
  "sp-session",
  "sp-timestamp",
  "sp-transaction-pool",
- "substrate-bridge-channel-rpc",
  "substrate-build-script-utils",
  "substrate-frame-rpc-system",
  "substrate-prometheus-endpoint",
@@ -6953,6 +6975,7 @@ dependencies = [
  "substrate-wasm-builder",
  "xcm",
  "xcm-app",
+ "xcm-app-sudo-wrapper",
  "xcm-builder",
  "xcm-executor",
  "xcm-simulator",
@@ -11745,7 +11768,7 @@ dependencies = [
 [[package]]
 name = "substrate-bridge-channel"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.4#c7ad8b7e6d95c9986f1970e08f308192831f28fd"
+source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.7#2f0aeec218e7646c295f371c4f553f4260e59eff"
 dependencies = [
  "bridge-types",
  "ethabi",
@@ -11761,27 +11784,6 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
-]
-
-[[package]]
-name = "substrate-bridge-channel-rpc"
-version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?tag=1.0.4#c7ad8b7e6d95c9986f1970e08f308192831f28fd"
-dependencies = [
- "anyhow",
- "bridge-types",
- "jsonrpsee",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-api",
- "sp-blockchain",
- "sp-core",
- "sp-offchain",
- "sp-rpc",
- "sp-runtime",
- "sp-std",
- "substrate-bridge-channel",
 ]
 
 [[package]]
@@ -13843,6 +13845,27 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "xcm",
+]
+
+[[package]]
+name = "xcm-app-sudo-wrapper"
+version = "0.1.0"
+dependencies = [
+ "bridge-types",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "orml-traits",
+ "parachain-common",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "xcm",
+ "xcm-app",
 ]
 
 [[package]]
