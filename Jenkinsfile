@@ -9,9 +9,7 @@ def pipeline = new org.rust.AppPipeline(steps: this,
       appImageName: 'docker.soramitsu.co.jp/sora2/parachain',
       buildTestCmds: ['housekeeping/scripts/build.sh'],
       codeCoverage: false,
-      //codeCoverageCommand: './housekeeping/scripts/coverage.sh',
-      coberturaReportFile: 'cobertura_report',
       buildArtifacts: 'parachain_template_runtime.compact.compressed.wasm',
-      prStatusNotif: true
+      assignReviewers: true
 )
 pipeline.runPipeline()
