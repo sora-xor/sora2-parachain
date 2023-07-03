@@ -97,10 +97,11 @@ where
         .into_rpc(),
     )?;
     if let Some(storage) = backend.offchain_storage() {
-        // io.merge(BridgeChannelClient::new(storage.clone()).into_rpc())?;
-        module.merge(<SubstrateBridgeChannelClient<_> as SubstrateBridgeChannelAPIServer<
-            Balance,
-        >>::into_rpc(SubstrateBridgeChannelClient::new(storage)))?;
+        module.merge(
+            <SubstrateBridgeChannelClient<_> as SubstrateBridgeChannelAPIServer>::into_rpc(
+                SubstrateBridgeChannelClient::new(storage),
+            ),
+        )?;
     }
 
     module.merge(LeafProviderClient::new(client.clone()).into_rpc())?;

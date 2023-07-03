@@ -99,6 +99,16 @@ impl xcm_app::Config for Test {
     type AccountIdToMultiLocation = TestAccountIdToMultiLocation;
     type XcmTransfer = TestXcmTransfer;
     type CallOrigin = TestCallOrigin;
+    type AccountIdConverter = TestAccountIdConverter;
+    type BalanceConverter = ();
+}
+
+pub struct TestAccountIdConverter;
+impl sp_runtime::traits::Convert<AccountId, sp_runtime::AccountId32> for TestAccountIdConverter {
+    fn convert(a: AccountId) -> sp_runtime::AccountId32 {
+        let b: [u8; 32] = [a.to_be_bytes(), a.to_be_bytes()].concat().try_into().unwrap();
+        b.into()
+    }
 }
 
 // Build genesis storage according to the mock runtime.
@@ -233,7 +243,7 @@ impl<OuterOrigin> frame_support::traits::EnsureOrigin<OuterOrigin> for TestCallO
                 1, 1, 1, 1,
             ]
             .into(),
-            timestamp: 0,
+            timepoint: bridge_types::GenericTimepoint::Sora(1),
             additional: (),
         })
     }

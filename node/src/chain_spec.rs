@@ -2,7 +2,8 @@ use bridge_types::SubNetworkId;
 use cumulus_primitives_core::ParaId;
 use hex_literal::hex;
 use parachain_template_runtime::{
-    AccountId, AuraId, BeefyId, BeefyLightClientConfig, Signature, EXISTENTIAL_DEPOSIT,
+    AccountId, AuraId, BeefyId, BeefyLightClientConfig, MultisigVerifierConfig, Signature,
+    EXISTENTIAL_DEPOSIT,
 };
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
@@ -498,7 +499,9 @@ fn testnet_genesis(
 ) -> parachain_template_runtime::GenesisConfig {
     parachain_template_runtime::GenesisConfig {
         beefy_light_client: BeefyLightClientConfig { network_id: bridge_network_id },
-        substrate_bridge_inbound_channel: Default::default(),
+        multisig_verifier: MultisigVerifierConfig {
+            network_id: bridge_types::GenericNetworkId::Sub(bridge_network_id),
+        },
         substrate_bridge_outbound_channel: Default::default(),
         system: parachain_template_runtime::SystemConfig {
             code: parachain_template_runtime::WASM_BINARY

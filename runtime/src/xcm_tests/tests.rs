@@ -29,8 +29,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use super::*;
-use bridge_types::substrate::SubstrateAppMessage;
-use bridge_types::SubNetworkId;
+use bridge_types::{substrate::SubstrateAppCall, GenericTimepoint, SubNetworkId};
 use cumulus_primitives_core::ParaId;
 use frame_support::{assert_noop, assert_ok, traits::Currency};
 use orml_traits::MultiCurrency;
@@ -70,10 +69,6 @@ fn message_id() -> crate::H256 {
 
 fn prepare_sora_parachain() {
     SoraParachain::execute_with(|| {
-        let _ = SoraBalances::deposit_creating(
-            &crate::GetTrustlessBridgeFeesAccountId::get(),
-            1000000000000000000,
-        );
         let _ = SoraBalances::deposit_creating(&ALICE, 1000000000000000000);
         let _ = SoraBalances::deposit_creating(&BOB, 1000000000000000000);
         assert_ok!(crate::XCMApp::register_mapping(
@@ -123,9 +118,9 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
     });
 
     SoraParachain::execute_with(|| {
-        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
-            == crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
-                SubstrateAppMessage::Transfer {
+        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event ==
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
+                SubstrateAppCall::Transfer {
                     asset_id: relay_native_asset_id(),
                     sender: None,
                     recipient: BOB,
@@ -177,9 +172,9 @@ fn send_sibling_asset_to_sora_from_sibling() {
     });
 
     SoraParachain::execute_with(|| {
-        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
-            == crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
-                SubstrateAppMessage::Transfer {
+        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event ==
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
+                SubstrateAppCall::Transfer {
                     asset_id: para_x_asset_id(),
                     sender: None,
                     recipient: BOB,
@@ -217,7 +212,7 @@ fn send_relay_chain_asset_to_sibling() {
                 network_id: SubNetworkId::Mainnet,
                 additional: (),
                 message_id: message_id(),
-                timestamp: 0,
+                timepoint: GenericTimepoint::Sora(1),
             })
             .into(),
             assetid,
@@ -261,7 +256,7 @@ fn send_sibling_chain_asset_to_sibling() {
                 network_id: SubNetworkId::Mainnet,
                 additional: (),
                 message_id: message_id(),
-                timestamp: 0,
+                timepoint: GenericTimepoint::Sora(1),
             })
             .into(),
             assetid,
@@ -299,7 +294,7 @@ fn send_relay_chain_asset_to_relay_chain() {
                 network_id: SubNetworkId::Mainnet,
                 additional: (),
                 message_id: message_id(),
-                timestamp: 0,
+                timepoint: GenericTimepoint::Sora(1),
             })
             .into(),
             assetid,
@@ -431,7 +426,7 @@ fn send_from_sora_no_mapping_error() {
                     network_id: SubNetworkId::Mainnet,
                     additional: (),
                     message_id: message_id(),
-                    timestamp: 0,
+                    timepoint: GenericTimepoint::Sora(1),
                 })
                 .into(),
                 assetid,

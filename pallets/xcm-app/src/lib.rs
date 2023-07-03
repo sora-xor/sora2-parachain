@@ -42,11 +42,12 @@ pub mod weights;
 
 pub use pallet::*;
 
-use bridge_types::substrate::XCMAppMessage;
+use bridge_types::substrate::XCMAppCall;
 use frame_support::weights::Weight;
 use orml_traits::xcm_transfer::XcmTransfer;
 use orml_traits::MultiCurrency;
 use parachain_common::primitives::AssetId;
+use sp_runtime::AccountId32;
 use xcm::{
     opaque::latest::{AssetId::Concrete, Fungibility::Fungible},
     v3::{MultiAsset, MultiLocation},
@@ -68,13 +69,16 @@ pub trait WeightInfo {
     fn register_asset() -> Weight;
 }
 
-impl<T: Config> From<XCMAppMessage<T::AccountId, AssetId, T::Balance>> for Call<T> {
-    fn from(value: XCMAppMessage<T::AccountId, AssetId, T::Balance>) -> Self {
+impl<T: Config> From<XCMAppCall> for Call<T>
+where
+    T::AccountId: From<AccountId32>,
+{
+    fn from(value: XCMAppCall) -> Self {
         match value {
-            XCMAppMessage::Transfer { sender, recipient, amount, asset_id } => {
-                Call::transfer { sender, recipient, amount, asset_id }
+            XCMAppCall::Transfer { sender, recipient, amount, asset_id } => {
+                Call::transfer { sender: sender.into(), recipient, amount, asset_id }
             },
-            XCMAppMessage::RegisterAsset { asset_id, sidechain_asset, asset_kind } => {
+            XCMAppCall::RegisterAsset { asset_id, sidechain_asset, asset_kind } => {
                 Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind }
             },
         }
@@ -85,7 +89,7 @@ impl<T: Config> From<XCMAppMessage<T::AccountId, AssetId, T::Balance>> for Call<
 pub mod pallet {
     use super::*;
     use bridge_types::{
-        substrate::{SubstrateAppMessage, SubstrateBridgeMessageEncode},
+        substrate::{SubstrateAppCall, SubstrateBridgeMessageEncode},
         traits::OutboundChannel,
         SubNetworkId, H256,
     };
@@ -118,7 +122,11 @@ pub mod pallet {
 
         type AccountIdToMultiLocation: Convert<Self::AccountId, MultiLocation>;
 
-        type XcmTransfer: XcmTransfer<Self::AccountId, Self::Balance, AssetId>;
+        type XcmTransfer: XcmTransfer<Self::AccountId, u128, AssetId>;
+
+        type AccountIdConverter: Convert<Self::AccountId, AccountId32>;
+
+        type BalanceConverter: Convert<Self::Balance, u128>;
     }
 
     #[pallet::pallet]
@@ -153,10 +161,10 @@ pub mod pallet {
         MappingDeleted(AssetId, MultiLocation),
         /// Asset Added to channel
         /// [SubstrateAppMessage]
-        AssetAddedToChannel(SubstrateAppMessage<T::AccountId, AssetId, T::Balance>),
+        AssetAddedToChannel(SubstrateAppCall),
         /// Asset transfered from this parachain
         /// [From, To, AssedId, amount]
-        AssetTransferred(T::AccountId, MultiLocation, AssetId, T::Balance),
+        AssetTransferred(T::AccountId, MultiLocation, AssetId, u128),
 
         // Error events:
         /// Error while submitting to outbound channel
@@ -198,7 +206,7 @@ pub mod pallet {
             asset_id: AssetId,
             sender: T::AccountId,
             recipient: xcm::VersionedMultiLocation,
-            amount: T::Balance,
+            amount: u128,
         ) -> DispatchResultWithPostInfo {
             ensure_root(origin)?;
             frame_support::log::info!(
@@ -217,7 +225,7 @@ pub mod pallet {
             asset_id: AssetId,
             sender: T::AccountId,
             recipient: xcm::VersionedMultiLocation,
-            amount: T::Balance,
+            amount: u128,
         ) -> DispatchResultWithPostInfo {
             let res = T::CallOrigin::ensure_origin(origin)?;
             frame_support::log::info!(
@@ -257,15 +265,12 @@ pub mod pallet {
             MultilocationToAssetId::<T>::insert(multilocation.clone(), asset_id);
 
             T::OutboundChannel::submit(
-				SubNetworkId::Mainnet,
-				&RawOrigin::Root,
-				&SubstrateAppMessage::<T::AccountId, AssetId, T::Balance>::FinalizeAssetRegistration {
-					asset_id,
-					asset_kind,
-				}
-				.prepare_message(),
-				(),
-			)?;
+                SubNetworkId::Mainnet,
+                &RawOrigin::Root,
+                &SubstrateAppCall::FinalizeAssetRegistration { asset_id, asset_kind }
+                    .prepare_message(),
+                (),
+            )?;
 
             Self::deposit_event(Event::<T>::MappingCreated(asset_id, multilocation));
             Ok(().into())
@@ -410,7 +415,7 @@ pub mod pallet {
             origin: OriginFor<T>,
             account_id: T::AccountId,
             asset_id: AssetId,
-            amount: T::Balance,
+            amount: u128,
         ) -> DispatchResultWithPostInfo {
             ensure_root(origin)?;
             Self::add_to_channel(account_id, asset_id, amount)?;
@@ -422,12 +427,12 @@ pub mod pallet {
         pub fn add_to_channel(
             account_id: T::AccountId,
             asset_id: AssetId,
-            amount: T::Balance,
+            amount: u128,
         ) -> sp_runtime::DispatchResult {
             let raw_origin = Some(account_id.clone()).into();
-            let xcm_mes = SubstrateAppMessage::Transfer {
+            let xcm_mes = SubstrateAppCall::Transfer {
                 asset_id,
-                recipient: account_id,
+                recipient: T::AccountIdConverter::convert(account_id),
                 sender: None,
                 amount,
             };
@@ -449,7 +454,7 @@ pub mod pallet {
             asset_id: AssetId,
             sender: T::AccountId,
             recipient: xcm::VersionedMultiLocation,
-            amount: T::Balance,
+            amount: u128,
         ) -> sp_runtime::DispatchResult {
             let recipient = match recipient {
                 xcm::VersionedMultiLocation::V3(m) => m,
