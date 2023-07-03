@@ -3,7 +3,6 @@
 def pipeline = new org.rust.AppPipeline(steps: this,
       disableSecretScanner: false,
       initSubmodules: false,
-      staticScanner: false,
       secretScannerExclusion: '.*Cargo.toml\$|.*pr.sh\$',
       dockerImageTags: ['develop': 'dev', 'master': 'latest'],
       envImageName: 'docker.soramitsu.co.jp/sora2/parachain-env:latest',
