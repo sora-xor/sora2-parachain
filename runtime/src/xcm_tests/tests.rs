@@ -418,21 +418,19 @@ fn send_from_sora_no_mapping_error() {
             ),
         );
         let assetid = relay_native_asset_id();
-        assert_ok!(
-            crate::XCMApp::transfer(
-                dispatch::RawOrigin::new(bridge_types::types::CallOriginOutput {
-                    network_id: SubNetworkId::Mainnet,
-                    additional: (),
-                    message_id: message_id(),
-                    timepoint: GenericTimepoint::Sora(1),
-                })
-                .into(),
-                assetid,
-                ALICE,
-                xcm::VersionedMultiLocation::V3(location.clone()),
-                10000000,
-            )
-        );
+        assert_ok!(crate::XCMApp::transfer(
+            dispatch::RawOrigin::new(bridge_types::types::CallOriginOutput {
+                network_id: SubNetworkId::Mainnet,
+                additional: (),
+                message_id: message_id(),
+                timepoint: GenericTimepoint::Sora(1),
+            })
+            .into(),
+            assetid,
+            ALICE,
+            xcm::VersionedMultiLocation::V3(location.clone()),
+            10000000,
+        ));
 
         // check that assets are not transferred
         assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(

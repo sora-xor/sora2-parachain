@@ -161,8 +161,7 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn trapped_done_result)]
-    pub type TrappedDoneResult<T: Config> =
-        StorageMap<_, Blake2_256, H256, H256, OptionQuery>;
+    pub type TrappedDoneResult<T: Config> = StorageMap<_, Blake2_256, H256, H256, OptionQuery>;
 
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -367,8 +366,13 @@ pub mod pallet {
                         (),
                     ) {
                         Self::deposit_event(Event::<T>::SubmittingToChannelError(e, asset_id));
-                        TrappedDoneResult::<T>::insert(origin_output.message_id, origin_output.message_id);
-                        Self::deposit_event(Event::<T>::DoneMessageTrapped(origin_output.message_id));
+                        TrappedDoneResult::<T>::insert(
+                            origin_output.message_id,
+                            origin_output.message_id,
+                        );
+                        Self::deposit_event(Event::<T>::DoneMessageTrapped(
+                            origin_output.message_id,
+                        ));
                     }
                 },
                 Err(_) => {
@@ -436,13 +440,18 @@ pub mod pallet {
             recipient: xcm::VersionedMultiLocation,
             amount: u128,
         ) {
-            BridgeAssetTrap::<T>::insert(message_id, TrappedMessage {
-                asset_id,
-                sender: sender.clone(),
-                recipient: recipient.clone(),
-                amount,
-            });
-            Self::deposit_event(Event::<T>::BridgeAssetTrapped(message_id, sender, asset_id, amount, recipient));
+            BridgeAssetTrap::<T>::insert(
+                message_id,
+                TrappedMessage {
+                    asset_id,
+                    sender: sender.clone(),
+                    recipient: recipient.clone(),
+                    amount,
+                },
+            );
+            Self::deposit_event(Event::<T>::BridgeAssetTrapped(
+                message_id, sender, asset_id, amount, recipient,
+            ));
         }
 
         /// Perform registration for mapping of an AssetId <-> Multilocation
