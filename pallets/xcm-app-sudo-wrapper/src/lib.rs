@@ -82,7 +82,7 @@ pub mod pallet {
             amount: u128,
         ) -> DispatchResultWithPostInfo {
             ensure_root(origin)?;
-            xcm_app::Pallet::<T>::do_xcm_asset_transfer(asset_id, sender, recipient, amount)?;
+            xcm_app::Pallet::<T>::xcm_transfer_asset(asset_id, sender, recipient, amount)?;
             Ok(().into())
         }
     }
