@@ -31,7 +31,7 @@
 use super::*;
 use bridge_types::{substrate::SubstrateAppCall, GenericTimepoint, SubNetworkId};
 use cumulus_primitives_core::ParaId;
-use frame_support::{assert_noop, assert_ok, traits::Currency};
+use frame_support::{assert_ok, traits::Currency};
 use orml_traits::MultiCurrency;
 use sp_runtime::{traits::AccountIdConversion, AccountId32};
 use xcm_simulator::TestExt;
@@ -217,7 +217,6 @@ fn send_relay_chain_asset_to_sibling() {
             ALICE,
             xcm::VersionedMultiLocation::V3(location.clone()),
             10000000,
-            0,
         ));
         let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransferred(
             ALICE,
@@ -419,7 +418,7 @@ fn send_from_sora_no_mapping_error() {
             ),
         );
         let assetid = relay_native_asset_id();
-        assert_noop!(
+        assert_ok!(
             crate::XCMApp::transfer(
                 dispatch::RawOrigin::new(bridge_types::types::CallOriginOutput {
                     network_id: SubNetworkId::Mainnet,
@@ -432,14 +431,17 @@ fn send_from_sora_no_mapping_error() {
                 ALICE,
                 xcm::VersionedMultiLocation::V3(location.clone()),
                 10000000,
-            ),
-            orml_xtokens::Error::<crate::Runtime>::NotCrossChainTransferableCurrency,
+            )
         );
 
         // check that assets are not transferred
         assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
             r.clone().event,
             crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransferred(_, _, _, _))
+        )));
+        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+            r.clone().event,
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetRefundSent(_, _, _, _))
         )));
     });
 }
