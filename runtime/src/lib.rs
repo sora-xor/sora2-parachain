@@ -610,6 +610,28 @@ impl dispatch::Config for Runtime {
     type Hashing = Keccak256;
     type Call = DispatchableSubstrateBridgeCall;
     type CallFilter = SubstrateBridgeCallFilter;
+    type TransferDetector = TransferDetector;
+}
+
+pub struct TransferDetector;
+impl bridge_types::traits::TransferDetector<DispatchableSubstrateBridgeCall> for TransferDetector {
+    fn is_transfer(call: &DispatchableSubstrateBridgeCall) -> bool {
+        match &call.0 {
+            bridge_types::substrate::BridgeCall::SubstrateApp(msg) => {
+                match msg {
+                    bridge_types::substrate::SubstrateAppCall::Transfer {..} => true,
+                    _ => false,
+                }
+            },
+            bridge_types::substrate::BridgeCall::XCMApp(msg) => {
+                match msg {
+                    bridge_types::substrate::XCMAppCall::Transfer {..} => true,
+                    _ => false,
+                }
+            },
+            _ => false,
+        }
+    }
 }
 
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug, TypeInfo)]
