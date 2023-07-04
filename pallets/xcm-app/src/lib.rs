@@ -97,6 +97,7 @@ pub mod pallet {
     use frame_system::{pallet_prelude::*, RawOrigin};
     use parachain_common::primitives::AssetId;
     use sp_runtime::traits::Convert;
+    use bridge_types::types::CallOriginOutput;
 
     #[pallet::config]
     pub trait Config: frame_system::Config {
@@ -115,7 +116,7 @@ pub mod pallet {
 
         type CallOrigin: EnsureOrigin<
             Self::RuntimeOrigin,
-            Success = bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
+            Success = CallOriginOutput<SubNetworkId, H256, ()>,
         >;
 
         type OutboundChannel: OutboundChannel<SubNetworkId, Self::AccountId, ()>;
@@ -179,7 +180,7 @@ pub mod pallet {
         MultiAssetMappingError(MultiAsset),
         ///
         /// [SubstrateAppMessage]
-        AssetRefundAddedToChannel(SubstrateAppCall),
+        AssetRefundSent(T::AccountId, AssetId, u128, H256),
     }
 
     #[pallet::error]
@@ -210,35 +211,9 @@ pub mod pallet {
             recipient: xcm::VersionedMultiLocation,
             amount: u128,
         ) -> DispatchResultWithPostInfo {
-            let res = T::CallOrigin::ensure_origin(origin)?;
-            let message_id = res.message_id;
-            frame_support::log::info!(
-                "Call transfer with params: {:?} by {:?}",
-                (asset_id, sender.clone(), recipient.clone(), amount),
-                res
-            );
-            match Self::do_xcm_asset_transfer(asset_id, sender.clone(), recipient, amount) {
-                Ok(_) => {
-                    let message = SubstrateAppCall::ReportXCMTransferResult {
-                        message_id,
-                        transfer_status: bridge_types::substrate::XCMAppTransferStatus::Success,
-                    };
-                    let xcm_mes_bytes = message.clone().prepare_message();
-                    let raw_origin = Some(sender.clone()).into();
-                    if let Err(e) = <T as Config>::OutboundChannel::submit(
-                        SubNetworkId::Mainnet,
-                        &raw_origin,
-                        &xcm_mes_bytes,
-                        (),
-                    ) {
-                        Self::deposit_event(Event::<T>::SubmittingToChannelError(e, asset_id));
-                        return Err(e.into());
-                    }
-                },
-                Err(_) => {
-                    Self::refund(sender, asset_id, amount, message_id)?;
-                },
-            }
+            let output = T::CallOrigin::ensure_origin(origin)?;
+            // this method shoud never return an error in case of transactional
+            Self::do_transfer(output, asset_id, sender, recipient, amount);
             Ok(().into())
         }
 
@@ -324,8 +299,46 @@ pub mod pallet {
                 Self::deposit_event(Event::<T>::SubmittingToChannelError(e, asset_id));
                 return Err(e);
             }
-            Self::deposit_event(Event::<T>::AssetRefundAddedToChannel(message));
+            Self::deposit_event(Event::<T>::AssetRefundSent(
+                account_id, asset_id, amount, message_id,
+            ));
             Ok(())
+        }
+
+        pub fn do_transfer(
+            origin_output: CallOriginOutput<SubNetworkId, H256, ()>,
+            asset_id: AssetId,
+            sender: T::AccountId,
+            recipient: xcm::VersionedMultiLocation,
+            amount: u128,
+        ) {
+            frame_support::log::info!(
+                "Call transfer with params: {:?} by {:?}",
+                (asset_id, sender.clone(), recipient.clone(), amount),
+                origin_output
+            );
+            match Self::do_xcm_asset_transfer(asset_id, sender.clone(), recipient, amount) {
+                Ok(_) => {
+                    let message = SubstrateAppCall::ReportXCMTransferResult {
+                        message_id: origin_output.message_id,
+                        transfer_status: bridge_types::substrate::XCMAppTransferStatus::Success,
+                    };
+                    let xcm_mes_bytes = message.clone().prepare_message();
+                    let raw_origin = Some(sender.clone()).into();
+                    if let Err(e) = <T as Config>::OutboundChannel::submit(
+                        SubNetworkId::Mainnet,
+                        &raw_origin,
+                        &xcm_mes_bytes,
+                        (),
+                    ) {
+                        Self::deposit_event(Event::<T>::SubmittingToChannelError(e, asset_id));
+                        todo!()
+                    }
+                },
+                Err(_) => {
+                    Self::refund(sender, asset_id, amount, origin_output.message_id);
+                },
+            }
         }
 
         pub fn do_xcm_asset_transfer(
