@@ -218,7 +218,7 @@ pub mod pallet {
         WrongXCMVersion,
         /// Error with mapping during tranfer assets from parachain to other parachans
         InvalidMultilocationMapping,
-
+        /// Trapped message is not found
         TrappedMessageNotFound,
     }
 
@@ -237,7 +237,7 @@ pub mod pallet {
             amount: u128,
         ) -> DispatchResultWithPostInfo {
             let output = T::CallOrigin::ensure_origin(origin)?;
-            // WARNING: this method and all code after this method shoud never return an error and must always be successfull.
+            // WARNING: this method and all code after this method should never return an error and must always be successfull.
             // All inner errors must be catched and processed
             Self::do_transfer(output, asset_id, sender, recipient, amount);
             Ok(().into())
@@ -406,6 +406,7 @@ pub mod pallet {
             Ok(())
         }
 
+        /// Perform refund if XCM transfer returned an errror
         pub fn refund(
             account_id: T::AccountId,
             asset_id: AssetId,
@@ -426,14 +427,15 @@ pub mod pallet {
                 (),
             ) {
                 Self::deposit_event(Event::<T>::SubmittingToChannelError(e, asset_id));
-                Self::trap_message(message_id, asset_id, account_id.clone(), recipient, amount);
+                Self::trap_asset(message_id, asset_id, account_id.clone(), recipient, amount);
             }
             Self::deposit_event(Event::<T>::AssetRefundSent(
                 message_id, account_id, asset_id, amount,
             ));
         }
 
-        fn trap_message(
+        /// Stores tokes that had not been refunded is some reason like an error
+        fn trap_asset(
             message_id: H256,
             asset_id: AssetId,
             sender: T::AccountId,
