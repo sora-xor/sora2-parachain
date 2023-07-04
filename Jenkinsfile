@@ -10,6 +10,7 @@ def pipeline = new org.rust.AppPipeline(steps: this,
       buildTestCmds: ['housekeeping/scripts/build.sh'],
       codeCoverage: false,
       buildArtifacts: 'parachain_template_runtime.compact.compressed.wasm',
-      assignReviewers: true
+      assignReviewers: true,
+      prStatusNotif: true
 )
 pipeline.runPipeline()
