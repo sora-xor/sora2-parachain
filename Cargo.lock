@@ -797,6 +797,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "bridge-channel-rpc"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bridge-types",
+ "jsonrpsee",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-api",
+ "sp-blockchain",
+ "sp-core",
+ "sp-offchain",
+ "sp-rpc",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "bridge-common"
 version = "0.1.0"
 dependencies = [
@@ -834,6 +853,7 @@ dependencies = [
 name = "bridge-types"
 version = "0.1.0"
 dependencies = [
+ "derivative",
  "enum-iterator",
  "ethabi",
  "ethash",
@@ -844,6 +864,7 @@ dependencies = [
  "getrandom 0.2.9",
  "hex-literal",
  "libsecp256k1",
+ "orml-traits",
  "parity-bytes",
  "parity-scale-codec",
  "rlp",
@@ -6795,6 +6816,7 @@ dependencies = [
  "beefy-light-client",
  "beefy-light-client-rpc",
  "beefy-light-client-runtime-api",
+ "bridge-channel-rpc",
  "bridge-types",
  "clap",
  "cumulus-client-cli",
@@ -6858,7 +6880,6 @@ dependencies = [
  "sp-session",
  "sp-timestamp",
  "sp-transaction-pool",
- "substrate-bridge-channel-rpc",
  "substrate-build-script-utils",
  "substrate-frame-rpc-system",
  "substrate-prometheus-endpoint",
@@ -11750,26 +11771,6 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
-]
-
-[[package]]
-name = "substrate-bridge-channel-rpc"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bridge-types",
- "jsonrpsee",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-api",
- "sp-blockchain",
- "sp-core",
- "sp-offchain",
- "sp-rpc",
- "sp-runtime",
- "sp-std",
- "substrate-bridge-channel",
 ]
 
 [[package]]

@@ -75,8 +75,8 @@ where
 {
     fn from(value: XCMAppCall) -> Self {
         match value {
-            XCMAppCall::Transfer { sender, recipient, amount, asset_id, transaction_nonce } => {
-                Call::transfer { sender: sender.into(), recipient, amount, asset_id, transaction_nonce }
+            XCMAppCall::Transfer { sender, recipient, amount, asset_id } => {
+                Call::transfer { sender: sender.into(), recipient, amount, asset_id }
             },
             XCMAppCall::RegisterAsset { asset_id, sidechain_asset, asset_kind } => {
                 Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind }
@@ -209,9 +209,9 @@ pub mod pallet {
             sender: T::AccountId,
             recipient: xcm::VersionedMultiLocation,
             amount: u128,
-            transaction_nonce: u128,
         ) -> DispatchResultWithPostInfo {
             let res = T::CallOrigin::ensure_origin(origin)?;
+            let message_id = res.message_id;
             frame_support::log::info!(
                 "Call transfer with params: {:?} by {:?}",
                 (asset_id, sender.clone(), recipient.clone(), amount),
@@ -219,8 +219,9 @@ pub mod pallet {
             );
             match Self::do_xcm_asset_transfer(asset_id, sender.clone(), recipient, amount) {
                 Ok(_) => {
-                    let message = SubstrateAppCall::VerifySuccessTransfer {
-                        transaction_nonce,
+                    let message = SubstrateAppCall::ReportXCMTransferResult {
+                        message_id,
+                        transfer_status: bridge_types::substrate::XCMAppTransferStatus::Success,
                     };
                     let xcm_mes_bytes = message.clone().prepare_message();
                     let raw_origin = Some(sender.clone()).into();
@@ -235,7 +236,7 @@ pub mod pallet {
                     }
                 },
                 Err(_) => {
-                    Self::refund(sender, asset_id, amount, transaction_nonce)?;
+                    Self::refund(sender, asset_id, amount, message_id)?;
                 },
             }
             Ok(().into())
@@ -306,14 +307,12 @@ pub mod pallet {
             account_id: T::AccountId,
             asset_id: AssetId,
             amount: u128,
-            transaction_nonce: u128,
+            message_id: H256,
         ) -> DispatchResult {
             let raw_origin = Some(account_id.clone()).into();
-            let message = SubstrateAppCall::Refund {
-                // asset_id,
-                // recipient: T::AccountIdConverter::convert(account_id),
-                // amount,
-                transaction_nonce,
+            let message = SubstrateAppCall::ReportXCMTransferResult {
+                message_id,
+                transfer_status: bridge_types::substrate::XCMAppTransferStatus::XCMTransferError,
             };
             let xcm_mes_bytes = message.clone().prepare_message();
             if let Err(e) = <T as Config>::OutboundChannel::submit(
@@ -347,6 +346,7 @@ pub mod pallet {
                 xcm::v3::WeightLimit::Unlimited,
             ) {
                 Self::deposit_event(Event::<T>::TrasferringAssetError(e, asset_id));
+                // dbushuev: the refund will be done via https://app.zenhub.com/workspaces/sora2-backend-62b9c0e3e9b9e600201273e3/issues/gh/sora-xor/sora2-parachain/106
                 return Err(e);
             }
 
