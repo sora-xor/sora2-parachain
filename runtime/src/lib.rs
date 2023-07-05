@@ -43,7 +43,7 @@ mod trader;
 mod weights;
 pub mod xcm_config;
 
-use bridge_types::SubNetworkId;
+use bridge_types::{SubNetworkId, GenericNetworkId};
 use codec::{Decode, Encode};
 use frame_support::{
     dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
@@ -654,6 +654,11 @@ impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
     }
 }
 
+parameter_types! {
+    /// Dima B. TODO: add features for 
+    pub const CurrentNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Rococo);
+}
+
 impl substrate_bridge_channel::inbound::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Verifier = MultisigVerifier;
@@ -663,6 +668,7 @@ impl substrate_bridge_channel::inbound::Config for Runtime {
     type UnsignedLongevity = DataSignerLongevity;
     type MaxMessagePayloadSize = BridgeMaxMessagePayloadSize;
     type MaxMessagesPerCommit = BridgeMaxMessagesPerCommit;
+    type ThisNetworkId = CurrentNetworkId;
 }
 
 pub struct TimepointProvider;
@@ -681,6 +687,7 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
     type AuxiliaryDigestHandler = LeafProvider;
     type WeightInfo = ();
     type TimepointProvider = TimepointProvider;
+    type ThisNetworkId = CurrentNetworkId;
     // Required for MessageStatusNotifier and actually not used
     type AssetId = ();
     type Balance = ();
