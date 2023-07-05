@@ -655,8 +655,8 @@ impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
 }
 
 parameter_types! {
-    /// Dima B. TODO: add features for 
-    pub const CurrentNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Rococo);
+    /// Dima B. TODO: add features for Rococo, Kusama and Polkadot
+    pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Rococo);
 }
 
 impl substrate_bridge_channel::inbound::Config for Runtime {
@@ -668,7 +668,7 @@ impl substrate_bridge_channel::inbound::Config for Runtime {
     type UnsignedLongevity = DataSignerLongevity;
     type MaxMessagePayloadSize = BridgeMaxMessagePayloadSize;
     type MaxMessagesPerCommit = BridgeMaxMessagesPerCommit;
-    type ThisNetworkId = CurrentNetworkId;
+    type ThisNetworkId = ThisNetworkId;
 }
 
 pub struct TimepointProvider;
@@ -687,7 +687,7 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
     type AuxiliaryDigestHandler = LeafProvider;
     type WeightInfo = ();
     type TimepointProvider = TimepointProvider;
-    type ThisNetworkId = CurrentNetworkId;
+    type ThisNetworkId = ThisNetworkId;
     // Required for MessageStatusNotifier and actually not used
     type AssetId = ();
     type Balance = ();
