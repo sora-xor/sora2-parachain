@@ -29,7 +29,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use super::*;
-use bridge_types::{substrate::SubstrateAppCall, GenericTimepoint, SubNetworkId};
+use bridge_types::{substrate::SubstrateAppCall, GenericTimepoint, SubNetworkId, traits::OutboundChannel};
 use cumulus_primitives_core::ParaId;
 use frame_support::{assert_ok, traits::Currency};
 use orml_traits::MultiCurrency;
@@ -488,5 +488,131 @@ fn send_relay_chain_asset_to_sora_from_relay_asset_trapped() {
             r.event,
             crate::RuntimeEvent::PolkadotXcm(pallet_xcm::Event::AssetsTrapped(_, _, _))
         )));
+    });
+}
+
+#[test]
+fn send_sibling_chain_asset_to_sibling_asset_trapped() {
+    TestNet::reset();
+
+    Relay::execute_with(|| {
+        let _ = RelayBalances::deposit_creating(&sora_para_account(), 1000000000000000000);
+    });
+
+    prepare_sora_parachain();
+
+    SoraParachain::execute_with(|| {
+        let location = xcm::v2::MultiLocation::parent();
+        let assetid = para_x_asset_id();
+
+        // fill queue
+        for _ in 0..crate::BridgeMaxMessagesPerCommit::get() {
+            let _ = crate::SubstrateBridgeOutboundChannel::submit(
+                SubNetworkId::Mainnet,
+                &frame_system::RawOrigin::Root,
+                &[],
+                (),
+            );
+        }
+        let amount = 10000000;
+        assert_ok!(crate::XCMApp::transfer(
+            dispatch::RawOrigin::new(bridge_types::types::CallOriginOutput {
+                network_id: SubNetworkId::Mainnet,
+                additional: (),
+                message_id: message_id(),
+                timepoint: GenericTimepoint::Sora(1),
+            })
+            .into(),
+            assetid,
+            ALICE,
+            xcm::VersionedMultiLocation::V2(location.clone()),
+            10000000,
+        ));
+        assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+            r.clone().event,
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransferred(_, _, _, _))
+        )));
+        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+            r.clone().event,
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::BridgeAssetTrapped(_, _, _, _, _))
+        )));
+        let mes = crate::XCMApp::bridge_asset_trap(message_id()).expect("asset trap does not exist");
+        assert_eq!(mes.amount, amount);
+        assert_eq!(mes.asset_id, assetid);
+        assert_eq!(mes.sender, ALICE);
+    });
+}
+
+#[test]
+fn claim_bridge_asset_works() {
+    TestNet::reset();
+
+    Relay::execute_with(|| {
+        let _ = RelayBalances::deposit_creating(&sora_para_account(), 1000000000000000000);
+    });
+
+    prepare_sora_parachain();
+
+    SoraParachain::execute_with(|| {
+        let location = MultiLocation::new(
+            1,
+            X2(
+                Parachain(1),
+                Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() },
+            ),
+        );
+        let assetid = para_x_asset_id();
+        let amount = 10000000;
+        crate::XCMApp::trap_asset(message_id(), assetid, ALICE, location.into(), amount);
+        assert_ok!(crate::XCMApp::try_claim_bridge_asset(crate::RuntimeOrigin::root(), message_id()));
+        assert!(crate::XCMApp::bridge_asset_trap(message_id()).is_none());
+        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+            r.clone().event,
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::TrappedMessageRefundSent(_, _, _, _))
+        )));
+    });
+}
+
+#[test]
+fn claim_bridge_asset_fails() {
+    TestNet::reset();
+
+    Relay::execute_with(|| {
+        let _ = RelayBalances::deposit_creating(&sora_para_account(), 1000000000000000000);
+    });
+
+    prepare_sora_parachain();
+
+    SoraParachain::execute_with(|| {
+        let location = MultiLocation::new(
+            1,
+            X2(
+                Parachain(1),
+                Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() },
+            ),
+        );
+        let assetid = para_x_asset_id();
+        let amount = 10000000;
+        crate::XCMApp::trap_asset(message_id(), assetid, ALICE, location.into(), amount);
+        
+        // fill queue
+        for _ in 0..crate::BridgeMaxMessagesPerCommit::get() {
+            let _ = crate::SubstrateBridgeOutboundChannel::submit(
+                SubNetworkId::Mainnet,
+                &frame_system::RawOrigin::Root,
+                &[],
+                (),
+            );
+        }
+
+        let _ = crate::XCMApp::try_claim_bridge_asset(crate::RuntimeOrigin::root(), message_id());
+        assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+            r.clone().event,
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::TrappedMessageRefundSent(_, _, _, _))
+        )));
+        let mes = crate::XCMApp::bridge_asset_trap(message_id()).expect("asset trap does not exist");
+        assert_eq!(mes.amount, amount);
+        assert_eq!(mes.asset_id, assetid);
+        assert_eq!(mes.sender, ALICE);
     });
 }

@@ -155,7 +155,7 @@ pub mod pallet {
         StorageMap<_, Blake2_256, MultiLocation, AssetId, OptionQuery>;
 
     #[pallet::storage]
-    #[pallet::getter(fn message_trap)]
+    #[pallet::getter(fn bridge_asset_trap)]
     pub type BridgeAssetTrap<T: Config> =
         StorageMap<_, Blake2_256, H256, TrappedMessage<T::AccountId>, OptionQuery>;
 
@@ -289,7 +289,7 @@ pub mod pallet {
                 sender,
                 amount,
                 ..
-            }) = Self::message_trap(message_id) else {
+            }) = Self::bridge_asset_trap(message_id) else {
                 fail!(Error::<T>::TrappedMessageNotFound)
             };
             let raw_origin = Some(sender.clone()).into();
@@ -435,7 +435,7 @@ pub mod pallet {
         }
 
         /// Stores tokes that had not been refunded is some reason like an error
-        fn trap_asset(
+        pub fn trap_asset(
             message_id: H256,
             asset_id: AssetId,
             sender: T::AccountId,

@@ -122,6 +122,7 @@ pub fn test_general_key() -> [u8; 32] {
 }
 
 pub struct TestOutboundChannel;
+pub static mut OUTBOUNDK_LOCKED: bool = false;
 
 impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
     fn submit(
@@ -130,8 +131,13 @@ impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
         _payload: &[u8],
         _additional: (),
     ) -> Result<H256, sp_runtime::DispatchError> {
-        Ok([1; 32]
-        .into())
+        if unsafe {OUTBOUNDK_LOCKED} {
+            Err(sp_runtime::DispatchError::Unavailable)
+        }
+        else {
+            Ok([1; 32]
+                .into())
+        }
     }
 }
 
