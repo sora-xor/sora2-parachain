@@ -434,7 +434,7 @@ pub mod pallet {
             ));
         }
 
-        /// Stores tokes that had not been refunded is some reason like an error
+        /// Stores tokens that had not been refunded in some reason like an error
         fn trap_asset(
             message_id: H256,
             asset_id: AssetId,
