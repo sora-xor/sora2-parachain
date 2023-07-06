@@ -59,6 +59,7 @@ frame_support::construct_runtime!(
     }
 );
 
+
 parameter_types! {
     pub const BlockHashCount: u64 = 250;
     pub const SS58Prefix: u8 = 42;
@@ -117,10 +118,11 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 }
 
 pub fn test_general_key() -> [u8; 32] {
-    [3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3]
+    [3; 32]
 }
 
 pub struct TestOutboundChannel;
+
 impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
     fn submit(
         _network_id: SubNetworkId,
@@ -128,10 +130,7 @@ impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
         _payload: &[u8],
         _additional: (),
     ) -> Result<H256, sp_runtime::DispatchError> {
-        Ok([
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1,
-        ]
+        Ok([1; 32]
         .into())
     }
 }
@@ -238,13 +237,11 @@ impl<OuterOrigin> frame_support::traits::EnsureOrigin<OuterOrigin> for TestCallO
     fn try_origin(_o: OuterOrigin) -> Result<Self::Success, OuterOrigin> {
         Ok(bridge_types::types::CallOriginOutput {
             network_id: SubNetworkId::Mainnet,
-            message_id: [
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1,
-            ]
+            message_id: [1; 32]
             .into(),
             timepoint: bridge_types::GenericTimepoint::Sora(1),
             additional: (),
         })
     }
 }
+

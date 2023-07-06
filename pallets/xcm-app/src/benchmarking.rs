@@ -43,10 +43,7 @@ use xcm::{
 
 benchmarks! {
     register_mapping {
-        let asset_id = [
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1,
-        ].into();
+        let asset_id = [1; 32].into();
         let multilocation = MultiLocation {
             parents: 1,
             interior: X2(Parachain(666), GeneralKey(test_general_key())),
@@ -66,10 +63,7 @@ benchmarks! {
     }
 
     change_asset_mapping {
-        let asset_id = [
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1,
-        ].into();
+        let asset_id = [1; 32].into();
         let multilocation = MultiLocation::parent();
         let new_multilocation = MultiLocation {
             parents: 1,
@@ -94,14 +88,8 @@ benchmarks! {
     }
 
     change_multilocation_mapping {
-        let asset_id = [
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1,
-        ].into();
-        let new_asset_id = [
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-            2, 2, 2,
-        ].into();
+        let asset_id = [1; 32 ].into();
+        let new_asset_id = [2; 32].into();
         let multilocation = MultiLocation {
             parents: 1,
             interior: X2(Parachain(666), GeneralKey(test_general_key())),
@@ -125,10 +113,7 @@ benchmarks! {
     }
 
     delete_mapping {
-        let asset_id = [
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1,
-        ].into();
+        let asset_id = [1; 32].into();
         let multilocation = MultiLocation {
             parents: 1,
             interior: X2(Parachain(666), GeneralKey(test_general_key())),
