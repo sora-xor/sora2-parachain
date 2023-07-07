@@ -1,4 +1,4 @@
-@Library('jenkins-library@feature/dops-2395/rust_library') _
+@Library('jenkins-library') _
 
 def pipeline = new org.rust.AppPipeline(steps: this,
       envImageName: 'docker.soramitsu.co.jp/sora2/parachain-env:latest',
