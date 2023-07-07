@@ -206,3 +206,9 @@ runtime-benchmarks = [
 try-runtime = ["frame-executive/try-runtime", "frame-try-runtime"]
 
 parachain-gen = []
+
+rococo = []
+
+kusama = []
+
+polkadot = []
