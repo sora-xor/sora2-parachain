@@ -105,7 +105,7 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
                     1,
                     X2(
                         Parachain(2),
-                        Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() }
+                        Junction::AccountId32 { network: None, id: BOB.into() }
                     )
                 )
                 .into()
@@ -159,7 +159,7 @@ fn send_sibling_asset_to_sora_from_sibling() {
                     1,
                     X2(
                         Parachain(2),
-                        Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() }
+                        Junction::AccountId32 { network: None, id: BOB.into() }
                     )
                 )
                 .into()
@@ -201,7 +201,7 @@ fn send_relay_chain_asset_to_sibling() {
             1,
             X2(
                 Parachain(1),
-                Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() },
+                Junction::AccountId32 { network: None, id: BOB.into() },
             ),
         );
         let assetid = relay_native_asset_id();
@@ -245,7 +245,7 @@ fn send_sibling_chain_asset_to_sibling() {
             1,
             X2(
                 Parachain(1),
-                Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() },
+                Junction::AccountId32 { network: None, id: BOB.into() },
             ),
         );
         let assetid = para_x_asset_id();
@@ -284,7 +284,7 @@ fn send_relay_chain_asset_to_relay_chain() {
     SoraParachain::execute_with(|| {
         let location = MultiLocation::new(
             1,
-            X1(Junction::AccountId32 { network: Some(NetworkId::Rococo), id: ALICE.into() }),
+            X1(Junction::AccountId32 { network: None, id: ALICE.into() }),
         );
         let assetid = relay_native_asset_id();
         assert_ok!(crate::XCMApp::transfer(
@@ -328,7 +328,7 @@ fn send_relay_chain_asset_to_sora_from_relay() {
             ))),
             Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
                 0,
-                X1(Junction::AccountId32 { network: Some(NetworkId::Rococo), id: ALICE.into() })
+                X1(Junction::AccountId32 { network: None, id: ALICE.into() })
             ))),
             Box::new(xcm::VersionedMultiAssets::V3(
                 vec![xcm::v3::MultiAsset {
@@ -371,7 +371,7 @@ fn send_to_sora_no_mapping_error() {
                     1,
                     X2(
                         Parachain(2),
-                        Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() }
+                        Junction::AccountId32 { network: None, id: BOB.into() }
                     )
                 )
                 .into()
@@ -414,7 +414,7 @@ fn send_from_sora_no_mapping_error() {
             1,
             X2(
                 Parachain(1),
-                Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() },
+                Junction::AccountId32 { network: None, id: BOB.into() },
             ),
         );
         let assetid = relay_native_asset_id();
@@ -460,7 +460,7 @@ fn send_relay_chain_asset_to_sora_from_relay_asset_trapped() {
             ))),
             Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
                 0,
-                X1(Junction::AccountId32 { network: Some(NetworkId::Rococo), id: ALICE.into() })
+                X1(Junction::AccountId32 { network: None, id: ALICE.into() })
             ))),
             Box::new(xcm::VersionedMultiAssets::V3(
                 vec![xcm::v3::MultiAsset {
@@ -558,7 +558,7 @@ fn claim_bridge_asset_works() {
             1,
             X2(
                 Parachain(1),
-                Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() },
+                Junction::AccountId32 { network: None, id: BOB.into() },
             ),
         );
         let assetid = para_x_asset_id();
@@ -588,7 +588,7 @@ fn claim_bridge_asset_fails() {
             1,
             X2(
                 Parachain(1),
-                Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() },
+                Junction::AccountId32 { network: None, id: BOB.into() },
             ),
         );
         let assetid = para_x_asset_id();
