@@ -125,7 +125,7 @@ pub mod pallet {
             + MaxEncodedLen;
 
         type CallOrigin: EnsureOrigin<
-            <Self as frame_system::Config>::RuntimeOrigin,
+            Self::RuntimeOrigin,
             Success = CallOriginOutput<SubNetworkId, H256, ()>,
         >;
 
