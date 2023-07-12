@@ -31,104 +31,75 @@
 use super::*;
 use crate::Pallet as XCMApp;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
-use frame_support::WeakBoundedVec;
 use frame_system::RawOrigin;
 use xcm::{
     opaque::latest::{
-        Junction::{GeneralKey, Parachain},
-        Junctions::X2,
+        Junction::{GeneralKey},
     },
-    v1::MultiLocation,
+    v3::MultiLocation,
 };
 
+fn alice<T: Config>() -> T::AccountId {
+    let bytes = [66; 32];
+    T::AccountId::decode(&mut &bytes[..]).expect("Failed to decode account ID")
+}
+
 benchmarks! {
-    register_mapping {
+    register_asset {
         let asset_id = [1; 32].into();
-        let multilocation = MultiLocation {
-            parents: 1,
-            interior: X2(Parachain(666), GeneralKey(test_general_key())),
-        };
-    }: _(RawOrigin::Root, asset_id, multilocation.clone())
+        let multilocation = test_multilocation();
+    }: _(RawOrigin::Root, asset_id, multilocation.clone().into(), bridge_types::types::AssetKind::Thischain)
     verify {
         assert_eq!(
             XCMApp::<T>::get_multilocation_from_asset_id(asset_id)
-                .expect("register_mapping: multilocation is None"),
+                .expect("register_asset: multilocation is None"),
             multilocation.clone()
         );
         assert_eq!(
             XCMApp::<T>::get_asset_id_from_multilocation(multilocation)
-                .expect("register_mapping: asset id is None"),
+                .expect("register_asset: asset id is None"),
             asset_id
         );
     }
 
-    change_asset_mapping {
+    transfer {
         let asset_id = [1; 32].into();
-        let multilocation = MultiLocation::parent();
-        let new_multilocation = MultiLocation {
-            parents: 1,
-            interior: X2(Parachain(666), GeneralKey(test_general_key())),
-        };
-        XCMApp::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
-        .expect("change_asset_mapping: failed to create a map");
-    }: _(RawOrigin::Root, asset_id, new_multilocation.clone())
+        let multilocation = test_multilocation();
+        let amount = 500;
+    }: _(RawOrigin::Root, asset_id, alice::<T>(), multilocation.clone().into(), amount)
     verify {
-        assert_eq!(
-            XCMApp::<T>::get_multilocation_from_asset_id(asset_id)
-                .expect("change_asset_mapping: new_multilocation is None"),
-            new_multilocation.clone()
-        );
-        assert_eq!(
-            XCMApp::<T>::get_asset_id_from_multilocation(new_multilocation).expect(
-                "change_asset_mapping: asset_id is None"
-            ),
-            asset_id
-        );
-        assert_eq!(XCMApp::<T>::get_asset_id_from_multilocation(multilocation), None);
+        assert_event::<T>(Event::<T>::AssetTransferred(alice::<T>(), multilocation, asset_id, amount).into());
     }
 
-    change_multilocation_mapping {
-        let asset_id = [1; 32 ].into();
-        let new_asset_id = [2; 32].into();
-        let multilocation = MultiLocation {
-            parents: 1,
-            interior: X2(Parachain(666), GeneralKey(test_general_key())),
-        };
-        XCMApp::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
-        .expect("change_multilocation_mapping: failed to create a map");
-    }: _(RawOrigin::Root, multilocation.clone(), new_asset_id)
-    verify {
-        assert_eq!(
-            XCMApp::<T>::get_multilocation_from_asset_id(new_asset_id)
-                .expect("change_multilocation_mapping: new_multilocation is None"),
-                multilocation.clone()
-        );
-        assert_eq!(
-            XCMApp::<T>::get_asset_id_from_multilocation(multilocation).expect(
-                "change_multilocation_mapping: asset_id is None"
-            ),
-            new_asset_id
-        );
-        assert_eq!(XCMApp::<T>::get_multilocation_from_asset_id(asset_id), None);
-    }
-
-    delete_mapping {
+    try_claim_bridge_asset {
+        // trap_asset:
+        let message_id = [0; 32].into();
         let asset_id = [1; 32].into();
-        let multilocation = MultiLocation {
-            parents: 1,
-            interior: X2(Parachain(666), GeneralKey(test_general_key())),
-        };
-        XCMApp::<T>::register_mapping(RawOrigin::Root.into(), asset_id, multilocation.clone())
-        .expect("change_multilocation_mapping: failed to create a map");
-    }: _(RawOrigin::Root, asset_id)
+        let amount = 500;
+        XCMApp::<T>::trap_asset(message_id, asset_id, alice::<T>(), test_multilocation().into(), amount);
+    }: _(RawOrigin::Root, message_id)
     verify {
-        assert_eq!(XCMApp::<T>::get_multilocation_from_asset_id(asset_id), None);
-        assert_eq!(XCMApp::<T>::get_asset_id_from_multilocation(multilocation), None);
+        assert!(XCMApp::<T>::bridge_asset_trap(message_id).is_none());
     }
 }
 
 impl_benchmark_test_suite!(XCMApp, crate::mock::new_test_ext(), crate::mock::Test,);
 
-pub fn test_general_key() -> WeakBoundedVec<u8, frame_support::traits::ConstU32<32>> {
-    WeakBoundedVec::try_from(b"TEST_ASSET".to_vec()).unwrap()
+fn test_multilocation() -> MultiLocation {
+    let general_key = GeneralKey{length: 32, data: [15; 32]};
+    // take the biggest multilocation
+    MultiLocation {
+        parents: 1,
+        interior: xcm::v3::Junctions::X8(general_key,  general_key, general_key, general_key, general_key, general_key, general_key, general_key),
+    }
+}
+
+fn assert_event<T: Config>(generic_event: <T as Config>::RuntimeEvent) {
+    let events = frame_system::Pallet::<T>::events();
+    let system_event: <T as frame_system::Config>::RuntimeEvent = generic_event.into();
+    // compare to the last event record
+    assert!(events.into_iter().any(|x| {
+        let frame_system::EventRecord { event, .. } = x;
+        event == system_event
+    }));
 }
