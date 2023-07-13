@@ -59,7 +59,6 @@ frame_support::construct_runtime!(
     }
 );
 
-
 parameter_types! {
     pub const BlockHashCount: u64 = 250;
     pub const SS58Prefix: u8 = 42;
@@ -102,6 +101,7 @@ impl xcm_app::Config for Test {
     type CallOrigin = TestCallOrigin;
     type AccountIdConverter = TestAccountIdConverter;
     type BalanceConverter = ();
+    type XcmSender = ();
 }
 
 pub struct TestAccountIdConverter;
@@ -236,11 +236,9 @@ impl<OuterOrigin> frame_support::traits::EnsureOrigin<OuterOrigin> for TestCallO
     fn try_origin(_o: OuterOrigin) -> Result<Self::Success, OuterOrigin> {
         Ok(bridge_types::types::CallOriginOutput {
             network_id: SubNetworkId::Mainnet,
-            message_id: [1; 32]
-            .into(),
+            message_id: [1; 32].into(),
             timepoint: bridge_types::GenericTimepoint::Sora(1),
             additional: (),
         })
     }
 }
-

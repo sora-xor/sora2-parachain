@@ -48,6 +48,7 @@ use frame_support::weights::Weight;
 use orml_traits::xcm_transfer::XcmTransfer;
 use orml_traits::MultiCurrency;
 use parachain_common::primitives::AssetId;
+use scale_info::prelude::boxed::Box;
 use sp_runtime::{AccountId32, RuntimeDebug};
 use xcm::{
     opaque::latest::{AssetId::Concrete, Fungibility::Fungible},
@@ -137,6 +138,8 @@ pub mod pallet {
         type AccountIdConverter: Convert<Self::AccountId, AccountId32>;
 
         type BalanceConverter: Convert<Self::Balance, u128>;
+
+        type XcmSender: XcmSender<Self>;
     }
 
     #[pallet::pallet]
@@ -310,6 +313,18 @@ pub mod pallet {
             ));
             Ok(().into())
         }
+
+        #[pallet::call_index(3)]
+        #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
+        pub fn sudo_send_xcm(
+            origin: OriginFor<T>,
+            dest: Box<xcm::VersionedMultiLocation>,
+            message: Box<xcm::VersionedXcm<()>>,
+        ) -> DispatchResultWithPostInfo {
+            ensure_root(origin.clone())?;
+            T::XcmSender::send_xcm(origin, dest, message)?;
+            Ok(().into())
+        }
     }
 
     impl<T: Config> Pallet<T> {
@@ -366,10 +381,7 @@ pub mod pallet {
                         (),
                     ) {
                         Self::deposit_event(Event::<T>::SubmittingToChannelError(e, asset_id));
-                        TrappedDoneResult::<T>::insert(
-                            origin_output.message_id,
-                            (),
-                        );
+                        TrappedDoneResult::<T>::insert(origin_output.message_id, ());
                         Self::deposit_event(Event::<T>::DoneMessageTrapped(
                             origin_output.message_id,
                         ));
@@ -560,5 +572,23 @@ pub mod pallet {
             };
             Ok(().into())
         }
+    }
+}
+
+pub trait XcmSender<T: Config> {
+    fn send_xcm(
+        origin: frame_system::pallet_prelude::OriginFor<T>,
+        dest: Box<xcm::VersionedMultiLocation>,
+        message: Box<xcm::VersionedXcm<()>>,
+    ) -> frame_support::pallet_prelude::DispatchResult;
+}
+
+impl<T: Config> XcmSender<T> for () {
+    fn send_xcm(
+            _origin: frame_system::pallet_prelude::OriginFor<T>,
+            _dest: Box<xcm::VersionedMultiLocation>,
+            _message: Box<xcm::VersionedXcm<()>>,
+        ) -> frame_support::pallet_prelude::DispatchResult {
+        Ok(())
     }
 }
