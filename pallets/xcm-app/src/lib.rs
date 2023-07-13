@@ -43,11 +43,13 @@ pub mod weights;
 pub use pallet::*;
 
 use bridge_types::substrate::XCMAppCall;
+use codec::{Decode, Encode};
 use frame_support::weights::Weight;
 use orml_traits::xcm_transfer::XcmTransfer;
 use orml_traits::MultiCurrency;
 use parachain_common::primitives::AssetId;
-use sp_runtime::AccountId32;
+use scale_info::prelude::boxed::Box;
+use sp_runtime::{AccountId32, RuntimeDebug};
 use xcm::{
     opaque::latest::{AssetId::Concrete, Fungibility::Fungible},
     v3::{MultiAsset, MultiLocation},
@@ -85,9 +87,18 @@ where
     }
 }
 
+#[derive(Clone, RuntimeDebug, Encode, Decode, PartialEq, Eq, scale_info::TypeInfo)]
+pub struct TrappedMessage<AccountId> {
+    pub asset_id: AssetId,
+    pub sender: AccountId,
+    pub recipient: xcm::VersionedMultiLocation,
+    pub amount: u128,
+}
+
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
+    use bridge_types::types::CallOriginOutput;
     use bridge_types::{
         substrate::{SubstrateAppCall, SubstrateBridgeMessageEncode},
         traits::OutboundChannel,
@@ -115,7 +126,7 @@ pub mod pallet {
 
         type CallOrigin: EnsureOrigin<
             Self::RuntimeOrigin,
-            Success = bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
+            Success = CallOriginOutput<SubNetworkId, H256, ()>,
         >;
 
         type OutboundChannel: OutboundChannel<SubNetworkId, Self::AccountId, ()>;
@@ -127,6 +138,8 @@ pub mod pallet {
         type AccountIdConverter: Convert<Self::AccountId, AccountId32>;
 
         type BalanceConverter: Convert<Self::Balance, u128>;
+
+        type XcmSender: XcmSender<Self>;
     }
 
     #[pallet::pallet]
@@ -143,6 +156,15 @@ pub mod pallet {
     #[pallet::getter(fn get_asset_id_from_multilocation)]
     pub type MultilocationToAssetId<T: Config> =
         StorageMap<_, Blake2_256, MultiLocation, AssetId, OptionQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn bridge_asset_trap)]
+    pub type BridgeAssetTrap<T: Config> =
+        StorageMap<_, Blake2_256, H256, TrappedMessage<T::AccountId>, OptionQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn trapped_done_result)]
+    pub type TrappedDoneResult<T: Config> = StorageMap<_, Blake2_256, H256, (), OptionQuery>;
 
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -165,6 +187,10 @@ pub mod pallet {
         /// Asset transfered from this parachain
         /// [From, To, AssedId, amount]
         AssetTransferred(T::AccountId, MultiLocation, AssetId, u128),
+        /// [To, AssetId, amount, MessageId]
+        AssetRefundSent(H256, T::AccountId, AssetId, u128),
+        /// [To, AssetId, amount, MessageId]
+        TrappedMessageRefundSent(H256, T::AccountId, AssetId, u128),
 
         // Error events:
         /// Error while submitting to outbound channel
@@ -177,6 +203,10 @@ pub mod pallet {
         AssetIdMappingError(AssetId),
         /// No mapping for MultiAsset
         MultiAssetMappingError(MultiAsset),
+        /// Asset is trapped in XCM App due to Submitting to channel error
+        BridgeAssetTrapped(H256, T::AccountId, AssetId, u128, xcm::VersionedMultiLocation),
+        /// Successful message is trapped in XCM App due to Submitting to channel error
+        DoneMessageTrapped(H256),
     }
 
     #[pallet::error]
@@ -191,6 +221,8 @@ pub mod pallet {
         WrongXCMVersion,
         /// Error with mapping during tranfer assets from parachain to other parachans
         InvalidMultilocationMapping,
+        /// Trapped message is not found
+        TrappedMessageNotFound,
     }
 
     #[pallet::hooks]
@@ -207,13 +239,10 @@ pub mod pallet {
             recipient: xcm::VersionedMultiLocation,
             amount: u128,
         ) -> DispatchResultWithPostInfo {
-            let res = T::CallOrigin::ensure_origin(origin)?;
-            frame_support::log::info!(
-                "Call transfer with params: {:?} by {:?}",
-                (asset_id, sender.clone(), recipient.clone(), amount),
-                res
-            );
-            Self::do_xcm_asset_transfer(asset_id, sender, recipient, amount)?;
+            let output = T::CallOrigin::ensure_origin(origin)?;
+            // WARNING: this method and all code after this method should never return an error and must always be successfull.
+            // All inner errors must be catched and processed
+            Self::do_transfer(output, asset_id, sender, recipient, amount);
             Ok(().into())
         }
 
@@ -249,6 +278,53 @@ pub mod pallet {
             Self::deposit_event(Event::<T>::MappingCreated(asset_id, multilocation));
             Ok(().into())
         }
+
+        /// Try Refund an asset trapped by bridge
+        #[pallet::call_index(2)]
+        #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
+        pub fn try_claim_bridge_asset(
+            origin: OriginFor<T>,
+            message_id: H256,
+        ) -> DispatchResultWithPostInfo {
+            ensure_root(origin)?;
+            let Some(TrappedMessage {
+                asset_id,
+                sender,
+                amount,
+                ..
+            }) = Self::bridge_asset_trap(message_id) else {
+                fail!(Error::<T>::TrappedMessageNotFound)
+            };
+            let raw_origin = Some(sender.clone()).into();
+            let message = SubstrateAppCall::ReportXCMTransferResult {
+                message_id,
+                transfer_status: bridge_types::substrate::XCMAppTransferStatus::XCMTransferError,
+            };
+            let xcm_mes_bytes = message.clone().prepare_message();
+            <T as Config>::OutboundChannel::submit(
+                SubNetworkId::Mainnet,
+                &raw_origin,
+                &xcm_mes_bytes,
+                (),
+            )?;
+            BridgeAssetTrap::<T>::remove(message_id);
+            Self::deposit_event(Event::<T>::TrappedMessageRefundSent(
+                message_id, sender, asset_id, amount,
+            ));
+            Ok(().into())
+        }
+
+        #[pallet::call_index(3)]
+        #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
+        pub fn sudo_send_xcm(
+            origin: OriginFor<T>,
+            dest: Box<xcm::VersionedMultiLocation>,
+            message: Box<xcm::VersionedXcm<()>>,
+        ) -> DispatchResultWithPostInfo {
+            ensure_root(origin.clone())?;
+            T::XcmSender::send_xcm(origin, dest, message)?;
+            Ok(().into())
+        }
     }
 
     impl<T: Config> Pallet<T> {
@@ -278,7 +354,46 @@ pub mod pallet {
             Ok(())
         }
 
-        pub fn do_xcm_asset_transfer(
+        pub fn do_transfer(
+            origin_output: CallOriginOutput<SubNetworkId, H256, ()>,
+            asset_id: AssetId,
+            sender: T::AccountId,
+            recipient: xcm::VersionedMultiLocation,
+            amount: u128,
+        ) {
+            frame_support::log::info!(
+                "Call transfer with params: {:?} by {:?}",
+                (asset_id, sender.clone(), recipient.clone(), amount),
+                origin_output
+            );
+            match Self::xcm_transfer_asset(asset_id, sender.clone(), recipient.clone(), amount) {
+                Ok(_) => {
+                    let message = SubstrateAppCall::ReportXCMTransferResult {
+                        message_id: origin_output.message_id,
+                        transfer_status: bridge_types::substrate::XCMAppTransferStatus::Success,
+                    };
+                    let xcm_mes_bytes = message.clone().prepare_message();
+                    let raw_origin = Some(sender.clone()).into();
+                    if let Err(e) = <T as Config>::OutboundChannel::submit(
+                        SubNetworkId::Mainnet,
+                        &raw_origin,
+                        &xcm_mes_bytes,
+                        (),
+                    ) {
+                        Self::deposit_event(Event::<T>::SubmittingToChannelError(e, asset_id));
+                        TrappedDoneResult::<T>::insert(origin_output.message_id, ());
+                        Self::deposit_event(Event::<T>::DoneMessageTrapped(
+                            origin_output.message_id,
+                        ));
+                    }
+                },
+                Err(_) => {
+                    Self::refund(sender, asset_id, amount, origin_output.message_id, recipient);
+                },
+            }
+        }
+
+        pub fn xcm_transfer_asset(
             asset_id: AssetId,
             sender: T::AccountId,
             recipient: xcm::VersionedMultiLocation,
@@ -296,12 +411,61 @@ pub mod pallet {
                 xcm::v3::WeightLimit::Unlimited,
             ) {
                 Self::deposit_event(Event::<T>::TrasferringAssetError(e, asset_id));
-                // dbushuev: the refund will be done via https://app.zenhub.com/workspaces/sora2-backend-62b9c0e3e9b9e600201273e3/issues/gh/sora-xor/sora2-parachain/106
                 return Err(e);
             }
 
             Self::deposit_event(Event::<T>::AssetTransferred(sender, recipient, asset_id, amount));
             Ok(())
+        }
+
+        /// Perform refund if XCM transfer returned an errror
+        pub fn refund(
+            account_id: T::AccountId,
+            asset_id: AssetId,
+            amount: u128,
+            message_id: H256,
+            recipient: xcm::VersionedMultiLocation,
+        ) {
+            let raw_origin = Some(account_id.clone()).into();
+            let message = SubstrateAppCall::ReportXCMTransferResult {
+                message_id,
+                transfer_status: bridge_types::substrate::XCMAppTransferStatus::XCMTransferError,
+            };
+            let xcm_mes_bytes = message.clone().prepare_message();
+            if let Err(e) = <T as Config>::OutboundChannel::submit(
+                SubNetworkId::Mainnet,
+                &raw_origin,
+                &xcm_mes_bytes,
+                (),
+            ) {
+                Self::deposit_event(Event::<T>::SubmittingToChannelError(e, asset_id));
+                Self::trap_asset(message_id, asset_id, account_id.clone(), recipient, amount);
+            }
+            Self::deposit_event(Event::<T>::AssetRefundSent(
+                message_id, account_id, asset_id, amount,
+            ));
+        }
+
+        /// Stores tokes that had not been refunded is some reason like an error
+        pub fn trap_asset(
+            message_id: H256,
+            asset_id: AssetId,
+            sender: T::AccountId,
+            recipient: xcm::VersionedMultiLocation,
+            amount: u128,
+        ) {
+            BridgeAssetTrap::<T>::insert(
+                message_id,
+                TrappedMessage {
+                    asset_id,
+                    sender: sender.clone(),
+                    recipient: recipient.clone(),
+                    amount,
+                },
+            );
+            Self::deposit_event(Event::<T>::BridgeAssetTrapped(
+                message_id, sender, asset_id, amount, recipient,
+            ));
         }
 
         /// Perform registration for mapping of an AssetId <-> Multilocation
@@ -408,5 +572,23 @@ pub mod pallet {
             };
             Ok(().into())
         }
+    }
+}
+
+pub trait XcmSender<T: Config> {
+    fn send_xcm(
+        origin: frame_system::pallet_prelude::OriginFor<T>,
+        dest: Box<xcm::VersionedMultiLocation>,
+        message: Box<xcm::VersionedXcm<()>>,
+    ) -> frame_support::pallet_prelude::DispatchResult;
+}
+
+impl<T: Config> XcmSender<T> for () {
+    fn send_xcm(
+            _origin: frame_system::pallet_prelude::OriginFor<T>,
+            _dest: Box<xcm::VersionedMultiLocation>,
+            _message: Box<xcm::VersionedXcm<()>>,
+        ) -> frame_support::pallet_prelude::DispatchResult {
+        Ok(())
     }
 }

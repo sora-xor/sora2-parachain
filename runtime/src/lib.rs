@@ -43,7 +43,7 @@ mod trader;
 mod weights;
 pub mod xcm_config;
 
-use bridge_types::SubNetworkId;
+use bridge_types::{GenericNetworkId, SubNetworkId};
 use codec::{Decode, Encode};
 use frame_support::{
     dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
@@ -576,6 +576,19 @@ impl xcm_app::Config for Runtime {
     type XcmTransfer = XTokens;
     type AccountIdConverter = sp_runtime::traits::Identity;
     type BalanceConverter = sp_runtime::traits::Identity;
+    type XcmSender = XCMSenderWrapper;
+}
+
+pub struct XCMSenderWrapper;
+
+impl xcm_app::XcmSender<Runtime> for XCMSenderWrapper {
+    fn send_xcm(
+        origin: frame_system::pallet_prelude::OriginFor<Runtime>,
+        dest: Box<xcm::VersionedMultiLocation>,
+        message: Box<xcm::VersionedXcm<()>>,
+    ) -> frame_support::pallet_prelude::DispatchResult {
+        PolkadotXcm::send(origin, dest, message)
+    }
 }
 
 impl xcm_app_sudo_wrapper::Config for Runtime {
@@ -654,6 +667,11 @@ impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
     }
 }
 
+parameter_types! {
+    /// Dima B. TODO: add features for Rococo, Kusama and Polkadot
+    pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Rococo);
+}
+
 impl substrate_bridge_channel::inbound::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Verifier = MultisigVerifier;
@@ -663,6 +681,7 @@ impl substrate_bridge_channel::inbound::Config for Runtime {
     type UnsignedLongevity = DataSignerLongevity;
     type MaxMessagePayloadSize = BridgeMaxMessagePayloadSize;
     type MaxMessagesPerCommit = BridgeMaxMessagesPerCommit;
+    type ThisNetworkId = ThisNetworkId;
 }
 
 pub struct TimepointProvider;
@@ -681,6 +700,7 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
     type AuxiliaryDigestHandler = LeafProvider;
     type WeightInfo = ();
     type TimepointProvider = TimepointProvider;
+    type ThisNetworkId = ThisNetworkId;
     // Required for MessageStatusNotifier and actually not used
     type AssetId = ();
     type Balance = ();
