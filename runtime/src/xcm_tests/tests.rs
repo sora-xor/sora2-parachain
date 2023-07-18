@@ -536,10 +536,76 @@ fn send_sibling_chain_asset_to_sibling_asset_trapped() {
             r.clone().event,
             crate::RuntimeEvent::XCMApp(xcm_app::Event::BridgeAssetTrapped(_, _, _, _, _))
         )));
-        let mes = crate::XCMApp::bridge_asset_trap(message_id()).expect("asset trap does not exist");
+        let mes = crate::XCMApp::bridge_asset_trap(1).expect("asset trap does not exist");
         assert_eq!(mes.amount, amount);
         assert_eq!(mes.asset_id, assetid);
-        assert_eq!(mes.sender, ALICE);
+        assert_eq!(mes.recipient, ALICE);
+    });
+}
+
+#[test]
+fn send_sibling_chain_asset_to_sora_asset_trapped() {
+    TestNet::reset();
+
+    Relay::execute_with(|| {
+        let _ = RelayBalances::deposit_creating(&sora_para_account(), 1000000000000000000);
+    });
+
+    prepare_sora_parachain();
+
+    SoraParachain::execute_with(|| {
+        let assetid = para_x_asset_id();
+
+        // fill queue
+        for _ in 0..crate::BridgeMaxMessagesPerCommit::get() {
+            let _ = crate::SubstrateBridgeOutboundChannel::submit(
+                SubNetworkId::Mainnet,
+                &frame_system::RawOrigin::Root,
+                &[],
+                (),
+            );
+        }
+        let amount = 10000000;
+        assert_ok!(crate::XCMApp::add_to_channel(            
+            ALICE,
+            assetid,
+            10000000,
+        ));
+        assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+            r.clone().event,
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
+        )));
+        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+            r.clone().event,
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::BridgeAssetTrapped(_, _, _, _, _))
+        )));
+        let mes = crate::XCMApp::bridge_asset_trap(1).expect("asset trap does not exist");
+        assert_eq!(mes.amount, amount);
+        assert_eq!(mes.asset_id, assetid);
+        assert_eq!(mes.recipient, ALICE);
+    });
+}
+
+#[test]
+fn claim_refund_bridge_asset_works() {
+    TestNet::reset();
+
+    Relay::execute_with(|| {
+        let _ = RelayBalances::deposit_creating(&sora_para_account(), 1000000000000000000);
+    });
+
+    prepare_sora_parachain();
+
+    SoraParachain::execute_with(|| {
+        let assetid = para_x_asset_id();
+        let amount = 10000000;
+        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE,  amount, true);
+        assert_ok!(crate::XCMApp::try_claim_bridge_asset(crate::RuntimeOrigin::root(), 1));
+        assert!(crate::XCMApp::bridge_asset_trap(0).is_none());
+        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+            r.clone().event,
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::TrappedMessageRefundSent(_, _, _, _))
+        )));
     });
 }
 
@@ -554,21 +620,18 @@ fn claim_bridge_asset_works() {
     prepare_sora_parachain();
 
     SoraParachain::execute_with(|| {
-        let location = MultiLocation::new(
-            1,
-            X2(
-                Parachain(1),
-                Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() },
-            ),
-        );
         let assetid = para_x_asset_id();
         let amount = 10000000;
-        crate::XCMApp::trap_asset(message_id(), assetid, ALICE, location.into(), amount);
-        assert_ok!(crate::XCMApp::try_claim_bridge_asset(crate::RuntimeOrigin::root(), message_id()));
-        assert!(crate::XCMApp::bridge_asset_trap(message_id()).is_none());
-        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE,  amount, false);
+        assert_ok!(crate::XCMApp::try_claim_bridge_asset(crate::RuntimeOrigin::root(), 1));
+        assert!(crate::XCMApp::bridge_asset_trap(0).is_none());
+        assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
             r.clone().event,
             crate::RuntimeEvent::XCMApp(xcm_app::Event::TrappedMessageRefundSent(_, _, _, _))
+        )));
+        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+            r.clone().event,
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::TrappedMessageSent(_, _, _))
         )));
     });
 }
@@ -584,16 +647,9 @@ fn claim_bridge_asset_fails() {
     prepare_sora_parachain();
 
     SoraParachain::execute_with(|| {
-        let location = MultiLocation::new(
-            1,
-            X2(
-                Parachain(1),
-                Junction::AccountId32 { network: Some(NetworkId::Rococo), id: BOB.into() },
-            ),
-        );
         let assetid = para_x_asset_id();
         let amount = 10000000;
-        crate::XCMApp::trap_asset(message_id(), assetid, ALICE, location.into(), amount);
+        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE, amount, true);
         
         // fill queue
         for _ in 0..crate::BridgeMaxMessagesPerCommit::get() {
@@ -605,14 +661,36 @@ fn claim_bridge_asset_fails() {
             );
         }
 
-        let _ = crate::XCMApp::try_claim_bridge_asset(crate::RuntimeOrigin::root(), message_id());
+        let _ = crate::XCMApp::try_claim_bridge_asset(crate::RuntimeOrigin::root(), 1);
         assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
             r.clone().event,
             crate::RuntimeEvent::XCMApp(xcm_app::Event::TrappedMessageRefundSent(_, _, _, _))
         )));
-        let mes = crate::XCMApp::bridge_asset_trap(message_id()).expect("asset trap does not exist");
+        let mes = crate::XCMApp::bridge_asset_trap(1).expect("asset trap does not exist");
         assert_eq!(mes.amount, amount);
         assert_eq!(mes.asset_id, assetid);
-        assert_eq!(mes.sender, ALICE);
+        assert_eq!(mes.recipient, ALICE);
+    });
+}
+
+#[test]
+fn trap_asset_nonce_works() {
+    TestNet::reset();
+
+    prepare_sora_parachain();
+
+    SoraParachain::execute_with(|| {
+        let assetid = para_x_asset_id();
+        let amount = 10000000;
+
+        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE,  amount, true);
+        assert!(crate::XCMApp::bridge_asset_trap(1).is_some());
+
+        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE,  amount, true);
+        assert!(crate::XCMApp::bridge_asset_trap(2).is_some());
+
+        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE,  amount, false);
+        assert!(crate::XCMApp::bridge_asset_trap(3).is_some());
+        assert!(crate::XCMApp::bridge_asset_trap(4).is_none());
     });
 }
