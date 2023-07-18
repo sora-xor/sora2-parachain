@@ -90,10 +90,15 @@ where
 
 #[derive(Clone, RuntimeDebug, Encode, Decode, PartialEq, Eq, scale_info::TypeInfo)]
 pub struct TrappedMessage<AccountId> {
+    /// Trapped Sora Asset Id
     pub asset_id: AssetId,
-    pub rec: AccountId,
+    /// AccountId iof an account on Sora that should recieve tokens
+    pub recipient: AccountId,
+    /// Bridge message id, if exists - shows the transaction message id to refund tokens
     pub message_id: Option<H256>,
+    /// Amount to send
     pub amount: u128,
+    /// Indicates if this trap is used to refund
     pub is_refund: bool,
 }
 
@@ -306,14 +311,14 @@ pub mod pallet {
             ensure_root(origin)?;
             let Some(TrappedMessage {
                 asset_id,
-                rec,
+                recipient,
                 amount,
                 message_id,
                 is_refund,
             }) = Self::bridge_asset_trap(nonce) else {
                 fail!(Error::<T>::TrappedMessageNotFound)
             };
-            let raw_origin = Some(rec.clone()).into();
+            let raw_origin = Some(recipient.clone()).into();
             let message_bytes = if is_refund {
                 // if we need to refund - send message to report that errror has occured
                 let Some(message_id) = message_id else {
@@ -325,19 +330,19 @@ pub mod pallet {
                 };
                 let mes_bytes = message.prepare_message();
                 Self::deposit_event(Event::<T>::TrappedMessageRefundSent(
-                    message_id, rec, asset_id, amount,
+                    message_id, recipient, asset_id, amount,
                 ));
                 mes_bytes
             } else {
                 // otherwise - send assets to bridge
                 let message = SubstrateAppCall::Transfer {
                     asset_id,
-                    recipient: T::AccountIdConverter::convert(rec.clone()),
+                    recipient: T::AccountIdConverter::convert(recipient.clone()),
                     sender: None,
                     amount,
                 };
                 let mes_bytes = message.clone().prepare_message();
-                Self::deposit_event(Event::<T>::TrappedMessageSent(rec, asset_id, amount));
+                Self::deposit_event(Event::<T>::TrappedMessageSent(recipient, asset_id, amount));
                 mes_bytes
             };
             
@@ -491,13 +496,15 @@ pub mod pallet {
             amount: u128,
             is_refund: bool,
         ) {
-            let nonce = BridgeAssetTrapNonce::<T>::get();
-            BridgeAssetTrapNonce::<T>::set(nonce.checked_add(1).unwrap_or(0));
+            let nonce = BridgeAssetTrapNonce::<T>::mutate(|n| {
+                *n = n.checked_add(1).unwrap_or(0);
+                *n
+            });
             BridgeAssetTrap::<T>::insert(
                 nonce,
                 TrappedMessage {
                     asset_id,
-                    rec: sender.clone(),
+                    recipient: sender.clone(),
                     message_id,
                     amount,
                     is_refund
