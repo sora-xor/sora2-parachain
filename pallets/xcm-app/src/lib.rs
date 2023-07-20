@@ -370,7 +370,7 @@ pub mod pallet {
             asset_id: AssetId,
             min_amount: u128,
         ) -> DispatchResultWithPostInfo {
-            ensure_root(origin.clone())?;
+            let _ = T::CallOrigin::ensure_origin(origin)?;
             let Some(multilocation) = Self::get_multilocation_from_asset_id(asset_id) else {
                 fail!(Error::<T>::MappingNotExist);
             };

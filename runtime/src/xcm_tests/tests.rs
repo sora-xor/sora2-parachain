@@ -85,13 +85,21 @@ fn prepare_sora_parachain() {
                 X2(Parachain(1), GeneralKey { length: 32, data: para_x_general_key() })
             )
         ));
+
+        let bridge_origin = dispatch::RawOrigin::new(bridge_types::types::CallOriginOutput {
+            network_id: SubNetworkId::Mainnet,
+            additional: (),
+            message_id: message_id(),
+            timepoint: GenericTimepoint::Sora(1),
+        });
+
         assert_ok!(crate::XCMApp::set_asset_minimum_amount(
-            crate::RuntimeOrigin::root(),
+            bridge_origin.clone().into(),
             relay_native_asset_id(),
             RELAY_ASSET_MIN_AMOUNT,
         ));
         assert_ok!(crate::XCMApp::set_asset_minimum_amount(
-            crate::RuntimeOrigin::root(),
+            bridge_origin.into(),
             para_x_asset_id(),
             PARA_X_ASSET_MIN_AMOUNT,
         ));
@@ -356,12 +364,6 @@ fn send_relay_chain_asset_to_sora_from_relay() {
     });
 
     SoraParachain::execute_with(|| {
-        print_events::<crate::Runtime>("Transfer to SORA");
-        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
-            r.event,
-            crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
-        )));
-
         assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
             == crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
                 SubstrateAppCall::Transfer {
@@ -407,6 +409,7 @@ fn send_to_sora_no_mapping_error() {
     });
 
     SoraParachain::execute_with(|| {
+        print_events::<crate::Runtime>("Transfer to SORA");
         assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
             r.event,
             crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
@@ -418,11 +421,16 @@ fn send_to_sora_no_mapping_error() {
 
         assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
             r.event,
-            crate::RuntimeEvent::DmpQueue(cumulus_pallet_dmp_queue::Event::ExecutedDownward {
-                message_id: _,
-                outcome: Outcome::Incomplete(_, xcm::v3::Error::FailedToTransactAsset(_)),
-            })
+            crate::RuntimeEvent::PolkadotXcm(pallet_xcm::Event::AssetsTrapped(_, _, _))
         )));
+
+        // assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+        //     r.event,
+        //     crate::RuntimeEvent::DmpQueue(cumulus_pallet_dmp_queue::Event::ExecutedDownward {
+        //         message_id: _,
+        //         outcome: Outcome::Incomplete(_, xcm::v3::Error::FailedToTransactAsset(_)),
+        //     })
+        // )));
     });
 }
 
@@ -470,7 +478,7 @@ fn send_from_sora_no_mapping_error() {
 }
 
 #[test]
-fn send_relay_chain_asset_to_sora_from_relay_asset_trapped() {
+fn send_relay_chain_asset_to_sora_from_relay_not_enough_tokens() {
     TestNet::reset();
 
     prepare_sora_parachain();
@@ -490,7 +498,7 @@ fn send_relay_chain_asset_to_sora_from_relay_asset_trapped() {
             Box::new(xcm::VersionedMultiAssets::V3(
                 vec![xcm::v3::MultiAsset {
                     id: Concrete(MultiLocation::new(0, Here)),
-                    fun: Fungible(1),
+                    fun: Fungible(RELAY_ASSET_MIN_AMOUNT - 1),
                 }]
                 .into()
             )),
@@ -499,6 +507,7 @@ fn send_relay_chain_asset_to_sora_from_relay_asset_trapped() {
     });
 
     SoraParachain::execute_with(|| {
+        print_events::<crate::Runtime>("");
         assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
             r.event,
             crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
@@ -507,14 +516,51 @@ fn send_relay_chain_asset_to_sora_from_relay_asset_trapped() {
         assert!(!frame_system::Pallet::<crate::Runtime>::events()
             .iter()
             .any(|r| matches!(r.event, crate::RuntimeEvent::SubstrateBridgeOutboundChannel(_))));
-
-        // check that asset are trapped
-        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
-            r.event,
-            crate::RuntimeEvent::PolkadotXcm(pallet_xcm::Event::AssetsTrapped(_, _, _))
-        )));
     });
 }
+
+#[test]
+fn send_relay_chain_asset_to_sora_from_relay_exact_enough_tokens() {
+    TestNet::reset();
+
+    prepare_sora_parachain();
+
+    Relay::execute_with(|| {
+        let _ = RelayBalances::deposit_creating(&ALICE, 1_000_000_000_000_000_000);
+        assert_ok!(relay::XcmPallet::reserve_transfer_assets(
+            Some(ALICE).into(),
+            Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
+                0,
+                X1(Junction::Parachain(2))
+            ))),
+            Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
+                0,
+                X1(Junction::AccountId32 { network: Some(NetworkId::Rococo), id: ALICE.into() })
+            ))),
+            Box::new(xcm::VersionedMultiAssets::V3(
+                vec![xcm::v3::MultiAsset {
+                    id: Concrete(MultiLocation::new(0, Here)),
+                    fun: Fungible(RELAY_ASSET_MIN_AMOUNT),
+                }]
+                .into()
+            )),
+            0,
+        ));
+    });
+
+    SoraParachain::execute_with(|| {
+        print_events::<crate::Runtime>("");
+        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
+            r.event,
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
+        )));
+
+        assert!(frame_system::Pallet::<crate::Runtime>::events()
+            .iter()
+            .any(|r| matches!(r.event, crate::RuntimeEvent::SubstrateBridgeOutboundChannel(_))));
+    });
+}
+
 
 #[test]
 fn send_sibling_chain_asset_to_sibling_asset_trapped() {
