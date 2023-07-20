@@ -32,6 +32,7 @@ use sp_runtime::traits::Zero;
 use sp_std::prelude::*;
 use xcm::{latest::Weight as XcmWeight, prelude::*};
 use xcm_executor::{traits::WeightTrader, Assets};
+use crate::XCMApp;
 
 pub struct ParachainTrader {
     pub weight: XcmWeight,
@@ -44,40 +45,60 @@ impl WeightTrader for ParachainTrader {
         Self { weight: XcmWeight::zero(), multi_location: None }
     }
 
-    fn buy_weight(&mut self, weight: XcmWeight, payment: Assets) -> Result<Assets, XcmError> {
-        log::trace!(target: "xcm::weight", "buy_weight weight: {:?}, payment: {:?}", weight, payment);
-        let asset_id = payment
-            .fungible
-            .iter()
-            .next()
-            .map_or(Err(XcmError::TooExpensive), |v| Ok(v.0))?;
+    fn buy_weight(&mut self, weight: XcmWeight, assets: Assets) -> Result<Assets, XcmError> {
+        log::trace!(target: "xcm::weight", "buy_weight weight: {:?}, payment: {:?}", weight, assets);
+        // let asset_id = assets
+        //     .fungible
+        //     .iter()
+        //     .next()
+        //     .map_or(Err(XcmError::TooExpensive), |v| Ok(v.0))?;
 
-        let required =
-            MultiAsset { id: asset_id.clone(), fun: Fungible(weight.ref_time() as u128) };
-
-        if let MultiAsset { fun: _, id: Concrete(ref id) } = &required {
-            self.multi_location = Some(id.clone());
-        } else {
+        // let assets = assets
+        //     .fungible;
+        if assets.fungible.len() == 0 {
+            return Err(XcmError::TooExpensive);
         }
 
-        let unused = payment.checked_sub(required).map_err(|_| XcmError::TooExpensive)?;
-        Ok(unused)
+
+        for (asset_id, val) in &assets.fungible {
+            // println!("asset_id {:?}, val {:?}", asset_id.clone(), val)
+            let ml = match asset_id {
+                Concrete(m) => m,
+                _ => return Err(XcmError::AssetNotFound),
+            };
+            let Some(minimum_amount) = XCMApp::asset_minimum_amount(ml) else {
+                return Err(XcmError::TooExpensive);
+            };
+            if *val < minimum_amount {
+                return Err(XcmError::TooExpensive);
+            }
+        }
+
+
+        // let required =
+        //     // MultiAsset { id: assets.fungible[0].0.clone(), fun: Fungible(weight.ref_time() as u128) };
+        //     MultiAsset { id: assets.fungible.iter().next().unwrap().0.clone(), fun: Fungible(*assets.fungible.iter().next().unwrap().1) };
+
+        // let unused = assets.checked_sub(required).map_err(|_| XcmError::TooExpensive)?;
+        Ok(assets)
+        // Ok(assets)
     }
 
     fn refund_weight(&mut self, weight: XcmWeight) -> Option<MultiAsset> {
-        log::trace!(
-            target: "xcm::weight", "refund_weight weight: {:?} ",
-            weight
-        );
-        match &self.multi_location {
-            None => None,
-            Some(ml) => {
-                if weight.is_zero() {
-                    None
-                } else {
-                    Some((ml.clone(), weight.ref_time() as u128).into())
-                }
-            },
-        }
+        // log::trace!(
+        //     target: "xcm::weight", "refund_weight weight: {:?} ",
+        //     weight
+        // );
+        // match &self.multi_location {
+        //     None => None,
+        //     Some(ml) => {
+        //         if weight.is_zero() {
+        //             None
+        //         } else {
+        //             Some((ml.clone(), weight.ref_time() as u128).into())
+        //         }
+        //     },
+        // }
+        None
     }
 }

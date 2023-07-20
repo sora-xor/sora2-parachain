@@ -178,6 +178,13 @@ pub mod pallet {
     pub type BridgeAssetTrapNonce<T: Config> = 
         StorageValue<_, u128, ValueQuery>;
 
+    /// Minimum amount of an asset that can be passed through incoming XCM message
+    #[pallet::storage]
+    #[pallet::getter(fn asset_minimum_amount)]
+    pub type AssetMinimumAmount<T: Config> =
+        StorageMap<_, Blake2_256, MultiLocation, u128, OptionQuery>;
+
+
     /// Stores successful Done result of a message if the result could not be sent back to Sora
     #[pallet::storage]
     #[pallet::getter(fn trapped_done_result)]
@@ -357,6 +364,21 @@ pub mod pallet {
         }
 
         #[pallet::call_index(3)]
+        #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
+        pub fn set_asset_minimum_amount(
+            origin: OriginFor<T>,
+            asset_id: AssetId,
+            min_amount: u128,
+        ) -> DispatchResultWithPostInfo {
+            ensure_root(origin.clone())?;
+            let Some(multilocation) = Self::get_multilocation_from_asset_id(asset_id) else {
+                fail!(Error::<T>::MappingNotExist);
+            };
+            AssetMinimumAmount::<T>::set(multilocation, Some(min_amount));
+            Ok(().into())
+        }
+
+        #[pallet::call_index(4)]
         #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
         pub fn sudo_send_xcm(
             origin: OriginFor<T>,
