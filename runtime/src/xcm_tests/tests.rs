@@ -409,7 +409,6 @@ fn send_to_sora_no_mapping_error() {
     });
 
     SoraParachain::execute_with(|| {
-        print_events::<crate::Runtime>("Transfer to SORA");
         assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
             r.event,
             crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
@@ -423,14 +422,6 @@ fn send_to_sora_no_mapping_error() {
             r.event,
             crate::RuntimeEvent::PolkadotXcm(pallet_xcm::Event::AssetsTrapped(_, _, _))
         )));
-
-        // assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
-        //     r.event,
-        //     crate::RuntimeEvent::DmpQueue(cumulus_pallet_dmp_queue::Event::ExecutedDownward {
-        //         message_id: _,
-        //         outcome: Outcome::Incomplete(_, xcm::v3::Error::FailedToTransactAsset(_)),
-        //     })
-        // )));
     });
 }
 
@@ -507,7 +498,6 @@ fn send_relay_chain_asset_to_sora_from_relay_not_enough_tokens() {
     });
 
     SoraParachain::execute_with(|| {
-        print_events::<crate::Runtime>("");
         assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
             r.event,
             crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
@@ -549,7 +539,6 @@ fn send_relay_chain_asset_to_sora_from_relay_exact_enough_tokens() {
     });
 
     SoraParachain::execute_with(|| {
-        print_events::<crate::Runtime>("");
         assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
             r.event,
             crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
