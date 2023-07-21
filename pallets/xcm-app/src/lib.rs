@@ -218,7 +218,7 @@ pub mod pallet {
         TrappedMessageRefundSent(H256, T::AccountId, AssetId, u128),
         /// [To, AssetId, amount, MessageId]
         TrappedMessageSent(T::AccountId, AssetId, u128),
-        /// [To, AssetId, amount, MessageId]
+        /// [AssetId, amount]
         AssetMinimumAmountSet(AssetId, u128),
 
         // Error events:
