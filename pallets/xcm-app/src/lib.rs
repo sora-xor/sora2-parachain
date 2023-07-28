@@ -81,9 +81,10 @@ where
             XCMAppCall::Transfer { sender, recipient, amount, asset_id } => {
                 Call::transfer { sender: sender.into(), recipient, amount, asset_id }
             },
-            XCMAppCall::RegisterAsset { asset_id, sidechain_asset, asset_kind } => {
-                Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind }
+            XCMAppCall::RegisterAsset { asset_id, sidechain_asset, asset_kind , minimal_xcm_amount} => {
+                Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind, minimal_xcm_amount }
             },
+            XCMAppCall::SetAssetMinAmount { asset_id, minimal_xcm_amount } => Call::set_asset_minimum_amount { asset_id, minimal_xcm_amount },
         }
     }
 }
@@ -178,6 +179,13 @@ pub mod pallet {
     pub type BridgeAssetTrapNonce<T: Config> = 
         StorageValue<_, u128, ValueQuery>;
 
+    /// Minimum amount of an asset that can be passed through incoming XCM message
+    #[pallet::storage]
+    #[pallet::getter(fn asset_minimum_amount)]
+    pub type AssetMinimumAmount<T: Config> =
+        StorageMap<_, Blake2_256, MultiLocation, u128, OptionQuery>;
+
+
     /// Stores successful Done result of a message if the result could not be sent back to Sora
     #[pallet::storage]
     #[pallet::getter(fn trapped_done_result)]
@@ -210,6 +218,8 @@ pub mod pallet {
         TrappedMessageRefundSent(H256, T::AccountId, AssetId, u128),
         /// [To, AssetId, amount, MessageId]
         TrappedMessageSent(T::AccountId, AssetId, u128),
+        /// [AssetId, amount]
+        AssetMinimumAmountSet(AssetId, u128),
 
         // Error events:
         /// Error while submitting to outbound channel
@@ -275,6 +285,7 @@ pub mod pallet {
             asset_id: AssetId,
             multiasset: xcm::v3::AssetId,
             asset_kind: bridge_types::types::AssetKind,
+            minimal_xcm_amount: u128,
         ) -> DispatchResultWithPostInfo {
             let res = T::CallOrigin::ensure_origin(origin)?;
             frame_support::log::info!(
@@ -288,6 +299,7 @@ pub mod pallet {
             };
 
             Self::register_mapping(asset_id, multilocation)?;
+            AssetMinimumAmount::<T>::set(multilocation, Some(minimal_xcm_amount));
 
             T::OutboundChannel::submit(
                 SubNetworkId::Mainnet,
@@ -357,6 +369,22 @@ pub mod pallet {
         }
 
         #[pallet::call_index(3)]
+        #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
+        pub fn set_asset_minimum_amount(
+            origin: OriginFor<T>,
+            asset_id: AssetId,
+            minimal_xcm_amount: u128,
+        ) -> DispatchResultWithPostInfo {
+            let _ = T::CallOrigin::ensure_origin(origin)?;
+            let Some(multilocation) = Self::get_multilocation_from_asset_id(asset_id) else {
+                fail!(Error::<T>::MappingNotExist);
+            };
+            AssetMinimumAmount::<T>::set(multilocation, Some(minimal_xcm_amount));
+            Self::deposit_event(Event::<T>::AssetMinimumAmountSet(asset_id, minimal_xcm_amount));
+            Ok(().into())
+        }
+
+        #[pallet::call_index(4)]
         #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
         pub fn sudo_send_xcm(
             origin: OriginFor<T>,
