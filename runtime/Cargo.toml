@@ -209,6 +209,4 @@ parachain-gen = []
 
 rococo = []
 
-kusama = []
-
 polkadot = []
