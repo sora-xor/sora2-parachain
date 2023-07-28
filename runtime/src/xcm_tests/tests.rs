@@ -29,7 +29,9 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use super::*;
-use bridge_types::{substrate::SubstrateAppCall, GenericTimepoint, SubNetworkId, traits::OutboundChannel};
+use bridge_types::{
+    substrate::SubstrateAppCall, traits::OutboundChannel, GenericTimepoint, SubNetworkId,
+};
 use cumulus_primitives_core::ParaId;
 use frame_support::{assert_ok, traits::Currency};
 use orml_traits::MultiCurrency;
@@ -124,10 +126,7 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
             Box::new(
                 MultiLocation::new(
                     1,
-                    X2(
-                        Parachain(2),
-                        Junction::AccountId32 { network: None, id: BOB.into() }
-                    )
+                    X2(Parachain(2), Junction::AccountId32 { network: None, id: BOB.into() })
                 )
                 .into()
             ),
@@ -180,10 +179,7 @@ fn send_sibling_asset_to_sora_from_sibling() {
             Box::new(
                 MultiLocation::new(
                     1,
-                    X2(
-                        Parachain(2),
-                        Junction::AccountId32 { network: None, id: BOB.into() }
-                    )
+                    X2(Parachain(2), Junction::AccountId32 { network: None, id: BOB.into() })
                 )
                 .into()
             ),
@@ -221,10 +217,7 @@ fn send_relay_chain_asset_to_sibling() {
     SoraParachain::execute_with(|| {
         let location = MultiLocation::new(
             1,
-            X2(
-                Parachain(1),
-                Junction::AccountId32 { network: None, id: BOB.into() },
-            ),
+            X2(Parachain(1), Junction::AccountId32 { network: None, id: BOB.into() }),
         );
         let assetid = relay_native_asset_id();
         assert_ok!(crate::XCMApp::transfer(
@@ -265,10 +258,7 @@ fn send_sibling_chain_asset_to_sibling() {
     SoraParachain::execute_with(|| {
         let location = MultiLocation::new(
             1,
-            X2(
-                Parachain(1),
-                Junction::AccountId32 { network: None, id: BOB.into() },
-            ),
+            X2(Parachain(1), Junction::AccountId32 { network: None, id: BOB.into() }),
         );
         let assetid = para_x_asset_id();
         assert_ok!(crate::XCMApp::transfer(
@@ -304,10 +294,8 @@ fn send_relay_chain_asset_to_relay_chain() {
     prepare_sora_parachain();
 
     SoraParachain::execute_with(|| {
-        let location = MultiLocation::new(
-            1,
-            X1(Junction::AccountId32 { network: None, id: ALICE.into() }),
-        );
+        let location =
+            MultiLocation::new(1, X1(Junction::AccountId32 { network: None, id: ALICE.into() }));
         let assetid = relay_native_asset_id();
         assert_ok!(crate::XCMApp::transfer(
             dispatch::RawOrigin::new(bridge_types::types::CallOriginOutput {
@@ -396,10 +384,7 @@ fn send_to_sora_no_mapping_error() {
             Box::new(
                 MultiLocation::new(
                     1,
-                    X2(
-                        Parachain(2),
-                        Junction::AccountId32 { network: None, id: BOB.into() }
-                    )
+                    X2(Parachain(2), Junction::AccountId32 { network: None, id: BOB.into() })
                 )
                 .into()
             ),
@@ -436,10 +421,7 @@ fn send_from_sora_no_mapping_error() {
     SoraParachain::execute_with(|| {
         let location = MultiLocation::new(
             1,
-            X2(
-                Parachain(1),
-                Junction::AccountId32 { network: None, id: BOB.into() },
-            ),
+            X2(Parachain(1), Junction::AccountId32 { network: None, id: BOB.into() }),
         );
         let assetid = relay_native_asset_id();
         assert_ok!(crate::XCMApp::transfer(
@@ -550,7 +532,6 @@ fn send_relay_chain_asset_to_sora_from_relay_exact_enough_tokens() {
     });
 }
 
-
 #[test]
 fn send_sibling_chain_asset_to_sibling_asset_trapped() {
     TestNet::reset();
@@ -626,11 +607,7 @@ fn send_sibling_chain_asset_to_sora_asset_trapped() {
             );
         }
         let amount = 10000000;
-        assert_ok!(crate::XCMApp::add_to_channel(            
-            ALICE,
-            assetid,
-            10000000,
-        ));
+        assert_ok!(crate::XCMApp::add_to_channel(ALICE, assetid, 10000000,));
         assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
             r.clone().event,
             crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
@@ -659,7 +636,7 @@ fn claim_refund_bridge_asset_works() {
     SoraParachain::execute_with(|| {
         let assetid = para_x_asset_id();
         let amount = 10000000;
-        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE,  amount, true);
+        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE, amount, true);
         assert_ok!(crate::XCMApp::try_claim_bridge_asset(crate::RuntimeOrigin::root(), 1));
         assert!(crate::XCMApp::bridge_asset_trap(0).is_none());
         assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
@@ -682,7 +659,7 @@ fn claim_bridge_asset_works() {
     SoraParachain::execute_with(|| {
         let assetid = para_x_asset_id();
         let amount = 10000000;
-        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE,  amount, false);
+        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE, amount, false);
         assert_ok!(crate::XCMApp::try_claim_bridge_asset(crate::RuntimeOrigin::root(), 1));
         assert!(crate::XCMApp::bridge_asset_trap(0).is_none());
         assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
@@ -710,7 +687,7 @@ fn claim_bridge_asset_fails() {
         let assetid = para_x_asset_id();
         let amount = 10000000;
         crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE, amount, true);
-        
+
         // fill queue
         for _ in 0..crate::BridgeMaxMessagesPerCommit::get() {
             let _ = crate::SubstrateBridgeOutboundChannel::submit(
@@ -743,13 +720,13 @@ fn trap_asset_nonce_works() {
         let assetid = para_x_asset_id();
         let amount = 10000000;
 
-        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE,  amount, true);
+        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE, amount, true);
         assert!(crate::XCMApp::bridge_asset_trap(1).is_some());
 
-        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE,  amount, true);
+        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE, amount, true);
         assert!(crate::XCMApp::bridge_asset_trap(2).is_some());
 
-        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE,  amount, false);
+        crate::XCMApp::trap_asset(Some(message_id()), assetid, ALICE, amount, false);
         assert!(crate::XCMApp::bridge_asset_trap(3).is_some());
         assert!(crate::XCMApp::bridge_asset_trap(4).is_none());
     });

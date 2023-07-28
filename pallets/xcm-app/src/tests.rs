@@ -219,7 +219,10 @@ fn it_works_register_asset() {
             AssetKind::Sidechain,
             100000,
         ));
-        assert_eq!(XCMApp::asset_minimum_amount(multiasset.clone()).expect("Min amount not set"), 100000);
+        assert_eq!(
+            XCMApp::asset_minimum_amount(multiasset.clone()).expect("Min amount not set"),
+            100000
+        );
         assert_eq!(
             XCMApp::get_multilocation_from_asset_id::<H256>(asset_id.into())
                 .expect("it_works_register_asset, Create: multilocation is None"),

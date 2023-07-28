@@ -130,7 +130,7 @@ impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
         _payload: &[u8],
         _additional: (),
     ) -> Result<H256, sp_runtime::DispatchError> {
-            Ok([1; 32].into())
+        Ok([1; 32].into())
     }
 }
 
