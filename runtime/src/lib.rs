@@ -43,7 +43,7 @@ mod trader;
 mod weights;
 pub mod xcm_config;
 
-use bridge_types::{SubNetworkId, GenericNetworkId};
+use bridge_types::{GenericNetworkId, SubNetworkId};
 use codec::{Decode, Encode};
 use frame_support::{
     dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
@@ -576,6 +576,19 @@ impl xcm_app::Config for Runtime {
     type XcmTransfer = XTokens;
     type AccountIdConverter = sp_runtime::traits::Identity;
     type BalanceConverter = sp_runtime::traits::Identity;
+    type XcmSender = XCMSenderWrapper;
+}
+
+pub struct XCMSenderWrapper;
+
+impl xcm_app::XcmSender<Runtime> for XCMSenderWrapper {
+    fn send_xcm(
+        origin: frame_system::pallet_prelude::OriginFor<Runtime>,
+        dest: Box<xcm::VersionedMultiLocation>,
+        message: Box<xcm::VersionedXcm<()>>,
+    ) -> frame_support::pallet_prelude::DispatchResult {
+        PolkadotXcm::send(origin, dest, message)
+    }
 }
 
 #[cfg(feature = "rococo")]
@@ -730,6 +743,7 @@ impl bridge_data_signer::Config for Runtime {
     type MaxPeers = BridgeMaxPeers;
     type UnsignedPriority = DataSignerPriority;
     type UnsignedLongevity = DataSignerLongevity;
+    type WeightInfo = bridge_data_signer::weights::WeightInfo<Runtime>;
 }
 
 impl multisig_verifier::Config for Runtime {
@@ -741,6 +755,7 @@ impl multisig_verifier::Config for Runtime {
     >;
     type OutboundChannel = SubstrateBridgeOutboundChannel;
     type MaxPeers = BridgeMaxPeers;
+    type WeightInfo = multisig_verifier::weights::WeightInfo<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

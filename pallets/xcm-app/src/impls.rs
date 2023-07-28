@@ -78,7 +78,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
             target: "xcm::XCMApp",
             "ensure_can_withdraw",
         );
-        Ok(())
+        fail!(Error::<T>::MethodNotAvailible)
     }
 
     fn transfer(
@@ -133,7 +133,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
             target: "xcm::XCMApp",
             "can_slash",
         );
-        true
+        false
     }
 
     fn slash(
