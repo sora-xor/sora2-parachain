@@ -81,10 +81,10 @@ where
             XCMAppCall::Transfer { sender, recipient, amount, asset_id } => {
                 Call::transfer { sender: sender.into(), recipient, amount, asset_id }
             },
-            XCMAppCall::RegisterAsset { asset_id, sidechain_asset, asset_kind , min_amount} => {
-                Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind, min_amount }
+            XCMAppCall::RegisterAsset { asset_id, sidechain_asset, asset_kind , minimal_xcm_amount} => {
+                Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind, minimal_xcm_amount }
             },
-            XCMAppCall::SetAssetMinAmount { asset_id, min_amount } => Call::set_asset_minimum_amount { asset_id, min_amount },
+            XCMAppCall::SetAssetMinAmount { asset_id, minimal_xcm_amount } => Call::set_asset_minimum_amount { asset_id, minimal_xcm_amount },
         }
     }
 }
@@ -285,7 +285,7 @@ pub mod pallet {
             asset_id: AssetId,
             multiasset: xcm::v3::AssetId,
             asset_kind: bridge_types::types::AssetKind,
-            min_amount: u128,
+            minimal_xcm_amount: u128,
         ) -> DispatchResultWithPostInfo {
             let res = T::CallOrigin::ensure_origin(origin)?;
             frame_support::log::info!(
@@ -299,7 +299,7 @@ pub mod pallet {
             };
 
             Self::register_mapping(asset_id, multilocation)?;
-            AssetMinimumAmount::<T>::set(multilocation, Some(min_amount));
+            AssetMinimumAmount::<T>::set(multilocation, Some(minimal_xcm_amount));
 
             T::OutboundChannel::submit(
                 SubNetworkId::Mainnet,
@@ -373,14 +373,14 @@ pub mod pallet {
         pub fn set_asset_minimum_amount(
             origin: OriginFor<T>,
             asset_id: AssetId,
-            min_amount: u128,
+            minimal_xcm_amount: u128,
         ) -> DispatchResultWithPostInfo {
             let _ = T::CallOrigin::ensure_origin(origin)?;
             let Some(multilocation) = Self::get_multilocation_from_asset_id(asset_id) else {
                 fail!(Error::<T>::MappingNotExist);
             };
-            AssetMinimumAmount::<T>::set(multilocation, Some(min_amount));
-            Self::deposit_event(Event::<T>::AssetMinimumAmountSet(asset_id, min_amount));
+            AssetMinimumAmount::<T>::set(multilocation, Some(minimal_xcm_amount));
+            Self::deposit_event(Event::<T>::AssetMinimumAmountSet(asset_id, minimal_xcm_amount));
             Ok(().into())
         }
 

@@ -733,6 +733,7 @@ impl bridge_data_signer::Config for Runtime {
     type MaxPeers = BridgeMaxPeers;
     type UnsignedPriority = DataSignerPriority;
     type UnsignedLongevity = DataSignerLongevity;
+    type WeightInfo = bridge_data_signer::weights::WeightInfo<Runtime>;
 }
 
 impl multisig_verifier::Config for Runtime {
@@ -744,6 +745,7 @@ impl multisig_verifier::Config for Runtime {
     >;
     type OutboundChannel = SubstrateBridgeOutboundChannel;
     type MaxPeers = BridgeMaxPeers;
+    type WeightInfo = multisig_verifier::weights::WeightInfo<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
