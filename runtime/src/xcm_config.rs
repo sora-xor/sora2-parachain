@@ -69,7 +69,6 @@ parameter_types! {
 
 parameter_types! {
     pub const RelayLocation: MultiLocation = MultiLocation::parent();
-    // pub const RelayNetwork: NetworkId = NetworkId::Rococo;
     pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
     pub Ancestry: MultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
     pub UniversalLocation: InteriorMultiLocation =
@@ -243,7 +242,6 @@ parameter_type_with_key! {
 pub struct AccountIdToMultiLocation;
 impl sp_runtime::traits::Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
     fn convert(account: AccountId) -> MultiLocation {
-        // X1(AccountId32 { network: Some(NetworkId::Rococo), id: account.into() }).into()
         X1(AccountId32 { network: None, id: account.into() }).into()
     }
 }

@@ -240,17 +240,17 @@ impl Convert<MultiAsset, Option<CurrencyId>> for CurrencyIdConvert {
     }
 }
 
-// #[cfg(feature = "rococo")]
+#[cfg(feature = "rococo")]
 parameter_types! {
     pub const RelayNetwork: NetworkId = NetworkId::Rococo;
 }
 
-// #[cfg(feature = "polkadot")]
-// parameter_types! {
-//     pub const RelayNetwork: NetworkId = NetworkId::Polkadot;
-// }
+#[cfg(feature = "polkadot")]
+parameter_types! {
+    pub const RelayNetwork: NetworkId = NetworkId::Polkadot;
+}
 
-// #[cfg(not(any(feature = "rococo", feature = "polkadot")))]
-// parameter_types! {
-//     pub const RelayNetwork: NetworkId = NetworkId::Kusama;
-// }
+#[cfg(not(any(feature = "rococo", feature = "polkadot")))]
+parameter_types! {
+    pub const RelayNetwork: NetworkId = NetworkId::Kusama;
+}
