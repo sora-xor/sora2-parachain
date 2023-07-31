@@ -28,9 +28,9 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use crate::XCMApp;
 use xcm::{latest::Weight as XcmWeight, prelude::*};
 use xcm_executor::{traits::WeightTrader, Assets};
-use crate::XCMApp;
 
 /// Does not take any fees but checks if there are enought assets to pass through the bridge
 pub struct ParachainTrader;

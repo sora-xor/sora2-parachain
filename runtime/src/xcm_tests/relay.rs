@@ -38,6 +38,7 @@ use sp_core::H256;
 use sp_runtime::{testing::Header, traits::IdentityLookup, AccountId32};
 use xcm::latest::Weight;
 
+use super::RelayNetwork;
 use cumulus_primitives_core::ParaId;
 use polkadot_runtime_parachains::{configuration, origin, shared, ump};
 use xcm::latest::prelude::*;
@@ -48,7 +49,6 @@ use xcm_builder::{
     TakeWeightCredit, UsingComponents,
 };
 use xcm_executor::{Config, XcmExecutor};
-use super::RelayNetwork;
 
 pub type AccountId = AccountId32;
 pub type Balance = u128;

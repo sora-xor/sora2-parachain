@@ -254,4 +254,3 @@ parameter_types! {
 // parameter_types! {
 //     pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 // }
-

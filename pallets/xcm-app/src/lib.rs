@@ -43,6 +43,7 @@ pub mod weights;
 pub use pallet::*;
 
 use bridge_types::substrate::XCMAppCall;
+use bridge_types::H256;
 use codec::{Decode, Encode};
 use frame_support::weights::Weight;
 use orml_traits::xcm_transfer::XcmTransfer;
@@ -54,7 +55,6 @@ use xcm::{
     opaque::latest::{AssetId::Concrete, Fungibility::Fungible},
     v3::{MultiAsset, MultiLocation},
 };
-use bridge_types::H256;
 
 pub type ParachainAssetId = xcm::VersionedMultiAsset;
 
@@ -79,10 +79,20 @@ where
             XCMAppCall::Transfer { sender, recipient, amount, asset_id } => {
                 Call::transfer { sender: sender.into(), recipient, amount, asset_id }
             },
-            XCMAppCall::RegisterAsset { asset_id, sidechain_asset, asset_kind , minimal_xcm_amount} => {
-                Call::register_asset { asset_id, multiasset: sidechain_asset, asset_kind, minimal_xcm_amount }
+            XCMAppCall::RegisterAsset {
+                asset_id,
+                sidechain_asset,
+                asset_kind,
+                minimal_xcm_amount,
+            } => Call::register_asset {
+                asset_id,
+                multiasset: sidechain_asset,
+                asset_kind,
+                minimal_xcm_amount,
             },
-            XCMAppCall::SetAssetMinAmount { asset_id, minimal_xcm_amount } => Call::set_asset_minimum_amount { asset_id, minimal_xcm_amount },
+            XCMAppCall::SetAssetMinAmount { asset_id, minimal_xcm_amount } => {
+                Call::set_asset_minimum_amount { asset_id, minimal_xcm_amount }
+            },
         }
     }
 }
@@ -174,15 +184,13 @@ pub mod pallet {
     /// Nonce for trapped message
     #[pallet::storage]
     #[pallet::getter(fn bridge_asset_trap_nonce)]
-    pub type BridgeAssetTrapNonce<T: Config> = 
-        StorageValue<_, u128, ValueQuery>;
+    pub type BridgeAssetTrapNonce<T: Config> = StorageValue<_, u128, ValueQuery>;
 
     /// Minimum amount of an asset that can be passed through incoming XCM message
     #[pallet::storage]
     #[pallet::getter(fn asset_minimum_amount)]
     pub type AssetMinimumAmount<T: Config> =
         StorageMap<_, Blake2_256, MultiLocation, u128, OptionQuery>;
-
 
     /// Stores successful Done result of a message if the result could not be sent back to Sora
     #[pallet::storage]
@@ -336,7 +344,8 @@ pub mod pallet {
                 };
                 let message = SubstrateAppCall::ReportXCMTransferResult {
                     message_id,
-                    transfer_status: bridge_types::substrate::XCMAppTransferStatus::XCMTransferError,
+                    transfer_status:
+                        bridge_types::substrate::XCMAppTransferStatus::XCMTransferError,
                 };
                 let mes_bytes = message.prepare_message();
                 Self::deposit_event(Event::<T>::TrappedMessageRefundSent(
@@ -355,7 +364,7 @@ pub mod pallet {
                 Self::deposit_event(Event::<T>::TrappedMessageSent(recipient, asset_id, amount));
                 mes_bytes
             };
-            
+
             <T as Config>::OutboundChannel::submit(
                 SubNetworkId::Mainnet,
                 &raw_origin,
@@ -488,12 +497,7 @@ pub mod pallet {
         }
 
         /// Perform refund if XCM transfer returned an errror
-        pub fn refund(
-            account_id: T::AccountId,
-            asset_id: AssetId,
-            amount: u128,
-            message_id: H256,
-        ) {
+        pub fn refund(account_id: T::AccountId, asset_id: AssetId, amount: u128, message_id: H256) {
             let raw_origin = Some(account_id.clone()).into();
             let message = SubstrateAppCall::ReportXCMTransferResult {
                 message_id,
@@ -533,7 +537,7 @@ pub mod pallet {
                     recipient: sender.clone(),
                     message_id,
                     amount,
-                    is_refund
+                    is_refund,
                 },
             );
             Self::deposit_event(Event::<T>::BridgeAssetTrapped(
@@ -658,10 +662,10 @@ pub trait XcmSender<T: Config> {
 
 impl<T: Config> XcmSender<T> for () {
     fn send_xcm(
-            _origin: frame_system::pallet_prelude::OriginFor<T>,
-            _dest: Box<xcm::VersionedMultiLocation>,
-            _message: Box<xcm::VersionedXcm<()>>,
-        ) -> frame_support::pallet_prelude::DispatchResult {
+        _origin: frame_system::pallet_prelude::OriginFor<T>,
+        _dest: Box<xcm::VersionedMultiLocation>,
+        _message: Box<xcm::VersionedXcm<()>>,
+    ) -> frame_support::pallet_prelude::DispatchResult {
         Ok(())
     }
 }
