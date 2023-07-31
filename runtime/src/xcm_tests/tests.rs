@@ -525,7 +525,7 @@ fn send_relay_chain_asset_to_sora_from_relay_exact_enough_tokens() {
             ))),
             Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
                 0,
-                X1(Junction::AccountId32 { network: Some(NetworkId::Rococo), id: ALICE.into() })
+                X1(Junction::AccountId32 { network: None, id: ALICE.into() })
             ))),
             Box::new(xcm::VersionedMultiAssets::V3(
                 vec![xcm::v3::MultiAsset {

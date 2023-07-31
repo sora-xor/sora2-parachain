@@ -64,6 +64,10 @@ pub trait WeightInfo {
     fn register_asset() -> Weight;
 
     fn try_claim_bridge_asset() -> Weight; 
+
+    fn set_asset_minimum_amount() -> Weight; 
+    
+    fn sudo_send_xcm() -> Weight; 
 }
 
 impl<T: Config> From<XCMAppCall> for Call<T>
@@ -363,7 +367,7 @@ pub mod pallet {
         }
 
         #[pallet::call_index(3)]
-        #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
+        #[pallet::weight(<T as Config>::WeightInfo::set_asset_minimum_amount())]
         pub fn set_asset_minimum_amount(
             origin: OriginFor<T>,
             asset_id: AssetId,
@@ -379,7 +383,7 @@ pub mod pallet {
         }
 
         #[pallet::call_index(4)]
-        #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
+        #[pallet::weight(<T as Config>::WeightInfo::sudo_send_xcm())]
         pub fn sudo_send_xcm(
             origin: OriginFor<T>,
             dest: Box<xcm::VersionedMultiLocation>,

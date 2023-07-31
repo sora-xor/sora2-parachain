@@ -56,6 +56,18 @@ impl<T: frame_system::Config> crate::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
     }
+
+	fn set_asset_minimum_amount() -> Weight {
+		Weight::from_ref_time(17_000_000)
+			.saturating_add(T::DbWeight::get().reads(1))
+			.saturating_add(T::DbWeight::get().writes(2))
+    }
+
+	fn sudo_send_xcm() -> Weight {
+		Weight::from_ref_time(17_000_000)
+			.saturating_add(T::DbWeight::get().reads(1))
+			.saturating_add(T::DbWeight::get().writes(2))
+    }
 }
 
 
@@ -69,6 +81,14 @@ impl crate::WeightInfo for () {
     }
 
 	fn try_claim_bridge_asset() -> Weight {
+        EXTRINSIC_FIXED_WEIGHT
+    }
+
+	fn set_asset_minimum_amount() -> Weight {
+        EXTRINSIC_FIXED_WEIGHT
+    }
+
+	fn sudo_send_xcm() -> Weight {
         EXTRINSIC_FIXED_WEIGHT
     }
 }

@@ -829,6 +829,7 @@ mod benches {
     );
 }
 
+
 impl_runtime_apis! {
     impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
         fn slot_duration() -> sp_consensus_aura::SlotDuration {
