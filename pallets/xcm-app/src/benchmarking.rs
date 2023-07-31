@@ -70,10 +70,10 @@ benchmarks! {
     }
 
     try_claim_bridge_asset {
-        // trap_asset:
         let message_id = [0; 32].into();
         let asset_id = [1; 32].into();
         let amount = 500;
+                // trap_asset:
         XCMApp::<T>::trap_asset(Some(message_id), asset_id, alice::<T>(), amount, true);
     }: _(RawOrigin::Root, 1)
     verify {
