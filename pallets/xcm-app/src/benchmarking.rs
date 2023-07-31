@@ -48,7 +48,7 @@ benchmarks! {
     register_asset {
         let asset_id = [1; 32].into();
         let multilocation = test_multilocation();
-    }: _(RawOrigin::Root, asset_id, multilocation.clone().into(), bridge_types::types::AssetKind::Thischain)
+    }: _(RawOrigin::Root, asset_id, multilocation.clone().into(), bridge_types::types::AssetKind::Thischain, 1000)
     verify {
         assert_eq!(
             XCMApp::<T>::get_multilocation_from_asset_id(asset_id)
@@ -76,10 +76,10 @@ benchmarks! {
         let message_id = [0; 32].into();
         let asset_id = [1; 32].into();
         let amount = 500;
-        XCMApp::<T>::trap_asset(message_id, asset_id, alice::<T>(), test_multilocation().into(), amount);
-    }: _(RawOrigin::Root, message_id)
+        XCMApp::<T>::trap_asset(Some(message_id), asset_id, alice::<T>(), amount, true);
+    }: _(RawOrigin::Root, 1)
     verify {
-        assert!(XCMApp::<T>::bridge_asset_trap(message_id).is_none());
+        assert!(XCMApp::<T>::bridge_asset_trap(1).is_none());
     }
 }
 
