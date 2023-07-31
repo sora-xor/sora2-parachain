@@ -33,9 +33,7 @@ use crate::Pallet as XCMApp;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
 use frame_system::RawOrigin;
 use xcm::{
-    opaque::latest::{
-        Junction::{GeneralKey},
-    },
+    opaque::latest::Junction::GeneralKey,
     v3::MultiLocation,
 };
 
@@ -80,6 +78,16 @@ benchmarks! {
     }: _(RawOrigin::Root, 1)
     verify {
         assert!(XCMApp::<T>::bridge_asset_trap(1).is_none());
+    }
+
+    set_asset_minimum_amount {
+        let asset_id = [1; 32].into();
+        let amount = 500;
+        let multilocation = test_multilocation();
+        let _ = XCMApp::<T>::register_asset(RawOrigin::Root.into(), asset_id, multilocation.clone().into(), bridge_types::types::AssetKind::Thischain, 1000);
+    }: _(RawOrigin::Root, asset_id, amount)
+    verify {
+        assert_eq!(XCMApp::<T>::asset_minimum_amount(multilocation).expect("set_asset_minimum_amount: no min amount"), amount);
     }
 }
 

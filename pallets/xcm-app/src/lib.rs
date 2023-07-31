@@ -67,6 +67,7 @@ pub trait WeightInfo {
 
     fn set_asset_minimum_amount() -> Weight; 
     
+    // since pallet_xcm is wrapped by this function, the benchmarks from this pallet for "send" shoudl be used
     fn sudo_send_xcm() -> Weight; 
 }
 
