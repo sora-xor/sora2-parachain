@@ -32,10 +32,7 @@ use super::*;
 use crate::Pallet as XCMApp;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
 use frame_system::RawOrigin;
-use xcm::{
-    opaque::latest::Junction::GeneralKey,
-    v3::MultiLocation,
-};
+use xcm::{opaque::latest::Junction::GeneralKey, v3::MultiLocation};
 
 fn alice<T: Config>() -> T::AccountId {
     let bytes = [66; 32];
@@ -73,7 +70,7 @@ benchmarks! {
         let message_id = [0; 32].into();
         let asset_id = [1; 32].into();
         let amount = 500;
-                // trap_asset:
+        // trap_asset:
         XCMApp::<T>::trap_asset(Some(message_id), asset_id, alice::<T>(), amount, true);
     }: _(RawOrigin::Root, 1)
     verify {
@@ -94,11 +91,20 @@ benchmarks! {
 impl_benchmark_test_suite!(XCMApp, crate::mock::new_test_ext(), crate::mock::Test,);
 
 fn test_multilocation() -> MultiLocation {
-    let general_key = GeneralKey{length: 32, data: [15; 32]};
+    let general_key = GeneralKey { length: 32, data: [15; 32] };
     // take the biggest multilocation
     MultiLocation {
         parents: 1,
-        interior: xcm::v3::Junctions::X8(general_key,  general_key, general_key, general_key, general_key, general_key, general_key, general_key),
+        interior: xcm::v3::Junctions::X8(
+            general_key,
+            general_key,
+            general_key,
+            general_key,
+            general_key,
+            general_key,
+            general_key,
+            general_key,
+        ),
     }
 }
 
