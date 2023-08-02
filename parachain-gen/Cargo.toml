@@ -8,3 +8,9 @@ parachain-template-runtime = { path = "../runtime", features = [
     "parachain-gen",
 ] }
 sp-core = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38", default-features = false }
+
+[features]
+default = []
+rococo = ["parachain-template-runtime/rococo"]
+kusama = ["parachain-template-runtime/kusama"]
+polkadot = ["parachain-template-runtime/polkadot"]

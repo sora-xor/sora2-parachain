@@ -119,4 +119,5 @@ runtime-benchmarks = [
 ]
 try-runtime = ["parachain-template-runtime/try-runtime"]
 rococo = ["parachain-template-runtime/rococo"]
+kusama = ["parachain-template-runtime/kusama"]
 polkadot = ["parachain-template-runtime/polkadot"]

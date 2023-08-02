@@ -678,7 +678,7 @@ parameter_types! {
     pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Polkadot);
 }
 
-#[cfg(not(any(feature = "rococo", feature = "polkadot")))]
+#[cfg(feature = "kusama")]
 parameter_types! {
     pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Kusama);
 }
@@ -703,6 +703,7 @@ impl bridge_types::traits::TimepointProvider for TimepointProvider {
     }
 }
 
+// #[cfg(any(feature = "rococo", feature = "polkadot", feature = "kusama"))]
 impl substrate_bridge_channel::outbound::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type MessageStatusNotifier = ();
