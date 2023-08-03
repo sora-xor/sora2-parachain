@@ -7,7 +7,7 @@
 
 use std::sync::Arc;
 
-use parachain_template_runtime::{opaque::Block, AccountId, Balance, BlockNumber, Index as Nonce};
+use sora2_parachain_runtime::{opaque::Block, AccountId, Balance, BlockNumber, Index as Nonce};
 
 use beefy_light_client_rpc::{BeefyLightClientAPIServer, BeefyLightClientClient};
 use sc_client_api::AuxStore;
@@ -96,9 +96,9 @@ where
     if let Some(storage) = backend.offchain_storage() {
         module.merge(<BridgeChannelClient<_, _> as BridgeChannelAPIServer<
             bridge_types::types::BridgeOffchainData<
-                parachain_template_runtime::BlockNumber,
-                parachain_template_runtime::BridgeMaxMessagesPerCommit,
-                parachain_template_runtime::BridgeMaxMessagePayloadSize,
+                sora2_parachain_runtime::BlockNumber,
+                sora2_parachain_runtime::BridgeMaxMessagesPerCommit,
+                sora2_parachain_runtime::BridgeMaxMessagePayloadSize,
             >,
         >>::into_rpc(BridgeChannelClient::new(storage)))?;
     }

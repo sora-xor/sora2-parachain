@@ -62,7 +62,7 @@ parameter_types! {
     pub const RelayNetwork: NetworkId = NetworkId::Polkadot;
 }
 
-#[cfg(not(any(feature = "rococo", feature = "polkadot")))]
+#[cfg(feature = "kusama")]
 parameter_types! {
     pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 }

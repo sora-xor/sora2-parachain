@@ -1,19 +1,19 @@
 use bridge_types::SubNetworkId;
 use cumulus_primitives_core::ParaId;
 use hex_literal::hex;
-use parachain_template_runtime::{
-    AccountId, AuraId, BeefyId, BeefyLightClientConfig, MultisigVerifierConfig, Signature,
-    EXISTENTIAL_DEPOSIT,
-};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
+use sora2_parachain_runtime::{
+    AccountId, AuraId, BeefyId, BeefyLightClientConfig, MultisigVerifierConfig, Signature,
+    EXISTENTIAL_DEPOSIT,
+};
 use sp_core::{sr25519, ByteArray, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec =
-    sc_service::GenericChainSpec<parachain_template_runtime::GenesisConfig, Extensions>;
+    sc_service::GenericChainSpec<sora2_parachain_runtime::GenesisConfig, Extensions>;
 
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
@@ -196,8 +196,8 @@ where
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
 pub fn template_session_keys(
     (aura, beefy): (AuraId, BeefyId),
-) -> parachain_template_runtime::SessionKeys {
-    parachain_template_runtime::SessionKeys { aura, beefy }
+) -> sora2_parachain_runtime::SessionKeys {
+    sora2_parachain_runtime::SessionKeys { aura, beefy }
 }
 
 pub fn kusama_chain_spec() -> Result<ChainSpec, String> {
@@ -217,7 +217,7 @@ pub fn coded_config(relay_chain: RelayChain, para_id: u32) -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "XOR".into());
     properties.insert("tokenDecimals".into(), 18u64.into());
-    properties.insert("ss58Format".into(), parachain_template_runtime::SS58Prefix::get().into());
+    properties.insert("ss58Format".into(), sora2_parachain_runtime::SS58Prefix::get().into());
     let root_key = relay_chain.root_key();
     let session_keys = relay_chain.session_keys();
     let endowed_accounts = relay_chain.endowed_accounts();
@@ -496,28 +496,28 @@ fn testnet_genesis(
     endowed_accounts: Vec<AccountId>,
     id: ParaId,
     bridge_network_id: SubNetworkId,
-) -> parachain_template_runtime::GenesisConfig {
-    parachain_template_runtime::GenesisConfig {
+) -> sora2_parachain_runtime::GenesisConfig {
+    sora2_parachain_runtime::GenesisConfig {
         beefy_light_client: BeefyLightClientConfig { network_id: bridge_network_id },
         multisig_verifier: MultisigVerifierConfig {
             network_id: bridge_types::GenericNetworkId::Sub(bridge_network_id),
         },
         substrate_bridge_outbound_channel: Default::default(),
-        system: parachain_template_runtime::SystemConfig {
-            code: parachain_template_runtime::WASM_BINARY
+        system: sora2_parachain_runtime::SystemConfig {
+            code: sora2_parachain_runtime::WASM_BINARY
                 .expect("WASM binary was not build, please build it!")
                 .to_vec(),
         },
-        balances: parachain_template_runtime::BalancesConfig {
+        balances: sora2_parachain_runtime::BalancesConfig {
             balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
         },
-        parachain_info: parachain_template_runtime::ParachainInfoConfig { parachain_id: id },
-        collator_selection: parachain_template_runtime::CollatorSelectionConfig {
+        parachain_info: sora2_parachain_runtime::ParachainInfoConfig { parachain_id: id },
+        collator_selection: sora2_parachain_runtime::CollatorSelectionConfig {
             invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
             candidacy_bond: EXISTENTIAL_DEPOSIT * 16,
             ..Default::default()
         },
-        session: parachain_template_runtime::SessionConfig {
+        session: sora2_parachain_runtime::SessionConfig {
             keys: invulnerables
                 .into_iter()
                 .map(|(acc, keys)| {
@@ -535,9 +535,9 @@ fn testnet_genesis(
         aura_ext: Default::default(),
         beefy: Default::default(),
         parachain_system: Default::default(),
-        polkadot_xcm: parachain_template_runtime::PolkadotXcmConfig {
+        polkadot_xcm: sora2_parachain_runtime::PolkadotXcmConfig {
             safe_xcm_version: Some(SAFE_XCM_VERSION),
         },
-        sudo: parachain_template_runtime::SudoConfig { key: Some(root_key) },
+        sudo: sora2_parachain_runtime::SudoConfig { key: Some(root_key) },
     }
 }

@@ -217,10 +217,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("sora_ksm"),
     impl_name: create_runtime_str!("sora_ksm"),
     authoring_version: 1,
-    spec_version: 4,
+    spec_version: 5,
     impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
-    transaction_version: 4,
+    transaction_version: 5,
     state_version: 1,
 };
 
@@ -678,7 +678,7 @@ parameter_types! {
     pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Polkadot);
 }
 
-#[cfg(not(any(feature = "rococo", feature = "polkadot")))]
+#[cfg(feature = "kusama")]
 parameter_types! {
     pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Kusama);
 }
@@ -703,6 +703,7 @@ impl bridge_types::traits::TimepointProvider for TimepointProvider {
     }
 }
 
+// #[cfg(any(feature = "rococo", feature = "polkadot", feature = "kusama"))]
 impl substrate_bridge_channel::outbound::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type MessageStatusNotifier = ();
