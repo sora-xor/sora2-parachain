@@ -1,11 +1,11 @@
 [package]
-name = "parachain-template-node"
+name = "sora-parachain-node"
 version = "0.1.0"
 authors = ["Anonymous"]
-description = "A new Cumulus FRAME-based Substrate Node, ready for hacking together a parachain."
+description = "Sora2 Parachain node. Is used as a gateway to SORA2 from any relaychain ecosysytem"
 license = "Unlicense"
-homepage = "https://substrate.io"
-repository = "https://github.com/paritytech/cumulus/"
+homepage = "https://sora.org/"
+repository = "https://github.com/sora-xor/sora2-parachain"
 edition = "2021"
 build = "build.rs"
 
