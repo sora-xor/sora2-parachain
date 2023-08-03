@@ -67,11 +67,7 @@ pub fn new_partial<RuntimeApi, Executor, BIQ>(
     build_import_queue: BIQ,
 ) -> Result<
     PartialComponents<
-        TFullClient<
-            Block,
-            sora2_parachain_runtime::RuntimeApi,
-            NativeElseWasmExecutor<Executor>,
-        >,
+        TFullClient<Block, sora2_parachain_runtime::RuntimeApi, NativeElseWasmExecutor<Executor>>,
         TFullBackend<Block>,
         (),
         sc_consensus::DefaultImportQueue<

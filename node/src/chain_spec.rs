@@ -1,13 +1,13 @@
 use bridge_types::SubNetworkId;
 use cumulus_primitives_core::ParaId;
 use hex_literal::hex;
+use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
+use sc_service::ChainType;
+use serde::{Deserialize, Serialize};
 use sora2_parachain_runtime::{
     AccountId, AuraId, BeefyId, BeefyLightClientConfig, MultisigVerifierConfig, Signature,
     EXISTENTIAL_DEPOSIT,
 };
-use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
-use sc_service::ChainType;
-use serde::{Deserialize, Serialize};
 use sp_core::{sr25519, ByteArray, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
