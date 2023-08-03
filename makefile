@@ -19,3 +19,6 @@ test-rococo:
 
 lint:
 	cargo clippy --all-targets
+
+meta:
+	cargo build --release -p parachain-gen --features rococo
