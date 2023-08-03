@@ -4,7 +4,7 @@ use codec::Encode;
 use cumulus_client_cli::generate_genesis_block;
 use cumulus_primitives_core::ParaId;
 use log::info;
-use parachain_template_runtime::{Block, RuntimeApi};
+use sora2_parachain_runtime::{Block, RuntimeApi};
 use sc_cli::{
     ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
     NetworkParams, Result, RuntimeVersion, SharedParams, SubstrateCli,
@@ -21,7 +21,7 @@ use crate::{
 
 fn set_default_ss58_version() {
     sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::custom(
-        parachain_template_runtime::SS58Prefix::get() as u16,
+        sora2_parachain_runtime::SS58Prefix::get() as u16,
     ));
 }
 
@@ -76,7 +76,7 @@ impl SubstrateCli for Cli {
     }
 
     fn native_runtime_version(_: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-        &parachain_template_runtime::VERSION
+        &sora2_parachain_runtime::VERSION
     }
 }
 

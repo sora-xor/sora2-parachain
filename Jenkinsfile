@@ -5,6 +5,6 @@ def pipeline = new org.rust.AppPipeline(steps: this,
       appImageName: 'docker.soramitsu.co.jp/sora2/parachain',
       buildTestCmds: ['housekeeping/scripts/build.sh'],
       codeCoverage: false,
-      buildArtifacts: 'parachain_template_runtime.compact.compressed.wasm'
+      buildArtifacts: 'sora2_parachain_runtime.compact.compressed.wasm'
 )
 pipeline.runPipeline()

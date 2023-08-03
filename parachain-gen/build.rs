@@ -3,7 +3,7 @@ use std::{path::PathBuf, str::FromStr};
 
 fn main() {
     let metadata: Bytes =
-        OpaqueMetadata::new(parachain_template_runtime::Runtime::metadata().into()).into();
+        OpaqueMetadata::new(sora2_parachain_runtime::Runtime::metadata().into()).into();
     let out_dir = PathBuf::from_str(&std::env::var("CARGO_MANIFEST_DIR").unwrap())
         .unwrap()
         .join("src/bytes");

@@ -8,7 +8,7 @@ use jsonrpsee::RpcModule;
 
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
-use parachain_template_runtime::{opaque::Block, Hash, RuntimeApi};
+use sora2_parachain_runtime::{opaque::Block, Hash, RuntimeApi};
 
 // Cumulus Imports
 use cumulus_client_consensus_aura::{AuraConsensus, BuildAuraConsensusParams, SlotProportion};
@@ -43,11 +43,11 @@ impl sc_executor::NativeExecutionDispatch for ParachainNativeExecutor {
     type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
 
     fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-        parachain_template_runtime::api::dispatch(method, data)
+        sora2_parachain_runtime::api::dispatch(method, data)
     }
 
     fn native_version() -> sc_executor::NativeVersion {
-        parachain_template_runtime::native_version()
+        sora2_parachain_runtime::native_version()
     }
 }
 
@@ -69,7 +69,7 @@ pub fn new_partial<RuntimeApi, Executor, BIQ>(
     PartialComponents<
         TFullClient<
             Block,
-            parachain_template_runtime::RuntimeApi,
+            sora2_parachain_runtime::RuntimeApi,
             NativeElseWasmExecutor<Executor>,
         >,
         TFullBackend<Block>,
@@ -78,7 +78,7 @@ pub fn new_partial<RuntimeApi, Executor, BIQ>(
             Block,
             TFullClient<
                 Block,
-                parachain_template_runtime::RuntimeApi,
+                sora2_parachain_runtime::RuntimeApi,
                 NativeElseWasmExecutor<Executor>,
             >,
         >,
@@ -86,7 +86,7 @@ pub fn new_partial<RuntimeApi, Executor, BIQ>(
             Block,
             TFullClient<
                 Block,
-                parachain_template_runtime::RuntimeApi,
+                sora2_parachain_runtime::RuntimeApi,
                 NativeElseWasmExecutor<Executor>,
             >,
         >,
@@ -120,7 +120,7 @@ where
             Block,
             TFullClient<
                 Block,
-                parachain_template_runtime::RuntimeApi,
+                sora2_parachain_runtime::RuntimeApi,
                 NativeElseWasmExecutor<Executor>,
             >,
         >,
@@ -146,7 +146,7 @@ where
     );
 
     let (client, backend, keystore_container, task_manager) =
-        sc_service::new_full_parts::<Block, parachain_template_runtime::RuntimeApi, _>(
+        sc_service::new_full_parts::<Block, sora2_parachain_runtime::RuntimeApi, _>(
             config,
             telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
             executor,

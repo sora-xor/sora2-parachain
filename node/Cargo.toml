@@ -1,5 +1,5 @@
 [package]
-name = "sora-parachain-node"
+name = "sora2-parachain-node"
 version = "0.1.0"
 authors = ["Anonymous"]
 description = "Sora2 Parachain node. Is used as a gateway to SORA2 from any relaychain ecosysytem"
@@ -38,7 +38,7 @@ leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common.gi
 bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false }
 
 # Local
-parachain-template-runtime = { path = "../runtime" }
+sora2-parachain-runtime = { path = "../runtime" }
 
 # Substrate Dependencies
 beefy-gadget = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
@@ -114,10 +114,10 @@ xcm = { git = "https://github.com/paritytech/polkadot", default-features = false
 [features]
 default = []
 runtime-benchmarks = [
-	"parachain-template-runtime/runtime-benchmarks",
+	"sora2-parachain-runtime/runtime-benchmarks",
 	"polkadot-cli/runtime-benchmarks",
 ]
-try-runtime = ["parachain-template-runtime/try-runtime"]
-rococo = ["parachain-template-runtime/rococo"]
-kusama = ["parachain-template-runtime/kusama"]
-polkadot = ["parachain-template-runtime/polkadot"]
+try-runtime = ["sora2-parachain-runtime/try-runtime"]
+rococo = ["sora2-parachain-runtime/rococo"]
+kusama = ["sora2-parachain-runtime/kusama"]
+polkadot = ["sora2-parachain-runtime/polkadot"]
