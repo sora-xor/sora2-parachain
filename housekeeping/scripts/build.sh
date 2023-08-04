@@ -1,17 +1,20 @@
 #!/bin/bash
 set -e
 
+buidcmd="cargo b -r --features"
+testcmd="cargo test --features -r"
 networks=(kusama rococo polkadot)
+wasm_in="./target/release/wbuild/sora2-parachain-runtime_"
 
 rm -rf ~/.cargo/registry/
 
 for network in ${networks[@]}
 do
  printf "🏗️ Build "$network" will starting now... \n"
- cargo b -r --features "$network"
- cargo test --features -r "$network"
+ $buidcmd "$network"
+ $testcmd "$network"
  wasm_out=./sora2-parachain-runtime_$network.compact.wasm
- mv ./target/release/wbuild/sora2-parachain-runtime_$network.compact.wasm $wasm_out
+ mv "$wasm_in$network.compact.wasm" "$wasm_out"
  if [ -f "$wasm_out" ]; then
     printf "✅ "$wasm_out" OK\n"
  else
