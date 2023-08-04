@@ -591,6 +591,7 @@ impl xcm_app::XcmSender<Runtime> for XCMSenderWrapper {
     }
 }
 
+#[cfg(feature = "rococo")]
 impl xcm_app_sudo_wrapper::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
 }
@@ -667,9 +668,19 @@ impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
     }
 }
 
+#[cfg(feature = "rococo")]
 parameter_types! {
-    /// Dima B. TODO: add features for Rococo, Kusama and Polkadot
     pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Rococo);
+}
+
+#[cfg(feature = "polkadot")]
+parameter_types! {
+    pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Polkadot);
+}
+
+#[cfg(feature = "kusama")]
+parameter_types! {
+    pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Kusama);
 }
 
 impl substrate_bridge_channel::inbound::Config for Runtime {
@@ -692,6 +703,7 @@ impl bridge_types::traits::TimepointProvider for TimepointProvider {
     }
 }
 
+// #[cfg(any(feature = "rococo", feature = "polkadot", feature = "kusama"))]
 impl substrate_bridge_channel::outbound::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type MessageStatusNotifier = ();
@@ -701,7 +713,6 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
     type WeightInfo = ();
     type TimepointProvider = TimepointProvider;
     type ThisNetworkId = ThisNetworkId;
-    // Required for MessageStatusNotifier and actually not used
     type AssetId = ();
     type Balance = ();
 }
@@ -797,6 +808,7 @@ construct_runtime!(
         BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
         MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
 
+        #[cfg(feature = "rococo")]
         XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
     }
 );

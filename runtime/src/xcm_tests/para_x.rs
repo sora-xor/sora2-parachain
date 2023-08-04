@@ -28,7 +28,7 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use super::{Amount, Balance, CurrencyId, CurrencyIdConvert, ParachainXcmRouter};
+use super::{Amount, Balance, CurrencyId, CurrencyIdConvert, ParachainXcmRouter, RelayNetwork};
 use crate::xcm_tests::AllTokensAreCreatedEqualToWeight;
 use cumulus_primitives_core::{ChannelStatus, GetChannelInfo, ParaId};
 use frame_support::{
@@ -126,7 +126,6 @@ impl parachain_info::Config for Runtime {}
 
 parameter_types! {
     pub const RelayLocation: MultiLocation = MultiLocation::parent();
-    pub const RelayNetwork: NetworkId = NetworkId::Rococo;
     pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
     pub Ancestry: MultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
 }
@@ -256,7 +255,7 @@ impl pallet_xcm::Config for Runtime {
 pub struct AccountIdToMultiLocation;
 impl Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
     fn convert(account: AccountId) -> MultiLocation {
-        X1(Junction::AccountId32 { network: Some(NetworkId::Rococo), id: account.into() }).into()
+        X1(Junction::AccountId32 { network: None, id: account.into() }).into()
     }
 }
 
