@@ -10,7 +10,7 @@ rm -rf ~/.cargo/registry/
 
 for network in ${networks[@]}
 do
- printf "🏗️ Build "$network" will starting now... \n"
+ printf "🏗️ Build "$network" will start now... \n"
  $buidcmd "$network"
  $testcmd "$network"
  wasm_out=./sora2-parachain-runtime_$network.compact.wasm
