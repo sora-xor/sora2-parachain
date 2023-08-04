@@ -7,9 +7,9 @@ rm -rf ~/.cargo/registry/
 
 for network in ${networks[@]}
 do
- printf "🏗️ Building "$network" will starting now... \n"
- cargo b -r "$network"
- cargo test -r "$network"
+ printf "🏗️ Build "$network" will starting now... \n"
+ cargo b -r --features "$network"
+ cargo test --features -r "$network"
  wasm_out=./sora2-parachain-runtime_$network.compact.wasm
  mv ./target/release/wbuild/sora2-parachain-runtime_$network.compact.wasm $wasm_out
  if [ -f "$wasm_out" ]; then
