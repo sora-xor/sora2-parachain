@@ -19,6 +19,6 @@ do
  if [ -f "$wasm_out" ]; then
     printf "✅ "$wasm_out" OK\n"
  else
-    exit 0
+    exit 1
  fi
 done
