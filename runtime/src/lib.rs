@@ -263,7 +263,7 @@ const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
     cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
 );
 
-pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 1 * HOURS;
+pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = HOURS;
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -965,7 +965,7 @@ impl_runtime_apis! {
 
     impl beefy_light_client_runtime_api::BeefyLightClientAPI<Block, beefy_light_client::BitField> for Runtime {
         fn get_random_bitfield(network_id: SubNetworkId, prior: beefy_light_client::BitField, num_of_validators: u32) -> beefy_light_client::BitField {
-            let len = prior.len() as usize;
+            let len = prior.len();
             BeefyLightClient::create_random_bit_field(network_id, prior, num_of_validators).unwrap_or(beefy_light_client::BitField::with_capacity(len))
         }
     }
