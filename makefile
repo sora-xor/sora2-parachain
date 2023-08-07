@@ -23,7 +23,7 @@ test-all:
 	cargo test --release -p sora2-parachain-runtime --features polkadot
 
 lint:
-	cargo clippy --all-targets
+	SKIP_WASM_BUILD=1 cargo clippy --features rococo
 
 meta:
 	cargo build --release -p parachain-gen --features rococo

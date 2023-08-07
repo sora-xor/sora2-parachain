@@ -78,11 +78,11 @@ pub mod pallet {
             origin: OriginFor<T>,
             asset_id: AssetId,
             sender: T::AccountId,
-            recipient: xcm::VersionedMultiLocation,
+            recipient: scale_info::prelude::boxed::Box<xcm::VersionedMultiLocation>,
             amount: u128,
         ) -> DispatchResultWithPostInfo {
             ensure_root(origin)?;
-            xcm_app::Pallet::<T>::xcm_transfer_asset(asset_id, sender, recipient, amount)?;
+            xcm_app::Pallet::<T>::xcm_transfer_asset(asset_id, sender, *recipient, amount)?;
             Ok(().into())
         }
     }
