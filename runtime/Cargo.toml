@@ -1,11 +1,11 @@
 [package]
-name = "parachain-template-runtime"
+name = "sora2-parachain-runtime"
 version = "0.1.0"
 authors = ["Anonymous"]
-description = "A new Cumulus FRAME-based Substrate Runtime, ready for hacking together a parachain."
+description = "sora2 parachain runtime"
 license = "Unlicense"
-homepage = "https://substrate.io"
-repository = "https://github.com/paritytech/cumulus/"
+homepage = "https://sora.org/"
+repository = "https://github.com/sora-xor/sora2-parachain"
 edition = "2021"
 
 [package.metadata.docs.rs]
@@ -206,3 +206,9 @@ runtime-benchmarks = [
 try-runtime = ["frame-executive/try-runtime", "frame-try-runtime"]
 
 parachain-gen = []
+
+rococo = []
+
+kusama = []
+
+polkadot = []
