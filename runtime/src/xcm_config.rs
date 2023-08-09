@@ -139,9 +139,16 @@ pub type Barrier = (
     AllowTopLevelPaidExecutionFrom<Everything>,
     // Expected responses are OK.
     AllowKnownQueryResponses<PolkadotXcm>,
-    // Subscriptions for version tracking are OK.
-    AllowSubscriptionsFrom<Everything>,
+    // Subscriptions for version tracking allowed only if parent
+    AllowSubscriptionsFrom<OnlyParent>,
 );
+
+pub struct OnlyParent;
+impl frame_support::traits::Contains<MultiLocation> for OnlyParent {
+	fn contains(ml: &MultiLocation) -> bool {
+		*ml == MultiLocation::parent()
+	}
+}
 
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
@@ -171,7 +178,8 @@ impl xcm_executor::Config for XcmConfig {
     type SafeCallFilter = ();
 }
 
-/// No local origins on this chain are allowed to dispatch XCM sends/executions.
+/// Converts a local signed origin into an XCM multilocation.
+/// Forms the basis for local origins sending/executing XCMs.
 pub type LocalOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, RelayNetwork>;
 
 /// The means for routing XCM messages which are not for local execution into the right message
