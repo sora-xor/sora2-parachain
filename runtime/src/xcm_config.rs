@@ -242,7 +242,7 @@ parameter_type_with_key! {
 pub struct AccountIdToMultiLocation;
 impl sp_runtime::traits::Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
     fn convert(account: AccountId) -> MultiLocation {
-        X1(AccountId32 { network: None, id: account.into() }).into()
+        X1(AccountId32 { network: Some(RelayNetwork::get()), id: account.into() }).into()
     }
 }
 
