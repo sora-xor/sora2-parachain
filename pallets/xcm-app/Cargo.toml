@@ -28,8 +28,8 @@ sp-runtime = { git = "https://github.com/paritytech/substrate.git", default-feat
 
 # Polkadot
 xcm = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" }
-xcm-executor = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" } # need to compile pallet 
-xcm-builder = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" } # need to compile pallet
+xcm-executor = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" } # needed to compile pallet as standalone crate 
+xcm-builder = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" } # needed to compile pallet as standalone crate 
 
 # Local
 parachain-common = { path = "../../parachain-common", default-features = false }

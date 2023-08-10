@@ -28,67 +28,65 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#![cfg_attr(rustfmt, rustfmt_skip)]
 #![allow(unused_parens)]
 #![allow(unused_imports)]
 
-use frame_support::{traits::Get, weights::Weight};
 use core::marker::PhantomData;
+use frame_support::{traits::Get, weights::Weight};
 use parachain_common::primitives::EXTRINSIC_FIXED_WEIGHT;
 
 /// Weight functions for `XCMApp`.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> crate::WeightInfo for WeightInfo<T> {
-	fn transfer() -> Weight {
-		Weight::from_ref_time(17_000_000)
-			.saturating_add(T::DbWeight::get().reads(1))
-			.saturating_add(T::DbWeight::get().writes(2))
+    fn transfer() -> Weight {
+        Weight::from_ref_time(17_000_000)
+            .saturating_add(T::DbWeight::get().reads(1))
+            .saturating_add(T::DbWeight::get().writes(2))
     }
 
-	fn register_asset() -> Weight {
-		Weight::from_ref_time(17_000_000)
-			.saturating_add(T::DbWeight::get().reads(1))
-			.saturating_add(T::DbWeight::get().writes(2))
+    fn register_asset() -> Weight {
+        Weight::from_ref_time(17_000_000)
+            .saturating_add(T::DbWeight::get().reads(1))
+            .saturating_add(T::DbWeight::get().writes(2))
     }
 
-	fn try_claim_bridge_asset() -> Weight {
-		Weight::from_ref_time(17_000_000)
-			.saturating_add(T::DbWeight::get().reads(1))
-			.saturating_add(T::DbWeight::get().writes(2))
+    fn try_claim_bridge_asset() -> Weight {
+        Weight::from_ref_time(17_000_000)
+            .saturating_add(T::DbWeight::get().reads(1))
+            .saturating_add(T::DbWeight::get().writes(2))
     }
 
-	fn set_asset_minimum_amount() -> Weight {
-		Weight::from_ref_time(17_000_000)
-			.saturating_add(T::DbWeight::get().reads(1))
-			.saturating_add(T::DbWeight::get().writes(2))
+    fn set_asset_minimum_amount() -> Weight {
+        Weight::from_ref_time(17_000_000)
+            .saturating_add(T::DbWeight::get().reads(1))
+            .saturating_add(T::DbWeight::get().writes(2))
     }
 
-	fn sudo_send_xcm() -> Weight {
-		Weight::from_ref_time(17_000_000)
-			.saturating_add(T::DbWeight::get().reads(1))
-			.saturating_add(T::DbWeight::get().writes(2))
+    fn sudo_send_xcm() -> Weight {
+        Weight::from_ref_time(17_000_000)
+            .saturating_add(T::DbWeight::get().reads(1))
+            .saturating_add(T::DbWeight::get().writes(2))
     }
 }
 
-
 impl crate::WeightInfo for () {
-	fn transfer() -> Weight {
+    fn transfer() -> Weight {
         EXTRINSIC_FIXED_WEIGHT
     }
 
-	fn register_asset() -> Weight {
+    fn register_asset() -> Weight {
         EXTRINSIC_FIXED_WEIGHT
     }
 
-	fn try_claim_bridge_asset() -> Weight {
+    fn try_claim_bridge_asset() -> Weight {
         EXTRINSIC_FIXED_WEIGHT
     }
 
-	fn set_asset_minimum_amount() -> Weight {
+    fn set_asset_minimum_amount() -> Weight {
         EXTRINSIC_FIXED_WEIGHT
     }
 
-	fn sudo_send_xcm() -> Weight {
+    fn sudo_send_xcm() -> Weight {
         EXTRINSIC_FIXED_WEIGHT
     }
 }
