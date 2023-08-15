@@ -201,6 +201,9 @@ runtime-benchmarks = [
 	"xcm-builder/runtime-benchmarks",
 	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
 	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
+	"dispatch/runtime-benchmarks",
+	"beefy-light-client/runtime-benchmarks",
+	"multisig-verifier/runtime-benchmarks",
 ]
 
 try-runtime = ["frame-executive/try-runtime", "frame-try-runtime"]

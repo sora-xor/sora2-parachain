@@ -183,6 +183,11 @@ pub type XcmRouter = (
     XcmpQueue,
 );
 
+#[cfg(feature = "runtime-benchmarks")]
+parameter_types! {
+    pub const ReachableDest: Option<MultiLocation> = None;
+}
+
 impl pallet_xcm::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
@@ -207,6 +212,8 @@ impl pallet_xcm::Config for Runtime {
     type SovereignAccountOf = ();
     type MaxLockers = ();
     type WeightInfo = PalletXCMWeightInfo;
+    #[cfg(feature = "runtime-benchmarks")]
+    type ReachableDest = ReachableDest;
 }
 
 impl cumulus_pallet_xcm::Config for Runtime {
