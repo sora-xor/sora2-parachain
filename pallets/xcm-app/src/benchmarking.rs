@@ -121,7 +121,6 @@ fn test_multilocation() -> MultiLocation {
 fn assert_event<T: Config>(generic_event: <T as Config>::RuntimeEvent) {
     let events = frame_system::Pallet::<T>::events();
     let system_event: <T as frame_system::Config>::RuntimeEvent = generic_event.into();
-    // compare to the last event record
     assert!(events.into_iter().any(|x| {
         let frame_system::EventRecord { event, .. } = x;
         event == system_event

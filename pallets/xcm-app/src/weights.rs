@@ -38,89 +38,89 @@ use parachain_common::primitives::EXTRINSIC_FIXED_WEIGHT;
 /// Weight functions for `XCMApp`.
 pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> crate::WeightInfo for SubstrateWeight<T> {
-	/// Storage: XCMApp AssetIdToMultilocation (r:1 w:1)
-	/// Proof Skipped: XCMApp AssetIdToMultilocation (max_values: None, max_size: None, mode: Measured)
-	/// Storage: XCMApp MultilocationToAssetId (r:1 w:1)
-	/// Proof Skipped: XCMApp MultilocationToAssetId (max_values: None, max_size: None, mode: Measured)
-	/// Storage: SubstrateBridgeOutboundChannel MessageQueues (r:1 w:1)
-	/// Proof Skipped: SubstrateBridgeOutboundChannel MessageQueues (max_values: None, max_size: None, mode: Measured)
-	/// Storage: SubstrateBridgeOutboundChannel ChannelNonces (r:1 w:0)
-	/// Proof Skipped: SubstrateBridgeOutboundChannel ChannelNonces (max_values: None, max_size: None, mode: Measured)
-	/// Storage: XCMApp AssetMinimumAmount (r:0 w:1)
-	/// Proof Skipped: XCMApp AssetMinimumAmount (max_values: None, max_size: None, mode: Measured)
-	fn register_asset() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `37`
-		//  Estimated: `10085`
-		// Minimum execution time: 47_000 nanoseconds.
-		Weight::from_parts(55_000_000, 10085)
-			.saturating_add(T::DbWeight::get().reads(4))
-			.saturating_add(T::DbWeight::get().writes(4))
-	}
-	/// Storage: XCMApp AssetIdToMultilocation (r:1 w:0)
-	/// Proof Skipped: XCMApp AssetIdToMultilocation (max_values: None, max_size: None, mode: Measured)
-	/// Storage: ParachainInfo ParachainId (r:1 w:0)
-	/// Proof: ParachainInfo ParachainId (max_values: Some(1), max_size: Some(4), added: 499, mode: MaxEncodedLen)
-	/// Storage: XCMApp MultilocationToAssetId (r:1 w:0)
-	/// Proof Skipped: XCMApp MultilocationToAssetId (max_values: None, max_size: None, mode: Measured)
-	/// Storage: ParachainSystem HostConfiguration (r:1 w:0)
-	/// Proof Skipped: ParachainSystem HostConfiguration (max_values: Some(1), max_size: None, mode: Measured)
-	/// Storage: ParachainSystem PendingUpwardMessages (r:1 w:1)
-	/// Proof Skipped: ParachainSystem PendingUpwardMessages (max_values: Some(1), max_size: None, mode: Measured)
-	/// Storage: SubstrateBridgeOutboundChannel MessageQueues (r:1 w:1)
-	/// Proof Skipped: SubstrateBridgeOutboundChannel MessageQueues (max_values: None, max_size: None, mode: Measured)
-	/// Storage: SubstrateBridgeOutboundChannel ChannelNonces (r:1 w:0)
-	/// Proof Skipped: SubstrateBridgeOutboundChannel ChannelNonces (max_values: None, max_size: None, mode: Measured)
-	fn transfer() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `694`
-		//  Estimated: `15553`
-		// Minimum execution time: 79_000 nanoseconds.
-		Weight::from_parts(92_000_000, 15553)
-			.saturating_add(T::DbWeight::get().reads(7))
-			.saturating_add(T::DbWeight::get().writes(2))
-	}
-	/// Storage: XCMApp BridgeAssetTrap (r:1 w:1)
-	/// Proof Skipped: XCMApp BridgeAssetTrap (max_values: None, max_size: None, mode: Measured)
-	/// Storage: SubstrateBridgeOutboundChannel MessageQueues (r:1 w:1)
-	/// Proof Skipped: SubstrateBridgeOutboundChannel MessageQueues (max_values: None, max_size: None, mode: Measured)
-	/// Storage: SubstrateBridgeOutboundChannel ChannelNonces (r:1 w:0)
-	/// Proof Skipped: SubstrateBridgeOutboundChannel ChannelNonces (max_values: None, max_size: None, mode: Measured)
-	fn try_claim_bridge_asset() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `276`
-		//  Estimated: `8253`
-		// Minimum execution time: 20_000 nanoseconds.
-		Weight::from_parts(21_000_000, 8253)
-			.saturating_add(T::DbWeight::get().reads(3))
-			.saturating_add(T::DbWeight::get().writes(2))
-	}
-	/// Storage: XCMApp AssetIdToMultilocation (r:1 w:0)
-	/// Proof Skipped: XCMApp AssetIdToMultilocation (max_values: None, max_size: None, mode: Measured)
-	/// Storage: XCMApp AssetMinimumAmount (r:0 w:1)
-	/// Proof Skipped: XCMApp AssetMinimumAmount (max_values: None, max_size: None, mode: Measured)
-	fn set_asset_minimum_amount() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `438`
-		//  Estimated: `3351`
-		// Minimum execution time: 10_000 nanoseconds.
-		Weight::from_parts(12_000_000, 3351)
-			.saturating_add(T::DbWeight::get().reads(1))
-			.saturating_add(T::DbWeight::get().writes(1))
-	}
+    /// Storage: XCMApp AssetIdToMultilocation (r:1 w:1)
+    /// Proof Skipped: XCMApp AssetIdToMultilocation (max_values: None, max_size: None, mode: Measured)
+    /// Storage: XCMApp MultilocationToAssetId (r:1 w:1)
+    /// Proof Skipped: XCMApp MultilocationToAssetId (max_values: None, max_size: None, mode: Measured)
+    /// Storage: SubstrateBridgeOutboundChannel MessageQueues (r:1 w:1)
+    /// Proof Skipped: SubstrateBridgeOutboundChannel MessageQueues (max_values: None, max_size: None, mode: Measured)
+    /// Storage: SubstrateBridgeOutboundChannel ChannelNonces (r:1 w:0)
+    /// Proof Skipped: SubstrateBridgeOutboundChannel ChannelNonces (max_values: None, max_size: None, mode: Measured)
+    /// Storage: XCMApp AssetMinimumAmount (r:0 w:1)
+    /// Proof Skipped: XCMApp AssetMinimumAmount (max_values: None, max_size: None, mode: Measured)
+    fn register_asset() -> Weight {
+        // Proof Size summary in bytes:
+        //  Measured:  `37`
+        //  Estimated: `10085`
+        // Minimum execution time: 47_000 nanoseconds.
+        Weight::from_parts(55_000_000, 10085)
+            .saturating_add(T::DbWeight::get().reads(4))
+            .saturating_add(T::DbWeight::get().writes(4))
+    }
+    /// Storage: XCMApp AssetIdToMultilocation (r:1 w:0)
+    /// Proof Skipped: XCMApp AssetIdToMultilocation (max_values: None, max_size: None, mode: Measured)
+    /// Storage: ParachainInfo ParachainId (r:1 w:0)
+    /// Proof: ParachainInfo ParachainId (max_values: Some(1), max_size: Some(4), added: 499, mode: MaxEncodedLen)
+    /// Storage: XCMApp MultilocationToAssetId (r:1 w:0)
+    /// Proof Skipped: XCMApp MultilocationToAssetId (max_values: None, max_size: None, mode: Measured)
+    /// Storage: ParachainSystem HostConfiguration (r:1 w:0)
+    /// Proof Skipped: ParachainSystem HostConfiguration (max_values: Some(1), max_size: None, mode: Measured)
+    /// Storage: ParachainSystem PendingUpwardMessages (r:1 w:1)
+    /// Proof Skipped: ParachainSystem PendingUpwardMessages (max_values: Some(1), max_size: None, mode: Measured)
+    /// Storage: SubstrateBridgeOutboundChannel MessageQueues (r:1 w:1)
+    /// Proof Skipped: SubstrateBridgeOutboundChannel MessageQueues (max_values: None, max_size: None, mode: Measured)
+    /// Storage: SubstrateBridgeOutboundChannel ChannelNonces (r:1 w:0)
+    /// Proof Skipped: SubstrateBridgeOutboundChannel ChannelNonces (max_values: None, max_size: None, mode: Measured)
+    fn transfer() -> Weight {
+        // Proof Size summary in bytes:
+        //  Measured:  `694`
+        //  Estimated: `15553`
+        // Minimum execution time: 79_000 nanoseconds.
+        Weight::from_parts(92_000_000, 15553)
+            .saturating_add(T::DbWeight::get().reads(7))
+            .saturating_add(T::DbWeight::get().writes(2))
+    }
+    /// Storage: XCMApp BridgeAssetTrap (r:1 w:1)
+    /// Proof Skipped: XCMApp BridgeAssetTrap (max_values: None, max_size: None, mode: Measured)
+    /// Storage: SubstrateBridgeOutboundChannel MessageQueues (r:1 w:1)
+    /// Proof Skipped: SubstrateBridgeOutboundChannel MessageQueues (max_values: None, max_size: None, mode: Measured)
+    /// Storage: SubstrateBridgeOutboundChannel ChannelNonces (r:1 w:0)
+    /// Proof Skipped: SubstrateBridgeOutboundChannel ChannelNonces (max_values: None, max_size: None, mode: Measured)
+    fn try_claim_bridge_asset() -> Weight {
+        // Proof Size summary in bytes:
+        //  Measured:  `276`
+        //  Estimated: `8253`
+        // Minimum execution time: 20_000 nanoseconds.
+        Weight::from_parts(21_000_000, 8253)
+            .saturating_add(T::DbWeight::get().reads(3))
+            .saturating_add(T::DbWeight::get().writes(2))
+    }
+    /// Storage: XCMApp AssetIdToMultilocation (r:1 w:0)
+    /// Proof Skipped: XCMApp AssetIdToMultilocation (max_values: None, max_size: None, mode: Measured)
+    /// Storage: XCMApp AssetMinimumAmount (r:0 w:1)
+    /// Proof Skipped: XCMApp AssetMinimumAmount (max_values: None, max_size: None, mode: Measured)
+    fn set_asset_minimum_amount() -> Weight {
+        // Proof Size summary in bytes:
+        //  Measured:  `438`
+        //  Estimated: `3351`
+        // Minimum execution time: 10_000 nanoseconds.
+        Weight::from_parts(12_000_000, 3351)
+            .saturating_add(T::DbWeight::get().reads(1))
+            .saturating_add(T::DbWeight::get().writes(1))
+    }
 
-	/// Storage: ParachainSystem HostConfiguration (r:1 w:0)
-	/// Proof Skipped: ParachainSystem HostConfiguration (max_values: Some(1), max_size: None, mode: Measured)
-	/// Storage: ParachainSystem PendingUpwardMessages (r:1 w:1)
-	/// Proof Skipped: ParachainSystem PendingUpwardMessages (max_values: Some(1), max_size: None, mode: Measured)
+    /// Storage: ParachainSystem HostConfiguration (r:1 w:0)
+    /// Proof Skipped: ParachainSystem HostConfiguration (max_values: Some(1), max_size: None, mode: Measured)
+    /// Storage: ParachainSystem PendingUpwardMessages (r:1 w:1)
+    /// Proof Skipped: ParachainSystem PendingUpwardMessages (max_values: Some(1), max_size: None, mode: Measured)
     fn sudo_send_xcm() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `6`
-		//  Estimated: `1002`
-		// Minimum execution time: 13_000 nanoseconds.
-		Weight::from_parts(14_000_000, 1002)
-			.saturating_add(T::DbWeight::get().reads(2))
-			.saturating_add(T::DbWeight::get().writes(1))
+        // Proof Size summary in bytes:
+        //  Measured:  `6`
+        //  Estimated: `1002`
+        // Minimum execution time: 13_000 nanoseconds.
+        Weight::from_parts(14_000_000, 1002)
+            .saturating_add(T::DbWeight::get().reads(2))
+            .saturating_add(T::DbWeight::get().writes(1))
     }
 }
 
