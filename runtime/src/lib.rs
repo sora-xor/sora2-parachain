@@ -564,13 +564,12 @@ impl pallet_collator_selection::Config for Runtime {
 
 impl xcm_app::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type WeightInfo = xcm_app::weights::WeightInfo<Runtime>;
+    type WeightInfo = xcm_app::weights::SubstrateWeight<Runtime>;
     type Balance = Balance;
     type OutboundChannel = SubstrateBridgeOutboundChannel;
     type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
-    type CallOrigin = dispatch::EnsureAccount<
-        bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
-    >;
+    type CallOrigin =
+        dispatch::EnsureAccount<bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>>;
     type XcmTransfer = XTokens;
     type AccountIdConverter = sp_runtime::traits::Identity;
     type BalanceConverter = sp_runtime::traits::Identity;
@@ -664,11 +663,11 @@ impl frame_support::dispatch::GetDispatchInfo for DispatchableSubstrateBridgeCal
             bridge_types::substrate::BridgeCall::DataSigner(msg) => {
                 let call: bridge_data_signer::Call<crate::Runtime> = msg.clone().into();
                 call.get_dispatch_info()
-            }
+            },
             bridge_types::substrate::BridgeCall::MultisigVerifier(msg) => {
                 let call: multisig_verifier::Call<crate::Runtime> = msg.clone().into();
                 call.get_dispatch_info()
-            }
+            },
         }
     }
 }
@@ -752,9 +751,8 @@ parameter_types! {
 impl bridge_data_signer::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type OutboundChannel = SubstrateBridgeOutboundChannel;
-    type CallOrigin = dispatch::EnsureAccount<
-        bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
-    >;
+    type CallOrigin =
+        dispatch::EnsureAccount<bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>>;
     type MaxPeers = BridgeMaxPeers;
     type UnsignedPriority = DataSignerPriority;
     type UnsignedLongevity = DataSignerLongevity;
@@ -763,9 +761,8 @@ impl bridge_data_signer::Config for Runtime {
 
 impl multisig_verifier::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type CallOrigin = dispatch::EnsureAccount<
-        bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
-    >;
+    type CallOrigin =
+        dispatch::EnsureAccount<bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>>;
     type OutboundChannel = SubstrateBridgeOutboundChannel;
     type MaxPeers = BridgeMaxPeers;
     type WeightInfo = multisig_verifier::weights::SubstrateWeight<Runtime>;
@@ -838,7 +835,8 @@ mod benches {
         [pallet_timestamp, Timestamp]
         [pallet_collator_selection, CollatorSelection]
         [cumulus_pallet_xcmp_queue, XcmpQueue]
-        [xcp_app, XCMApp]
+        [xcm_app, XCMApp]
+        [pallet_xcm, PolkadotXcm]
     );
 }
 
@@ -1042,11 +1040,12 @@ impl_runtime_apis! {
         ) {
             use frame_benchmarking::{list_benchmark, Benchmarking, BenchmarkList};
             use frame_support::traits::StorageInfoTrait;
-            use frame_system_benchmarking::Pallet as SystemBench;
-            use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+            // use frame_system_benchmarking::Pallet as SystemBench;
+            // use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 
             let mut list = Vec::<BenchmarkList>::new();
             list_benchmark!(list, extra, xcm_app, XCMApp);
+            list_benchmark!(list, extra, pallet_xcm, PolkadotXcm);
 
             let storage_info = AllPalletsWithSystem::storage_info();
             return (list, storage_info)
@@ -1057,10 +1056,10 @@ impl_runtime_apis! {
         ) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
             use frame_benchmarking::{Benchmarking, BenchmarkBatch, TrackedStorageKey, add_benchmark};
 
-            use frame_system_benchmarking::Pallet as SystemBench;
+            // use frame_system_benchmarking::Pallet as SystemBench;
             impl frame_system_benchmarking::Config for Runtime {}
 
-            use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+            // use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
             impl cumulus_pallet_session_benchmarking::Config for Runtime {}
 
             let whitelist: Vec<TrackedStorageKey> = vec![
@@ -1079,6 +1078,7 @@ impl_runtime_apis! {
             let mut batches = Vec::<BenchmarkBatch>::new();
             let params = (&config, &whitelist);
             add_benchmark!(params, batches, xcm_app, XCMApp);
+            add_benchmark!(params, batches, pallet_xcm, PolkadotXcm);
 
             if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
             Ok(batches)

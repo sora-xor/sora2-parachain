@@ -185,7 +185,7 @@ pub type XcmRouter = (
 
 #[cfg(feature = "runtime-benchmarks")]
 parameter_types! {
-    pub const ReachableDest: Option<MultiLocation> = None;
+    pub const ReachableDest: Option<MultiLocation> = Some(MultiLocation::parent());
 }
 
 impl pallet_xcm::Config for Runtime {
