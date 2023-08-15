@@ -569,8 +569,6 @@ impl xcm_app::Config for Runtime {
     type OutboundChannel = SubstrateBridgeOutboundChannel;
     type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
     type CallOrigin = dispatch::EnsureAccount<
-        SubNetworkId,
-        (),
         bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
     >;
     type XcmTransfer = XTokens;
@@ -616,14 +614,13 @@ parameter_types! {
 
 impl dispatch::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type NetworkId = SubNetworkId;
-    type Additional = ();
     type OriginOutput = bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>;
     type Origin = RuntimeOrigin;
     type MessageId = bridge_types::types::MessageId;
     type Hashing = Keccak256;
     type Call = DispatchableSubstrateBridgeCall;
     type CallFilter = SubstrateBridgeCallFilter;
+    type WeightInfo = dispatch::weights::SubstrateWeight<Runtime>;
 }
 
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug, TypeInfo)]
@@ -652,6 +649,27 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
                 call.dispatch(origin)
             },
             bridge_types::substrate::BridgeCall::MultisigVerifier(_) => Ok(().into()),
+        }
+    }
+}
+
+impl frame_support::dispatch::GetDispatchInfo for DispatchableSubstrateBridgeCall {
+    fn get_dispatch_info(&self) -> DispatchInfo {
+        match &self.0 {
+            bridge_types::substrate::BridgeCall::SubstrateApp(_) => todo!(),
+            bridge_types::substrate::BridgeCall::XCMApp(msg) => {
+                let call: xcm_app::Call<crate::Runtime> = msg.clone().into();
+                call.get_dispatch_info()
+            },
+            bridge_types::substrate::BridgeCall::DataSigner(msg) => {
+                let call: bridge_data_signer::Call<crate::Runtime> = msg.clone().into();
+                call.get_dispatch_info()
+            }
+            bridge_types::substrate::BridgeCall::MultisigVerifier(msg) => {
+                let call: multisig_verifier::Call<crate::Runtime> = msg.clone().into();
+                let call: RuntimeCall = call.into();
+                call.get_dispatch_info()
+            }
         }
     }
 }
@@ -687,7 +705,7 @@ impl substrate_bridge_channel::inbound::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Verifier = MultisigVerifier;
     type MessageDispatch = SubstrateDispatch;
-    type WeightInfo = ();
+    type WeightInfo = substrate_bridge_channel::inbound::weights::SubstrateWeight<Runtime>;
     type UnsignedPriority = DataSignerPriority;
     type UnsignedLongevity = DataSignerLongevity;
     type MaxMessagePayloadSize = BridgeMaxMessagePayloadSize;
@@ -703,7 +721,6 @@ impl bridge_types::traits::TimepointProvider for TimepointProvider {
     }
 }
 
-// #[cfg(any(feature = "rococo", feature = "polkadot", feature = "kusama"))]
 impl substrate_bridge_channel::outbound::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type MessageStatusNotifier = ();
@@ -737,26 +754,22 @@ impl bridge_data_signer::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type OutboundChannel = SubstrateBridgeOutboundChannel;
     type CallOrigin = dispatch::EnsureAccount<
-        SubNetworkId,
-        (),
         bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
     >;
     type MaxPeers = BridgeMaxPeers;
     type UnsignedPriority = DataSignerPriority;
     type UnsignedLongevity = DataSignerLongevity;
-    type WeightInfo = bridge_data_signer::weights::WeightInfo<Runtime>;
+    type WeightInfo = bridge_data_signer::weights::SubstrateWeight<Runtime>;
 }
 
 impl multisig_verifier::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type CallOrigin = dispatch::EnsureAccount<
-        SubNetworkId,
-        (),
         bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
     >;
     type OutboundChannel = SubstrateBridgeOutboundChannel;
     type MaxPeers = BridgeMaxPeers;
-    type WeightInfo = multisig_verifier::weights::WeightInfo<Runtime>;
+    type WeightInfo = multisig_verifier::weights::SubstrateWeight<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
