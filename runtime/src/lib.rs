@@ -667,7 +667,6 @@ impl frame_support::dispatch::GetDispatchInfo for DispatchableSubstrateBridgeCal
             }
             bridge_types::substrate::BridgeCall::MultisigVerifier(msg) => {
                 let call: multisig_verifier::Call<crate::Runtime> = msg.clone().into();
-                let call: RuntimeCall = call.into();
                 call.get_dispatch_info()
             }
         }

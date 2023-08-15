@@ -132,6 +132,10 @@ impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
     ) -> Result<H256, sp_runtime::DispatchError> {
         Ok([1; 32].into())
     }
+
+    fn submit_weight() -> frame_support::weights::Weight {
+        frame_support::weights::Weight::zero()
+    }
 }
 
 pub struct TestAccountIdToMultiLocation;
