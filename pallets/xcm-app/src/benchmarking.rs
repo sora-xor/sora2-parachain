@@ -31,6 +31,7 @@
 use super::*;
 use crate::Pallet as XCMApp;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
+use frame_support::traits::EnsureOrigin;
 use frame_system::RawOrigin;
 use xcm::{opaque::latest::Junction::GeneralKey, v3::MultiLocation};
 
@@ -43,7 +44,9 @@ benchmarks! {
     register_asset {
         let asset_id = [1; 32].into();
         let multilocation = test_multilocation();
-    }: _(RawOrigin::Root, asset_id, multilocation.clone().into(), bridge_types::types::AssetKind::Thischain, 1000)
+    }: {
+        XCMApp::<T>::register_asset(T::CallOrigin::try_successful_origin().unwrap(), asset_id, multilocation.clone().into(), bridge_types::types::AssetKind::Thischain, 1000)?;
+    }
     verify {
         assert_eq!(
             XCMApp::<T>::get_multilocation_from_asset_id(asset_id)
@@ -61,7 +64,11 @@ benchmarks! {
         let asset_id = [1; 32].into();
         let multilocation = test_multilocation();
         let amount = 500;
-    }: _(RawOrigin::Root, asset_id, alice::<T>(), multilocation.clone().into(), amount)
+        XCMApp::<T>::register_asset(T::CallOrigin::try_successful_origin().unwrap(), asset_id, multilocation.clone().into(), bridge_types::types::AssetKind::Thischain, 1000)
+            .expect("transfer: Failed register assed");
+    }: {
+        XCMApp::<T>::transfer(T::CallOrigin::try_successful_origin().unwrap(), asset_id, alice::<T>(), multilocation.clone().into(), amount)?;
+    }
     verify {
         assert_event::<T>(Event::<T>::AssetTransferred(alice::<T>(), multilocation, asset_id, amount).into());
     }
@@ -81,8 +88,11 @@ benchmarks! {
         let asset_id = [1; 32].into();
         let amount = 500;
         let multilocation = test_multilocation();
-        let _ = XCMApp::<T>::register_asset(RawOrigin::Root.into(), asset_id, multilocation.clone().into(), bridge_types::types::AssetKind::Thischain, 1000);
-    }: _(RawOrigin::Root, asset_id, amount)
+        XCMApp::<T>::register_asset(T::CallOrigin::try_successful_origin().unwrap(), asset_id, multilocation.clone().into(), bridge_types::types::AssetKind::Thischain, 1000)
+            .expect("set_asset_minimum_amount: Failed register assed");
+    }: {
+        XCMApp::<T>::set_asset_minimum_amount(T::CallOrigin::try_successful_origin().unwrap(), asset_id, amount)?;
+    }
     verify {
         assert_eq!(XCMApp::<T>::asset_minimum_amount(multilocation).expect("set_asset_minimum_amount: no min amount"), amount);
     }
@@ -111,7 +121,6 @@ fn test_multilocation() -> MultiLocation {
 fn assert_event<T: Config>(generic_event: <T as Config>::RuntimeEvent) {
     let events = frame_system::Pallet::<T>::events();
     let system_event: <T as frame_system::Config>::RuntimeEvent = generic_event.into();
-    // compare to the last event record
     assert!(events.into_iter().any(|x| {
         let frame_system::EventRecord { event, .. } = x;
         event == system_event
