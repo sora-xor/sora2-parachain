@@ -45,7 +45,7 @@ benchmarks! {
         let asset_id = [1; 32].into();
         let multilocation = test_multilocation();
     }: {
-        XCMApp::<T>::register_asset(T::CallOrigin::try_successful_origin().unwrap(), asset_id, multilocation.clone().into(), bridge_types::types::AssetKind::Thischain, 1000)?;
+        XCMApp::<T>::register_asset(T::CallOrigin::try_successful_origin().unwrap(), asset_id, multilocation.into(), bridge_types::types::AssetKind::Thischain, 1000)?;
     }
     verify {
         assert_eq!(
@@ -64,10 +64,10 @@ benchmarks! {
         let asset_id = [1; 32].into();
         let multilocation = test_multilocation();
         let amount = 500;
-        XCMApp::<T>::register_asset(T::CallOrigin::try_successful_origin().unwrap(), asset_id, multilocation.clone().into(), bridge_types::types::AssetKind::Thischain, 1000)
+        XCMApp::<T>::register_asset(T::CallOrigin::try_successful_origin().unwrap(), asset_id, multilocation.into(), bridge_types::types::AssetKind::Thischain, 1000)
             .expect("transfer: Failed register assed");
     }: {
-        XCMApp::<T>::transfer(T::CallOrigin::try_successful_origin().unwrap(), asset_id, alice::<T>(), multilocation.clone().into(), amount)?;
+        XCMApp::<T>::transfer(T::CallOrigin::try_successful_origin().unwrap(), asset_id, alice::<T>(), multilocation.into(), amount)?;
     }
     verify {
         assert_event::<T>(Event::<T>::AssetTransferred(alice::<T>(), multilocation, asset_id, amount).into());
@@ -88,7 +88,7 @@ benchmarks! {
         let asset_id = [1; 32].into();
         let amount = 500;
         let multilocation = test_multilocation();
-        XCMApp::<T>::register_asset(T::CallOrigin::try_successful_origin().unwrap(), asset_id, multilocation.clone().into(), bridge_types::types::AssetKind::Thischain, 1000)
+        XCMApp::<T>::register_asset(T::CallOrigin::try_successful_origin().unwrap(), asset_id, multilocation.into(), bridge_types::types::AssetKind::Thischain, 1000)
             .expect("set_asset_minimum_amount: Failed register assed");
     }: {
         XCMApp::<T>::set_asset_minimum_amount(T::CallOrigin::try_successful_origin().unwrap(), asset_id, amount)?;
