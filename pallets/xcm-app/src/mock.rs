@@ -132,6 +132,10 @@ impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
     ) -> Result<H256, sp_runtime::DispatchError> {
         Ok([1; 32].into())
     }
+
+    fn submit_weight() -> frame_support::weights::Weight {
+        frame_support::weights::Weight::zero()
+    }
 }
 
 pub struct TestAccountIdToMultiLocation;
@@ -230,7 +234,7 @@ impl XcmTransfer<AccountId, Balance, AssetId> for TestXcmTransfer {
 }
 
 pub struct TestCallOrigin;
-impl<OuterOrigin> frame_support::traits::EnsureOrigin<OuterOrigin> for TestCallOrigin {
+impl<OuterOrigin: Default> frame_support::traits::EnsureOrigin<OuterOrigin> for TestCallOrigin {
     type Success = bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>;
 
     fn try_origin(_o: OuterOrigin) -> Result<Self::Success, OuterOrigin> {
@@ -240,5 +244,16 @@ impl<OuterOrigin> frame_support::traits::EnsureOrigin<OuterOrigin> for TestCallO
             timepoint: bridge_types::GenericTimepoint::Sora(1),
             additional: (),
         })
+    }
+
+    #[cfg(feature = "runtime-benchmarks")]
+    fn try_successful_origin() -> Result<OuterOrigin, ()> {
+        Ok(Default::default())
+    }
+}
+
+impl Default for RuntimeOrigin {
+    fn default() -> Self {
+        RuntimeOrigin::root()
     }
 }

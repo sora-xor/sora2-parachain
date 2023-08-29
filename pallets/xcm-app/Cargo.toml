@@ -28,6 +28,8 @@ sp-runtime = { git = "https://github.com/paritytech/substrate.git", default-feat
 
 # Polkadot
 xcm = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" }
+xcm-executor = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" } # needed to compile pallet as standalone crate 
+xcm-builder = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" } # needed to compile pallet as standalone crate 
 
 # Local
 parachain-common = { path = "../../parachain-common", default-features = false }
@@ -48,12 +50,19 @@ sp-runtime = { git = "https://github.com/paritytech/substrate.git", default-feat
 
 [features]
 default = ["std"]
-runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
+runtime-benchmarks = [
+	"frame-benchmarking/runtime-benchmarks",
+	"xcm-builder/runtime-benchmarks"
+]
 std = [
+	"bridge-types/std",
 	"codec/std",
 	"scale-info/std",
 	"frame-benchmarking/std",
 	"frame-support/std",
 	"frame-system/std",
+	"xcm/std",
+	"xcm-executor/std",
+	"xcm-builder/std",
 ]
 try-runtime = ["frame-support/try-runtime"]

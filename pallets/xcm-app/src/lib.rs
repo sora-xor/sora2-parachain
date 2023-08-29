@@ -59,17 +59,16 @@ use xcm::{
 pub type ParachainAssetId = xcm::VersionedMultiAsset;
 
 pub trait WeightInfo {
-    fn register_mapping() -> Weight;
-
-    fn change_asset_mapping() -> Weight;
-
-    fn change_multilocation_mapping() -> Weight;
-
-    fn delete_mapping() -> Weight;
-
     fn transfer() -> Weight;
 
     fn register_asset() -> Weight;
+
+    fn try_claim_bridge_asset() -> Weight;
+
+    fn set_asset_minimum_amount() -> Weight;
+
+    // since pallet_xcm is wrapped by this function, the benchmarks from this pallet for "send" should be used
+    fn sudo_send_xcm() -> Weight;
 }
 
 impl<T: Config> From<XCMAppCall> for Call<T>
@@ -323,7 +322,7 @@ pub mod pallet {
 
         /// Try Refund an asset trapped by bridge
         #[pallet::call_index(2)]
-        #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
+        #[pallet::weight(<T as Config>::WeightInfo::try_claim_bridge_asset())]
         pub fn try_claim_bridge_asset(
             origin: OriginFor<T>,
             nonce: u128,
@@ -378,7 +377,7 @@ pub mod pallet {
         }
 
         #[pallet::call_index(3)]
-        #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
+        #[pallet::weight(<T as Config>::WeightInfo::set_asset_minimum_amount())]
         pub fn set_asset_minimum_amount(
             origin: OriginFor<T>,
             asset_id: AssetId,
@@ -394,7 +393,7 @@ pub mod pallet {
         }
 
         #[pallet::call_index(4)]
-        #[pallet::weight(<T as Config>::WeightInfo::register_asset())]
+        #[pallet::weight(<T as Config>::WeightInfo::sudo_send_xcm())]
         pub fn sudo_send_xcm(
             origin: OriginFor<T>,
             dest: Box<xcm::VersionedMultiLocation>,
