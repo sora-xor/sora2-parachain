@@ -65,7 +65,7 @@ benchmarks! {
         let multilocation = test_multilocation();
         let amount = 500;
         XCMApp::<T>::register_asset(T::CallOrigin::try_successful_origin().unwrap(), asset_id, multilocation.into(), bridge_types::types::AssetKind::Thischain, 1000)
-            .expect("transfer: Failed register assed");
+            .expect("transfer: Failed register asset");
     }: {
         XCMApp::<T>::transfer(T::CallOrigin::try_successful_origin().unwrap(), asset_id, alice::<T>(), multilocation.into(), amount)?;
     }
