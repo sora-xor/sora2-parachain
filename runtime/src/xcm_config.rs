@@ -145,9 +145,9 @@ pub type Barrier = (
 
 pub struct OnlyParent;
 impl frame_support::traits::Contains<MultiLocation> for OnlyParent {
-	fn contains(ml: &MultiLocation) -> bool {
-		*ml == MultiLocation::parent()
-	}
+    fn contains(ml: &MultiLocation) -> bool {
+        *ml == MultiLocation::parent()
+    }
 }
 
 pub struct XcmConfig;
