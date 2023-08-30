@@ -43,7 +43,7 @@ impl WeightTrader for ParachainTrader {
 
     fn buy_weight(&mut self, weight: XcmWeight, assets: Assets) -> Result<Assets, XcmError> {
         log::trace!(target: "xcm::weight", "buy_weight weight: {:?}, payment: {:?}", weight, assets);
-        if assets.fungible.len() == 0 {
+        if assets.fungible.is_empty() {
             return Err(XcmError::AssetNotFound);
         }
 

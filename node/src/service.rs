@@ -168,7 +168,7 @@ where
 
     let import_queue = build_import_queue(
         client.clone(),
-        block_import.clone(),
+        block_import,
         config,
         telemetry.as_ref().map(|telemetry| telemetry.handle()),
         &task_manager,
@@ -196,7 +196,7 @@ async fn build_relay_chain_interface(
     collator_options: CollatorOptions,
     hwbench: Option<sc_sysinfo::HwBench>,
 ) -> RelayChainResult<(Arc<(dyn RelayChainInterface + 'static)>, Option<CollatorPair>)> {
-    if collator_options.relay_chain_rpc_urls.len() != 0 {
+    if !collator_options.relay_chain_rpc_urls.is_empty() {
         return cumulus_relay_chain_minimal_node::build_minimal_relay_chain_node(
             polkadot_config,
             task_manager,
@@ -216,6 +216,7 @@ async fn build_relay_chain_interface(
 /// Start a node with the given parachain `Configuration` and relay chain `Configuration`.
 ///
 /// This is the actual implementation that is abstract over the executor and the runtime api.
+#[allow(clippy::too_many_arguments)]
 #[sc_tracing::logging::prefix_logs_with("Parachain")]
 async fn start_node_impl<Executor, RB, BIQ, BIC>(
     parachain_config: Configuration,
@@ -286,7 +287,7 @@ where
         params.client.block_hash(0).ok().flatten().expect("Genesis block exists; qed");
 
     let gossip_protocol_name = beefy_gadget::gossip_protocol_name(
-        &genesis_hash,
+        genesis_hash,
         None, // todo change to fork id
     );
 
@@ -301,7 +302,7 @@ where
 
     let (beefy_on_demand_justifications_handler, beefy_req_resp_cfg) =
         beefy_gadget::communication::request_response::BeefyJustifsRequestHandler::new(
-            &genesis_hash,
+            genesis_hash,
             parachain_config.chain_spec.fork_id(),
             client.clone(),
         );

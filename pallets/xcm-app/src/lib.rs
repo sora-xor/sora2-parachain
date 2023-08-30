@@ -297,7 +297,7 @@ pub mod pallet {
             let res = T::CallOrigin::ensure_origin(origin)?;
             frame_support::log::info!(
                 "Call register_asset with params: {:?} by {:?}",
-                (asset_id, multiasset.clone()),
+                (asset_id, multiasset),
                 res
             );
             let multilocation = match multiasset {
@@ -361,7 +361,7 @@ pub mod pallet {
                     sender: None,
                     amount,
                 };
-                let mes_bytes = message.clone().prepare_message();
+                let mes_bytes = message.prepare_message();
                 Self::deposit_event(Event::<T>::TrappedMessageSent(recipient, asset_id, amount));
                 mes_bytes
             };
@@ -445,14 +445,14 @@ pub mod pallet {
                 (asset_id, sender.clone(), recipient.clone(), amount),
                 origin_output
             );
-            match Self::xcm_transfer_asset(asset_id, sender.clone(), recipient.clone(), amount) {
+            match Self::xcm_transfer_asset(asset_id, sender.clone(), recipient, amount) {
                 Ok(_) => {
                     let message = SubstrateAppCall::ReportXCMTransferResult {
                         message_id: origin_output.message_id,
                         transfer_status: bridge_types::substrate::XCMAppTransferStatus::Success,
                     };
-                    let xcm_mes_bytes = message.clone().prepare_message();
-                    let raw_origin = Some(sender.clone()).into();
+                    let xcm_mes_bytes = message.prepare_message();
+                    let raw_origin = Some(sender).into();
                     if let Err(e) = <T as Config>::OutboundChannel::submit(
                         SubNetworkId::Mainnet,
                         &raw_origin,
@@ -486,7 +486,7 @@ pub mod pallet {
                 sender.clone(),
                 asset_id,
                 amount,
-                recipient.clone(),
+                recipient,
                 xcm::v3::WeightLimit::Unlimited,
             ) {
                 Self::deposit_event(Event::<T>::TrasferringAssetError(e, asset_id));
@@ -504,7 +504,7 @@ pub mod pallet {
                 message_id,
                 transfer_status: bridge_types::substrate::XCMAppTransferStatus::XCMTransferError,
             };
-            let xcm_mes_bytes = message.clone().prepare_message();
+            let xcm_mes_bytes = message.prepare_message();
             if let Err(e) = <T as Config>::OutboundChannel::submit(
                 SubNetworkId::Mainnet,
                 &raw_origin,
@@ -556,11 +556,11 @@ pub mod pallet {
         ) -> DispatchResultWithPostInfo {
             ensure!(
                 AssetIdToMultilocation::<T>::get(asset_id).is_none()
-                    && MultilocationToAssetId::<T>::get(multilocation.clone()).is_none(),
+                    && MultilocationToAssetId::<T>::get(multilocation).is_none(),
                 Error::<T>::MappingAlreadyExists
             );
-            AssetIdToMultilocation::<T>::insert(asset_id, multilocation.clone());
-            MultilocationToAssetId::<T>::insert(multilocation.clone(), asset_id);
+            AssetIdToMultilocation::<T>::insert(asset_id, multilocation);
+            MultilocationToAssetId::<T>::insert(multilocation, asset_id);
             Ok(().into())
         }
 
@@ -578,15 +578,15 @@ pub mod pallet {
                     Some(ml) => {
                         // ensure that new_multilocation mapping does not exist
                         ensure!(
-                            MultilocationToAssetId::<T>::get(new_multilocation.clone()).is_none(),
+                            MultilocationToAssetId::<T>::get(new_multilocation).is_none(),
                             Error::<T>::MappingAlreadyExists
                         );
-                        MultilocationToAssetId::<T>::insert(new_multilocation.clone(), asset_id);
+                        MultilocationToAssetId::<T>::insert(new_multilocation, asset_id);
 
                         // remove old multilocation
-                        MultilocationToAssetId::<T>::remove(ml.clone());
+                        MultilocationToAssetId::<T>::remove(*ml);
 
-                        *ml = new_multilocation.clone();
+                        *ml = new_multilocation;
                     },
                 }
                 Ok(())
@@ -604,24 +604,21 @@ pub mod pallet {
             new_asset_id: AssetId,
         ) -> DispatchResultWithPostInfo {
             MultilocationToAssetId::<T>::try_mutate(
-                multilocation.clone(),
+                multilocation,
                 |asset_opt| -> DispatchResult {
                     match asset_opt {
                         None => fail!(Error::<T>::MappingNotExist),
                         Some(asset_id) => {
                             // ensure that new_assetid mapping does not exist
                             ensure!(
-                                AssetIdToMultilocation::<T>::get(new_asset_id.clone()).is_none(),
+                                AssetIdToMultilocation::<T>::get(new_asset_id).is_none(),
                                 Error::<T>::MappingAlreadyExists
                             );
 
-                            AssetIdToMultilocation::<T>::insert(
-                                new_asset_id,
-                                multilocation.clone(),
-                            );
+                            AssetIdToMultilocation::<T>::insert(new_asset_id, multilocation);
 
                             // remove old assetid
-                            AssetIdToMultilocation::<T>::remove(asset_id.clone());
+                            AssetIdToMultilocation::<T>::remove(*asset_id);
 
                             *asset_id = new_asset_id;
                         },
@@ -644,7 +641,7 @@ pub mod pallet {
                 None => fail!(Error::<T>::MappingNotExist),
                 Some(multilocation) => {
                     AssetIdToMultilocation::<T>::remove(asset_id);
-                    MultilocationToAssetId::<T>::remove(multilocation.clone());
+                    MultilocationToAssetId::<T>::remove(multilocation);
                     Self::deposit_event(Event::<T>::MappingDeleted(asset_id, multilocation));
                 },
             };

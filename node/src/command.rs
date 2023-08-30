@@ -21,7 +21,7 @@ use crate::{
 
 fn set_default_ss58_version() {
     sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::custom(
-        sora2_parachain_runtime::SS58Prefix::get() as u16,
+        sora2_parachain_runtime::SS58Prefix::get(),
     ));
 }
 
@@ -268,7 +268,7 @@ pub fn run() -> Result<()> {
             runner.run_node_until_exit(|config| async move {
                 let hwbench = if !cli.no_hardware_benchmarks {
                     config.database.path().map(|database_path| {
-                        let _ = std::fs::create_dir_all(&database_path);
+                        let _ = std::fs::create_dir_all(database_path);
                         sc_sysinfo::gather_hwbench(Some(database_path))
                     })
                 } else {
@@ -277,7 +277,7 @@ pub fn run() -> Result<()> {
 
                 let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
                     .map(|e| e.para_id)
-                    .ok_or_else(|| "Could not find parachain ID in chain-spec.")?;
+                    .ok_or("Could not find parachain ID in chain-spec.")?;
 
                 let polkadot_cli = RelayChainCli::new(
                     &config,
