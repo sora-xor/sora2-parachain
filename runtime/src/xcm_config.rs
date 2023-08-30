@@ -191,6 +191,11 @@ pub type XcmRouter = (
     XcmpQueue,
 );
 
+#[cfg(feature = "runtime-benchmarks")]
+parameter_types! {
+    pub const ReachableDest: Option<MultiLocation> = Some(MultiLocation::parent());
+}
+
 impl pallet_xcm::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type SendXcmOrigin = EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
@@ -215,6 +220,8 @@ impl pallet_xcm::Config for Runtime {
     type SovereignAccountOf = ();
     type MaxLockers = ();
     type WeightInfo = PalletXCMWeightInfo;
+    #[cfg(feature = "runtime-benchmarks")]
+    type ReachableDest = ReachableDest;
 }
 
 impl cumulus_pallet_xcm::Config for Runtime {
@@ -250,7 +257,7 @@ parameter_type_with_key! {
 pub struct AccountIdToMultiLocation;
 impl sp_runtime::traits::Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
     fn convert(account: AccountId) -> MultiLocation {
-        X1(AccountId32 { network: None, id: account.into() }).into()
+        X1(AccountId32 { network: Some(RelayNetwork::get()), id: account.into() }).into()
     }
 }
 

@@ -82,7 +82,7 @@ impl SubstrateCli for Cli {
 
 impl SubstrateCli for RelayChainCli {
     fn impl_name() -> String {
-        "Parachain Collator Template".into()
+        "SORA Parachain Collator".into()
     }
 
     fn impl_version() -> String {
@@ -91,7 +91,7 @@ impl SubstrateCli for RelayChainCli {
 
     fn description() -> String {
         format!(
-            "Parachain Collator Template\n\nThe command-line arguments provided first will be \
+            "SORA Parachain Collator \n\nThe command-line arguments provided first will be \
 		passed to the parachain node, while the arguments provided after -- will be passed \
 		to the relay chain node.\n\n\
 		{} <parachain-args> -- <relay-chain-args>",
@@ -215,17 +215,17 @@ pub fn run() -> Result<()> {
             // Switch on the concrete benchmark sub-command-
             match cmd {
                 BenchmarkCmd::Pallet(cmd) => {
-                    runner.sync_run(|config| cmd.run::<Block, TemplateRuntimeExecutor>(config))
+                    runner.sync_run(|config| cmd.run::<Block, ParachainNativeExecutor>(config))
                 },
                 BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-                    let partials = new_partial::<RuntimeApi, TemplateRuntimeExecutor, _>(
+                    let partials = new_partial::<RuntimeApi, ParachainNativeExecutor, _>(
                         &config,
                         crate::service::parachain_build_import_queue,
                     )?;
                     cmd.run(partials.client)
                 }),
                 BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-                    let partials = new_partial::<RuntimeApi, TemplateRuntimeExecutor, _>(
+                    let partials = new_partial::<RuntimeApi, ParachainNativeExecutor, _>(
                         &config,
                         crate::service::parachain_build_import_queue,
                     )?;
@@ -255,7 +255,7 @@ pub fn run() -> Result<()> {
                         .map_err(|e| format!("Error: {:?}", e))?;
 
                 runner.async_run(|config| {
-                    Ok((cmd.run::<Block, TemplateRuntimeExecutor>(config), task_manager))
+                    Ok((cmd.run::<Block, ParachainNativeExecutor>(config), task_manager))
                 })
             } else {
                 Err("Try-runtime must be enabled by `--features try-runtime`.".into())
