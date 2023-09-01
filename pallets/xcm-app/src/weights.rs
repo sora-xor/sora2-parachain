@@ -33,7 +33,6 @@
 
 use core::marker::PhantomData;
 use frame_support::{traits::Get, weights::Weight};
-use parachain_common::primitives::EXTRINSIC_FIXED_WEIGHT;
 
 /// Weight functions for `XCMApp`.
 pub struct SubstrateWeight<T>(PhantomData<T>);
@@ -109,39 +108,17 @@ impl<T: frame_system::Config> crate::WeightInfo for SubstrateWeight<T> {
             .saturating_add(T::DbWeight::get().writes(1))
     }
 
-    /// Storage: ParachainSystem HostConfiguration (r:1 w:0)
-    /// Proof Skipped: ParachainSystem HostConfiguration (max_values: Some(1), max_size: None, mode: Measured)
-    /// Storage: ParachainSystem PendingUpwardMessages (r:1 w:1)
-    /// Proof Skipped: ParachainSystem PendingUpwardMessages (max_values: Some(1), max_size: None, mode: Measured)
-    fn sudo_send_xcm() -> Weight {
-        // Proof Size summary in bytes:
-        //  Measured:  `6`
-        //  Estimated: `1002`
-        // Minimum execution time: 13_000 nanoseconds.
-        Weight::from_parts(14_000_000, 1002)
-            .saturating_add(T::DbWeight::get().reads(2))
-            .saturating_add(T::DbWeight::get().writes(1))
-    }
-}
-
-impl crate::WeightInfo for () {
-    fn transfer() -> Weight {
-        EXTRINSIC_FIXED_WEIGHT
-    }
-
-    fn register_asset() -> Weight {
-        EXTRINSIC_FIXED_WEIGHT
-    }
-
-    fn try_claim_bridge_asset() -> Weight {
-        EXTRINSIC_FIXED_WEIGHT
-    }
-
-    fn set_asset_minimum_amount() -> Weight {
-        EXTRINSIC_FIXED_WEIGHT
-    }
-
-    fn sudo_send_xcm() -> Weight {
-        EXTRINSIC_FIXED_WEIGHT
-    }
+	/// Storage: ParachainSystem HostConfiguration (r:1 w:0)
+	/// Proof Skipped: ParachainSystem HostConfiguration (max_values: Some(1), max_size: None, mode: Measured)
+	/// Storage: ParachainSystem PendingUpwardMessages (r:1 w:1)
+	/// Proof Skipped: ParachainSystem PendingUpwardMessages (max_values: Some(1), max_size: None, mode: Measured)
+	fn sudo_send_xcm() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `6`
+		//  Estimated: `1002`
+		// Minimum execution time: 31_000 nanoseconds.
+		Weight::from_parts(32_000_000, 1002)
+			.saturating_add(T::DbWeight::get().reads(2))
+			.saturating_add(T::DbWeight::get().writes(1))
+	}
 }
