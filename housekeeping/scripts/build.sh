@@ -14,6 +14,7 @@ do
       printf "🏗️ Building of "$network" will start now... \n"
       $buidcmd "$network"
       $testcmd "$network"
+      cp target/release/parachain-collator housekeeping/parachain-collator
       wasm_in="./target/release/wbuild/sora2-parachain-runtime/"
       wasm_out=./sora2-parachain-runtime_$network.compact.compressed.wasm
       wasm_file=$(ls "$wasm_in" | grep ".compact.compressed.wasm")
