@@ -34,3 +34,5 @@ do
       exit 1
    fi
 done
+
+cp target/release/parachain-collator housekeeping/parachain-collator
