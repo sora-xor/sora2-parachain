@@ -42,6 +42,6 @@ do
    fi
 done
 
-if [[ $buildTag != null ]] && [[ ${TAG_NAME} != null || ${TAG_NAME} != '' ]] && [[ ${TAG_NAME} != 'benchmarking'* ]]; then
+if [ -f "$binaryfile" ]; then
    cp "$binaryfile" "$binaryfilepath"
 fi
