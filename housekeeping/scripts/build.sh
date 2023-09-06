@@ -10,7 +10,7 @@ rm -rf ~/.cargo/registry/
 
 if [[ ${TAG_NAME} =~ 'benchmarking'* ]]; then
    printf "🕙 Building benchmarks will start now... \n"
-   cargo build --release --locked --features runtime-benchmarks,kusama --bin parachain-collator
+   $benchmarkcmd
 fi
 
 for network in ${networks[@]}
