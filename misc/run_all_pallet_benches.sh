@@ -91,5 +91,3 @@ if [ -f "$ERR_FILE" ]; then
 else
   echo "[+] All benchmarks passed."
 fi
-
-cat benchmarking_errors.txt
