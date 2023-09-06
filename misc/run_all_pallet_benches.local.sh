@@ -3,8 +3,11 @@
 # Runs all benchmarks for all pallets, for a given runtime, provided by $1
 # Should be run on a reference machine to gain accurate benchmarks
 # current reference machine: https://github.com/paritytech/substrate/pull/5848
-# Load all pallet names in an array.
 
+echo "[+] Compiling benchmarks..."
+cargo build --release --locked --features runtime-benchmarks,rococo --bin framenode
+
+# Load all pallet names in an array.
 PALLETS=($(
   ./target/release/parachain-collator benchmark pallet --list --chain="local" |\
     tail -n+2 |\
@@ -91,5 +94,3 @@ if [ -f "$ERR_FILE" ]; then
 else
   echo "[+] All benchmarks passed."
 fi
-
-cat benchmarking_errors.txt
