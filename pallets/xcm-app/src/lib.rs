@@ -45,54 +45,18 @@ pub use pallet::*;
 use bridge_types::substrate::XCMAppCall;
 use bridge_types::H256;
 use codec::{Decode, Encode};
-use frame_support::weights::Weight;
 use orml_traits::xcm_transfer::XcmTransfer;
 use orml_traits::MultiCurrency;
 use parachain_common::primitives::AssetId;
-use parachain_common::primitives::EXTRINSIC_FIXED_WEIGHT;
 use scale_info::prelude::boxed::Box;
 use sp_runtime::{AccountId32, RuntimeDebug};
 use xcm::{
     opaque::latest::{AssetId::Concrete, Fungibility::Fungible},
     v3::{MultiAsset, MultiLocation},
 };
+use crate::weights::WeightInfo;
 
 pub type ParachainAssetId = xcm::VersionedMultiAsset;
-
-pub trait WeightInfo {
-    fn transfer() -> Weight;
-
-    fn register_asset() -> Weight;
-
-    fn try_claim_bridge_asset() -> Weight;
-
-    fn set_asset_minimum_amount() -> Weight;
-
-    // since pallet_xcm is wrapped by this function, the benchmarks from this pallet for "send" should be used
-    fn sudo_send_xcm() -> Weight;
-}
-
-impl WeightInfo for () {
-    fn transfer() -> Weight {
-        EXTRINSIC_FIXED_WEIGHT
-    }
-
-    fn register_asset() -> Weight {
-        EXTRINSIC_FIXED_WEIGHT
-    }
-
-    fn try_claim_bridge_asset() -> Weight {
-        EXTRINSIC_FIXED_WEIGHT
-    }
-
-    fn set_asset_minimum_amount() -> Weight {
-        EXTRINSIC_FIXED_WEIGHT
-    }
-
-    fn sudo_send_xcm() -> Weight {
-        EXTRINSIC_FIXED_WEIGHT
-    }
-}
 
 impl<T: Config> From<XCMAppCall> for Call<T>
 where

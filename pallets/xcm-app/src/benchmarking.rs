@@ -110,6 +110,8 @@ benchmarks! {
         let versioned_dest: bridge_types::substrate::VersionedMultiLocation = MultiLocation::parent().into();
         let versioned_msg = xcm::VersionedXcm::from(msg);
     }: _(RawOrigin::Root, Box::new(versioned_dest), Box::new(versioned_msg))
+    // verify {
+    // }
 }
 
 impl_benchmark_test_suite!(XCMApp, crate::mock::new_test_ext(), crate::mock::Test,);
