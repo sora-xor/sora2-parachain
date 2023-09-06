@@ -25,7 +25,6 @@ do
       wasm_out=./sora2-parachain-runtime_$network.compact.compressed.wasm
       wasm_file=$(ls "$wasm_in" | grep ".compact.compressed.wasm")
       mv "$wasm_in$wasm_file" "$wasm_out"
-      cp "$binaryfile" "$binaryfilepath"
    else
       printf "⚡️ There is no tag here, only tests run. \n"
       printf "🏃 Running tests for "$network"... \n"
@@ -42,3 +41,7 @@ do
       exit 1
    fi
 done
+
+if [[ $buildTag != null ]] && [[ ${TAG_NAME} != null || ${TAG_NAME} != '' ]] && [[ ${TAG_NAME} != 'benchmarking'* ]]; then
+   cp "$binaryfile" "$binaryfilepath"
+fi
