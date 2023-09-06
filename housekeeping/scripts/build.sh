@@ -1,20 +1,24 @@
 #!/bin/bash
 set -e
 
+benchmarkcmd="cargo build --release --locked --features runtime-benchmarks,kusama --bin parachain-collator"
 buidcmd="cargo b -r --features"
 testcmd="cargo test -r --features"
 networks=(kusama rococo polkadot)
 
 rm -rf ~/.cargo/registry/
 
+if [[ ${TAG_NAME} =~ 'benchmarking'* ]]; then
+   printf "🕙 Building benchmarks will start now... \n"
+   cargo build --release --locked --features runtime-benchmarks,kusama --bin parachain-collator
+fi
 
 for network in ${networks[@]}
 do
-   if [[ $buildTag != null ]] && [[ ${TAG_NAME} != null || ${TAG_NAME} != '' ]]; then
+   if [[ $buildTag != null ]] && [[ ${TAG_NAME} != null || ${TAG_NAME} != '' ]] && [[ ${TAG_NAME} != 'benchmarking'* ]]; then
       printf "🏗️ Building of "$network" will start now... \n"
       $buidcmd "$network"
       $testcmd "$network"
-      cp target/release/parachain-collator housekeeping/parachain-collator
       wasm_in="./target/release/wbuild/sora2-parachain-runtime/"
       wasm_out=./sora2-parachain-runtime_$network.compact.compressed.wasm
       wasm_file=$(ls "$wasm_in" | grep ".compact.compressed.wasm")
@@ -35,3 +39,5 @@ do
       exit 1
    fi
 done
+
+cp target/release/parachain-collator housekeeping/parachain-collator
