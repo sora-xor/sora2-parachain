@@ -35,6 +35,7 @@ use frame_support::traits::EnsureOrigin;
 use frame_system::RawOrigin;
 use xcm::latest::prelude::AssetId as XCMAssetId;
 use xcm::{latest::prelude::*, opaque::latest::Junction::GeneralKey, v3::MultiLocation};
+use frame_support::pallet_prelude::Weight;
 
 fn alice<T: Config>() -> T::AccountId {
     let bytes = [66; 32];
@@ -110,8 +111,6 @@ benchmarks! {
         let versioned_dest: bridge_types::substrate::VersionedMultiLocation = MultiLocation::parent().into();
         let versioned_msg = xcm::VersionedXcm::from(msg);
     }: _(RawOrigin::Root, Box::new(versioned_dest), Box::new(versioned_msg))
-    // verify {
-    // }
 }
 
 impl_benchmark_test_suite!(XCMApp, crate::mock::new_test_ext(), crate::mock::Test,);
