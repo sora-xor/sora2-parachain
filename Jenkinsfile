@@ -1,4 +1,4 @@
-@Library('jenkins-library@duty/parachain-bench') _
+@Library('jenkins-library') _
 
 def pipeline = new org.rust.AppPipeline(steps: this,
       envImageName: 'docker.soramitsu.co.jp/sora2/parachain-env:latest',
