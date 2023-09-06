@@ -5,6 +5,8 @@ benchmarkcmd="cargo build --release --locked --features runtime-benchmarks,kusam
 buidcmd="cargo b -r --features"
 testcmd="cargo test -r --features"
 networks=(kusama rococo polkadot)
+binaryfile="target/release/parachain-collator"
+binaryfilepath="housekeeping/parachain-collator"
 
 rm -rf ~/.cargo/registry/
 
@@ -23,6 +25,7 @@ do
       wasm_out=./sora2-parachain-runtime_$network.compact.compressed.wasm
       wasm_file=$(ls "$wasm_in" | grep ".compact.compressed.wasm")
       mv "$wasm_in$wasm_file" "$wasm_out"
+      cp "$binaryfile" "$binaryfilepath"
    else
       printf "⚡️ There is no tag here, only tests run. \n"
       printf "🏃 Running tests for "$network"... \n"
@@ -39,5 +42,3 @@ do
       exit 1
    fi
 done
-
-cp target/release/parachain-collator housekeeping/parachain-collator
