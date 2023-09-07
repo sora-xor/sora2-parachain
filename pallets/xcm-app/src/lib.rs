@@ -45,7 +45,6 @@ pub use pallet::*;
 use bridge_types::substrate::XCMAppCall;
 use bridge_types::H256;
 use codec::{Decode, Encode};
-use frame_support::weights::Weight;
 use orml_traits::xcm_transfer::XcmTransfer;
 use orml_traits::MultiCurrency;
 use parachain_common::primitives::AssetId;
@@ -55,21 +54,9 @@ use xcm::{
     opaque::latest::{AssetId::Concrete, Fungibility::Fungible},
     v3::{MultiAsset, MultiLocation},
 };
+use crate::weights::WeightInfo;
 
 pub type ParachainAssetId = xcm::VersionedMultiAsset;
-
-pub trait WeightInfo {
-    fn transfer() -> Weight;
-
-    fn register_asset() -> Weight;
-
-    fn try_claim_bridge_asset() -> Weight;
-
-    fn set_asset_minimum_amount() -> Weight;
-
-    // since pallet_xcm is wrapped by this function, the benchmarks from this pallet for "send" should be used
-    fn sudo_send_xcm() -> Weight;
-}
 
 impl<T: Config> From<XCMAppCall> for Call<T>
 where
