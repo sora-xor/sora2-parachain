@@ -108,6 +108,9 @@ leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common.gi
 bridge-data-signer = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false } 
 multisig-verifier = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false } 
 
+# SORA Substrate
+pallet-collective = { git = "https://github.com/sora-xor/substrate.git", branch = "polkadot-v0.9.38", default-features = false }
+
 [dev-dependencies]
 #Polkadot
 xcm-simulator = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.38" }
@@ -147,6 +150,7 @@ std = [
 	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-beefy/std",
+	"pallet-collective/std",
 	"pallet-collator-selection/std",
 	"pallet-mmr/std",
 	"pallet-randomness-collective-flip/std",

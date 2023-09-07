@@ -768,6 +768,85 @@ impl multisig_verifier::Config for Runtime {
     type WeightInfo = multisig_verifier::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+    pub const CouncilCollectiveMotionDuration: BlockNumber = 5 * DAYS;
+    pub const CouncilCollectiveMaxProposals: u32 = 100;
+    pub const CouncilCollectiveMaxMembers: u32 = 100;
+}
+
+pub type CouncilCollective = pallet_collective::Instance1;
+// pub type TechnicalCollective = pallet_collective::Instance2;
+
+// type MoreThanHalfCouncil = EitherOfDiverse<
+//     EnsureRoot<AccountId>,
+//     pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
+// >;
+// type AtLeastHalfCouncil = EitherOfDiverse<
+//     pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>,
+//     EnsureRoot<AccountId>,
+// >;
+// type AtLeastTwoThirdsCouncil = EitherOfDiverse<
+//     pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>,
+//     EnsureRoot<AccountId>,
+// >;
+
+impl pallet_collective::Config<CouncilCollective> for Runtime {
+    type RuntimeOrigin = RuntimeOrigin;
+    type Proposal = RuntimeCall;
+    type RuntimeEvent = RuntimeEvent;
+    type MotionDuration = CouncilCollectiveMotionDuration;
+    type MaxProposals = CouncilCollectiveMaxProposals;
+    type MaxMembers = CouncilCollectiveMaxMembers;
+    type DefaultVote = pallet_collective::PrimeDefaultVote;
+    type WeightInfo = Lol;
+}
+
+pub struct Lol;
+
+impl pallet_collective::WeightInfo for Lol {
+	fn set_members(m: u32, n: u32, p: u32, ) -> Weight {
+        todo!()
+    }
+	fn execute(b: u32, m: u32, ) -> Weight{
+        todo!()
+    }
+	fn propose_execute(b: u32, m: u32, ) -> Weight{
+        todo!()
+    }
+	fn propose_proposed(b: u32, m: u32, p: u32, ) -> Weight{
+        todo!()
+    }
+	fn vote(m: u32, ) -> Weight{
+        todo!()
+    }
+	fn close_early_disapproved(m: u32, p: u32, ) -> Weight{
+        todo!()
+    }
+	fn close_early_approved(b: u32, m: u32, p: u32, ) -> Weight{
+        todo!()
+    }
+	fn close_disapproved(m: u32, p: u32, ) -> Weight{
+        todo!()
+    }
+	fn close_approved(b: u32, m: u32, p: u32, ) -> Weight{
+        todo!()
+    }
+	fn disapprove_proposal(p: u32, ) -> Weight{
+        todo!()
+    }
+}
+
+// impl pallet_collective::Config<TechnicalCollective> for Runtime {
+//     type RuntimeOrigin = RuntimeOrigin;
+//     type Proposal = RuntimeCall;
+//     type RuntimeEvent = RuntimeEvent;
+//     type MotionDuration = TechnicalCollectiveMotionDuration;
+//     type MaxProposals = TechnicalCollectiveMaxProposals;
+//     type MaxMembers = TechnicalCollectiveMaxMembers;
+//     type DefaultVote = pallet_collective::PrimeDefaultVote;
+//     type WeightInfo = CollectiveWeightInfo<Self>;
+// }
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -816,6 +895,10 @@ construct_runtime!(
         LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
         BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
         MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
+
+		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 110,
+		// Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>} = 110,
+		// TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 111,
 
         #[cfg(feature = "rococo")]
         XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
