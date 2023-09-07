@@ -7,6 +7,7 @@ testcmd="cargo test -r --features"
 networks=(kusama rococo polkadot)
 binaryfile="target/release/parachain-collator"
 binaryfilepath="housekeeping/parachain-collator"
+errorfile="benchmarking_errors.txt"
 
 rm -rf ~/.cargo/registry/
 
@@ -44,4 +45,9 @@ done
 
 if [ -f "$binaryfile" ]; then
    cp "$binaryfile" "$binaryfilepath"
+fi
+
+if [ -f "$errorfile" ]; then
+   printf "⚠️ build failed, please check the error below\n"
+   cat "$errorfile"
 fi
