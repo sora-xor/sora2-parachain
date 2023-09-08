@@ -1,22 +1,55 @@
-# Substrate Cumulus Parachain Template
+<img alt="SORA logo" src="https://static.tildacdn.com/tild3664-3939-4236-b762-306663333564/sora_small.svg"/>
 
-A new [Cumulus](https://github.com/paritytech/cumulus/)-based Substrate node, ready for hacking ☁️..
+# Overview
 
-This project is originally a fork of the
-[Substrate Node Template](https://github.com/substrate-developer-hub/substrate-node-template)
-modified to include dependencies required for registering this node as a **parathread** or
-**parachain** to a **relay chain**.
+This is FRAME-based Substrate node of SORA2.
+This repo contains code of node, pallets, runtime.
 
-The stand-alone version of this template is hosted on the
-[Substrate Devhub Parachain Template](https://github.com/substrate-developer-hub/substrate-parachain-template/)
-for each release of Polkadot. It is generated directly to the upstream
-[Parachain Template in Cumulus](https://github.com/paritytech/cumulus/tree/master/parachain-template)
-at each release branch using the
-[Substrate Template Generator](https://github.com/paritytech/substrate-template-generator/).
+# Quick start
 
-👉 Learn more about parachains [here](https://wiki.polkadot.network/docs/learn-parachains), and
-parathreads [here](https://wiki.polkadot.network/docs/learn-parathreads).
+### Build 
 
+For Kusama:
+```sh
+make kusama
+```
 
-🧙 Learn about how to use this template and run your own parachain testnet for it in the
-[Devhub Cumulus Tutorial](https://docs.substrate.io/tutorials/v3/cumulus/start-relay/).
+For Polkadot:
+```sh
+make polkadot
+```
+
+For Rococo:
+```sh
+make rococo
+```
+
+### Test
+
+For Kusama:
+```sh
+make test-kusama
+```
+
+For Polkadot:
+```sh
+make test-polkadot
+```
+
+For Rococo:
+```sh
+make test-rococo
+```
+
+# Rust Analyzer
+Since project can only be compiled with features it would be convenient to set feature in rust analyzer
+
+.vscode/settings.json may look like 
+
+```json
+{
+    "rust-analyzer.cargo.features": [
+        "rococo"
+    ]
+}
+```

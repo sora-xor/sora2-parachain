@@ -27,39 +27,63 @@
 // OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#![cfg_attr(not(feature = "std"), no_std)]
 
-use crate::XCMApp;
-use xcm::{latest::Weight as XcmWeight, prelude::*};
-use xcm_executor::{traits::WeightTrader, Assets};
+pub use pallet::*;
 
-/// Does not take any fees but checks if there are enought assets to pass through the bridge
-pub struct ParachainTrader;
+#[frame_support::pallet]
+pub mod pallet {
+    use super::*;
+    use frame_support::{dispatch::DispatchResultWithPostInfo, pallet_prelude::*};
+    use frame_system::pallet_prelude::*;
+    use parachain_common::primitives::AssetId;
 
-impl WeightTrader for ParachainTrader {
-    fn new() -> Self {
-        log::trace!(target: "xcm::weight", "creating new WeightTrader instance");
-        Self
+    #[pallet::config]
+    pub trait Config: frame_system::Config + xcm_app::Config {
+        type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
     }
 
-    fn buy_weight(&mut self, weight: XcmWeight, assets: Assets) -> Result<Assets, XcmError> {
-        log::trace!(target: "xcm::weight", "buy_weight weight: {:?}, payment: {:?}", weight, assets);
-        if assets.fungible.is_empty() {
-            return Err(XcmError::AssetNotFound);
+    #[pallet::pallet]
+    #[pallet::generate_store(pub(super) trait Store)]
+    #[pallet::without_storage_info]
+    pub struct Pallet<T>(_);
+
+    #[pallet::event]
+    pub enum Event<T: Config> {}
+
+    #[pallet::error]
+    pub enum Error<T> {}
+
+    #[pallet::hooks]
+    impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
+
+    #[pallet::call]
+    impl<T: Config> Pallet<T> {
+        #[pallet::call_index(0)]
+        #[pallet::weight(0)]
+        pub fn test_channel_transfer(
+            origin: OriginFor<T>,
+            account_id: T::AccountId,
+            asset_id: AssetId,
+            amount: u128,
+        ) -> DispatchResultWithPostInfo {
+            ensure_root(origin)?;
+            xcm_app::Pallet::<T>::add_to_channel(account_id, asset_id, amount)?;
+            Ok(().into())
         }
 
-        for (asset_id, val) in &assets.fungible {
-            let ml = match asset_id {
-                Concrete(m) => m,
-                _ => return Err(XcmError::AssetNotFound),
-            };
-            let Some(minimum_amount) = XCMApp::asset_minimum_amount(ml) else {
-                return Err(XcmError::TooExpensive);
-            };
-            if *val < minimum_amount {
-                return Err(XcmError::TooExpensive);
-            }
+        #[pallet::call_index(1)]
+        #[pallet::weight(0)]
+        pub fn test_xcm_transfer(
+            origin: OriginFor<T>,
+            asset_id: AssetId,
+            sender: T::AccountId,
+            recipient: scale_info::prelude::boxed::Box<xcm::VersionedMultiLocation>,
+            amount: u128,
+        ) -> DispatchResultWithPostInfo {
+            ensure_root(origin)?;
+            xcm_app::Pallet::<T>::xcm_transfer_asset(asset_id, sender, *recipient, amount)?;
+            Ok(().into())
         }
-
-        Ok(assets)
     }
 }

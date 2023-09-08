@@ -33,7 +33,7 @@ pub mod relay;
 pub mod tests;
 
 use cumulus_primitives_core::{ChannelStatus, GetChannelInfo, ParaId};
-use frame_support::pallet_prelude::*;
+use frame_support::{pallet_prelude::*, parameter_types};
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 use sp_io::TestExternalities;
@@ -238,4 +238,19 @@ impl Convert<MultiAsset, Option<CurrencyId>> for CurrencyIdConvert {
             Option::None
         }
     }
+}
+
+#[cfg(feature = "rococo")]
+parameter_types! {
+    pub const RelayNetwork: NetworkId = NetworkId::Rococo;
+}
+
+#[cfg(feature = "polkadot")]
+parameter_types! {
+    pub const RelayNetwork: NetworkId = NetworkId::Polkadot;
+}
+
+#[cfg(feature = "kusama")]
+parameter_types! {
+    pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 }

@@ -43,7 +43,7 @@ mod trader;
 mod weights;
 pub mod xcm_config;
 
-use bridge_types::{SubNetworkId, CHANNEL_INDEXING_PREFIX};
+use bridge_types::{GenericNetworkId, SubNetworkId};
 use codec::{Decode, Encode};
 use frame_support::{
     dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
@@ -217,10 +217,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("sora_ksm"),
     impl_name: create_runtime_str!("sora_ksm"),
     authoring_version: 1,
-    spec_version: 3,
+    spec_version: 5,
     impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
-    transaction_version: 3,
+    transaction_version: 5,
     state_version: 1,
 };
 
@@ -263,7 +263,7 @@ const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
     cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
 );
 
-pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 1 * HOURS;
+pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = HOURS;
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -564,18 +564,33 @@ impl pallet_collator_selection::Config for Runtime {
 
 impl xcm_app::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type WeightInfo = xcm_app::weights::WeightInfo<Runtime>;
+    type WeightInfo = xcm_app::weights::SubstrateWeight<Runtime>;
     type Balance = Balance;
     type OutboundChannel = SubstrateBridgeOutboundChannel;
     type AccountIdToMultiLocation = xcm_config::AccountIdToMultiLocation;
-    type CallOrigin = dispatch::EnsureAccount<
-        SubNetworkId,
-        (),
-        bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
-    >;
+    type CallOrigin =
+        dispatch::EnsureAccount<bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>>;
     type XcmTransfer = XTokens;
     type AccountIdConverter = sp_runtime::traits::Identity;
     type BalanceConverter = sp_runtime::traits::Identity;
+    type XcmSender = XCMSenderWrapper;
+}
+
+pub struct XCMSenderWrapper;
+
+impl xcm_app::XcmSender<Runtime> for XCMSenderWrapper {
+    fn send_xcm(
+        origin: frame_system::pallet_prelude::OriginFor<Runtime>,
+        dest: Box<xcm::VersionedMultiLocation>,
+        message: Box<xcm::VersionedXcm<()>>,
+    ) -> frame_support::pallet_prelude::DispatchResult {
+        PolkadotXcm::send(origin, dest, message)
+    }
+}
+
+#[cfg(feature = "rococo")]
+impl xcm_app_sudo_wrapper::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
 }
 
 parameter_types! {
@@ -590,22 +605,21 @@ impl beefy_light_client::Config for Runtime {
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
 parameter_types! {
-    pub const BridgeMaxMessagePayloadSize: u64 = 256;
-    pub const BridgeMaxMessagesPerCommit: u64 = 20;
+    pub const BridgeMaxMessagePayloadSize: u32 = 256;
+    pub const BridgeMaxMessagesPerCommit: u32 = 20;
     pub const BridgeMaxTotalGasLimit: u64 = 5_000_000;
     pub const Decimals: u32 = 12;
 }
 
 impl dispatch::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type NetworkId = SubNetworkId;
-    type Additional = ();
     type OriginOutput = bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>;
     type Origin = RuntimeOrigin;
     type MessageId = bridge_types::types::MessageId;
     type Hashing = Keccak256;
     type Call = DispatchableSubstrateBridgeCall;
     type CallFilter = SubstrateBridgeCallFilter;
+    type WeightInfo = dispatch::weights::SubstrateWeight<Runtime>;
 }
 
 #[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug, TypeInfo)]
@@ -638,6 +652,26 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
     }
 }
 
+impl frame_support::dispatch::GetDispatchInfo for DispatchableSubstrateBridgeCall {
+    fn get_dispatch_info(&self) -> DispatchInfo {
+        match &self.0 {
+            bridge_types::substrate::BridgeCall::SubstrateApp(_) => todo!(),
+            bridge_types::substrate::BridgeCall::XCMApp(msg) => {
+                let call: xcm_app::Call<crate::Runtime> = msg.clone().into();
+                call.get_dispatch_info()
+            },
+            bridge_types::substrate::BridgeCall::DataSigner(msg) => {
+                let call: bridge_data_signer::Call<crate::Runtime> = msg.clone().into();
+                call.get_dispatch_info()
+            },
+            bridge_types::substrate::BridgeCall::MultisigVerifier(msg) => {
+                let call: multisig_verifier::Call<crate::Runtime> = msg.clone().into();
+                call.get_dispatch_info()
+            },
+        }
+    }
+}
+
 pub struct SubstrateBridgeCallFilter;
 impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
     fn contains(call: &DispatchableSubstrateBridgeCall) -> bool {
@@ -650,13 +684,31 @@ impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
     }
 }
 
+#[cfg(feature = "rococo")]
+parameter_types! {
+    pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Rococo);
+}
+
+#[cfg(feature = "polkadot")]
+parameter_types! {
+    pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Polkadot);
+}
+
+#[cfg(feature = "kusama")]
+parameter_types! {
+    pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Kusama);
+}
+
 impl substrate_bridge_channel::inbound::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Verifier = MultisigVerifier;
     type MessageDispatch = SubstrateDispatch;
-    type WeightInfo = ();
+    type WeightInfo = substrate_bridge_channel::inbound::weights::SubstrateWeight<Runtime>;
     type UnsignedPriority = DataSignerPriority;
     type UnsignedLongevity = DataSignerLongevity;
+    type MaxMessagePayloadSize = BridgeMaxMessagePayloadSize;
+    type MaxMessagesPerCommit = BridgeMaxMessagesPerCommit;
+    type ThisNetworkId = ThisNetworkId;
 }
 
 pub struct TimepointProvider;
@@ -668,16 +720,14 @@ impl bridge_types::traits::TimepointProvider for TimepointProvider {
 }
 
 impl substrate_bridge_channel::outbound::Config for Runtime {
-    const INDEXING_PREFIX: &'static [u8] = CHANNEL_INDEXING_PREFIX;
     type RuntimeEvent = RuntimeEvent;
-    type Hashing = Keccak256;
     type MessageStatusNotifier = ();
     type MaxMessagePayloadSize = BridgeMaxMessagePayloadSize;
     type MaxMessagesPerCommit = BridgeMaxMessagesPerCommit;
     type AuxiliaryDigestHandler = LeafProvider;
     type WeightInfo = ();
     type TimepointProvider = TimepointProvider;
-    // Required for MessageStatusNotifier and actually not used
+    type ThisNetworkId = ThisNetworkId;
     type AssetId = ();
     type Balance = ();
 }
@@ -701,25 +751,21 @@ parameter_types! {
 impl bridge_data_signer::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type OutboundChannel = SubstrateBridgeOutboundChannel;
-    type CallOrigin = dispatch::EnsureAccount<
-        SubNetworkId,
-        (),
-        bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
-    >;
+    type CallOrigin =
+        dispatch::EnsureAccount<bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>>;
     type MaxPeers = BridgeMaxPeers;
     type UnsignedPriority = DataSignerPriority;
     type UnsignedLongevity = DataSignerLongevity;
+    type WeightInfo = bridge_data_signer::weights::SubstrateWeight<Runtime>;
 }
 
 impl multisig_verifier::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type CallOrigin = dispatch::EnsureAccount<
-        SubNetworkId,
-        (),
-        bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>,
-    >;
+    type CallOrigin =
+        dispatch::EnsureAccount<bridge_types::types::CallOriginOutput<SubNetworkId, H256, ()>>;
     type OutboundChannel = SubstrateBridgeOutboundChannel;
     type MaxPeers = BridgeMaxPeers;
+    type WeightInfo = multisig_verifier::weights::SubstrateWeight<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -770,6 +816,9 @@ construct_runtime!(
         LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
         BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
         MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
+
+        #[cfg(feature = "rococo")]
+        XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
     }
 );
 
@@ -786,7 +835,8 @@ mod benches {
         [pallet_timestamp, Timestamp]
         [pallet_collator_selection, CollatorSelection]
         [cumulus_pallet_xcmp_queue, XcmpQueue]
-        [xcp_app, XCMApp]
+        [xcm_app, XCMApp]
+        [pallet_xcm, PolkadotXcm]
     );
 }
 
@@ -925,7 +975,7 @@ impl_runtime_apis! {
 
     impl beefy_light_client_runtime_api::BeefyLightClientAPI<Block, beefy_light_client::BitField> for Runtime {
         fn get_random_bitfield(network_id: SubNetworkId, prior: beefy_light_client::BitField, num_of_validators: u32) -> beefy_light_client::BitField {
-            let len = prior.len() as usize;
+            let len = prior.len();
             BeefyLightClient::create_random_bit_field(network_id, prior, num_of_validators).unwrap_or(beefy_light_client::BitField::with_capacity(len))
         }
     }
@@ -990,14 +1040,15 @@ impl_runtime_apis! {
         ) {
             use frame_benchmarking::{list_benchmark, Benchmarking, BenchmarkList};
             use frame_support::traits::StorageInfoTrait;
-            use frame_system_benchmarking::Pallet as SystemBench;
-            use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+            // use frame_system_benchmarking::Pallet as SystemBench;
+            // use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 
             let mut list = Vec::<BenchmarkList>::new();
             list_benchmark!(list, extra, xcm_app, XCMApp);
+            list_benchmark!(list, extra, pallet_xcm, PolkadotXcm);
 
             let storage_info = AllPalletsWithSystem::storage_info();
-            return (list, storage_info)
+            (list, storage_info)
         }
 
         fn dispatch_benchmark(
@@ -1005,10 +1056,10 @@ impl_runtime_apis! {
         ) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
             use frame_benchmarking::{Benchmarking, BenchmarkBatch, TrackedStorageKey, add_benchmark};
 
-            use frame_system_benchmarking::Pallet as SystemBench;
+            // use frame_system_benchmarking::Pallet as SystemBench;
             impl frame_system_benchmarking::Config for Runtime {}
 
-            use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+            // use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
             impl cumulus_pallet_session_benchmarking::Config for Runtime {}
 
             let whitelist: Vec<TrackedStorageKey> = vec![
@@ -1027,6 +1078,7 @@ impl_runtime_apis! {
             let mut batches = Vec::<BenchmarkBatch>::new();
             let params = (&config, &whitelist);
             add_benchmark!(params, batches, xcm_app, XCMApp);
+            add_benchmark!(params, batches, pallet_xcm, PolkadotXcm);
 
             if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
             Ok(batches)

@@ -52,9 +52,23 @@ use xcm_builder::{
 };
 use xcm_executor::XcmExecutor;
 
+#[cfg(feature = "rococo")]
+parameter_types! {
+    pub const RelayNetwork: NetworkId = NetworkId::Rococo;
+}
+
+#[cfg(feature = "polkadot")]
+parameter_types! {
+    pub const RelayNetwork: NetworkId = NetworkId::Polkadot;
+}
+
+#[cfg(feature = "kusama")]
+parameter_types! {
+    pub const RelayNetwork: NetworkId = NetworkId::Kusama;
+}
+
 parameter_types! {
     pub const RelayLocation: MultiLocation = MultiLocation::parent();
-    pub const RelayNetwork: NetworkId = NetworkId::Rococo;
     pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
     pub Ancestry: MultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
     pub UniversalLocation: InteriorMultiLocation =
@@ -125,9 +139,16 @@ pub type Barrier = (
     AllowTopLevelPaidExecutionFrom<Everything>,
     // Expected responses are OK.
     AllowKnownQueryResponses<PolkadotXcm>,
-    // Subscriptions for version tracking are OK.
-    AllowSubscriptionsFrom<Everything>,
+    // Subscriptions for version tracking allowed only if parent
+    AllowSubscriptionsFrom<OnlyParent>,
 );
+
+pub struct OnlyParent;
+impl frame_support::traits::Contains<MultiLocation> for OnlyParent {
+    fn contains(ml: &MultiLocation) -> bool {
+        *ml == MultiLocation::parent()
+    }
+}
 
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
@@ -157,7 +178,8 @@ impl xcm_executor::Config for XcmConfig {
     type SafeCallFilter = ();
 }
 
-/// No local origins on this chain are allowed to dispatch XCM sends/executions.
+/// Converts a local signed origin into an XCM multilocation.
+/// Forms the basis for local origins sending/executing XCMs.
 pub type LocalOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, RelayNetwork>;
 
 /// The means for routing XCM messages which are not for local execution into the right message
@@ -168,6 +190,11 @@ pub type XcmRouter = (
     // ..and XCMP to communicate with the sibling chains.
     XcmpQueue,
 );
+
+#[cfg(feature = "runtime-benchmarks")]
+parameter_types! {
+    pub const ReachableDest: Option<MultiLocation> = Some(MultiLocation::parent());
+}
 
 impl pallet_xcm::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
@@ -193,6 +220,8 @@ impl pallet_xcm::Config for Runtime {
     type SovereignAccountOf = ();
     type MaxLockers = ();
     type WeightInfo = PalletXCMWeightInfo;
+    #[cfg(feature = "runtime-benchmarks")]
+    type ReachableDest = ReachableDest;
 }
 
 impl cumulus_pallet_xcm::Config for Runtime {
@@ -228,7 +257,7 @@ parameter_type_with_key! {
 pub struct AccountIdToMultiLocation;
 impl sp_runtime::traits::Convert<AccountId, MultiLocation> for AccountIdToMultiLocation {
     fn convert(account: AccountId) -> MultiLocation {
-        X1(AccountId32 { network: Some(NetworkId::Rococo), id: account.into() }).into()
+        X1(AccountId32 { network: Some(RelayNetwork::get()), id: account.into() }).into()
     }
 }
 

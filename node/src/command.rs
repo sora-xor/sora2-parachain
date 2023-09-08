@@ -4,12 +4,12 @@ use codec::Encode;
 use cumulus_client_cli::generate_genesis_block;
 use cumulus_primitives_core::ParaId;
 use log::info;
-use parachain_template_runtime::{Block, RuntimeApi};
 use sc_cli::{
     ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
     NetworkParams, Result, RuntimeVersion, SharedParams, SubstrateCli,
 };
 use sc_service::config::{BasePath, PrometheusConfig};
+use sora2_parachain_runtime::{Block, RuntimeApi};
 use sp_core::hexdisplay::HexDisplay;
 use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
 
@@ -21,7 +21,7 @@ use crate::{
 
 fn set_default_ss58_version() {
     sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::custom(
-        parachain_template_runtime::SS58Prefix::get() as u16,
+        sora2_parachain_runtime::SS58Prefix::get(),
     ));
 }
 
@@ -76,13 +76,13 @@ impl SubstrateCli for Cli {
     }
 
     fn native_runtime_version(_: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-        &parachain_template_runtime::VERSION
+        &sora2_parachain_runtime::VERSION
     }
 }
 
 impl SubstrateCli for RelayChainCli {
     fn impl_name() -> String {
-        "Parachain Collator Template".into()
+        "SORA Parachain Collator".into()
     }
 
     fn impl_version() -> String {
@@ -91,7 +91,7 @@ impl SubstrateCli for RelayChainCli {
 
     fn description() -> String {
         format!(
-            "Parachain Collator Template\n\nThe command-line arguments provided first will be \
+            "SORA Parachain Collator \n\nThe command-line arguments provided first will be \
 		passed to the parachain node, while the arguments provided after -- will be passed \
 		to the relay chain node.\n\n\
 		{} <parachain-args> -- <relay-chain-args>",
@@ -214,17 +214,18 @@ pub fn run() -> Result<()> {
             let runner = cli.create_runner(cmd)?;
             // Switch on the concrete benchmark sub-command-
             match cmd {
-                BenchmarkCmd::Pallet(cmd) =>
-                    runner.sync_run(|config| cmd.run::<Block, TemplateRuntimeExecutor>(config)),
+                BenchmarkCmd::Pallet(cmd) => {
+                    runner.sync_run(|config| cmd.run::<Block, ParachainNativeExecutor>(config))
+                },
                 BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-                    let partials = new_partial::<RuntimeApi, TemplateRuntimeExecutor, _>(
+                    let partials = new_partial::<RuntimeApi, ParachainNativeExecutor, _>(
                         &config,
                         crate::service::parachain_build_import_queue,
                     )?;
                     cmd.run(partials.client)
                 }),
                 BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-                    let partials = new_partial::<RuntimeApi, TemplateRuntimeExecutor, _>(
+                    let partials = new_partial::<RuntimeApi, ParachainNativeExecutor, _>(
                         &config,
                         crate::service::parachain_build_import_queue,
                     )?;
@@ -253,7 +254,7 @@ pub fn run() -> Result<()> {
                         .map_err(|e| format!("Error: {:?}", e))?;
 
                 runner.async_run(|config| {
-                    Ok((cmd.run::<Block, TemplateRuntimeExecutor>(config), task_manager))
+                    Ok((cmd.run::<Block, ParachainNativeExecutor>(config), task_manager))
                 })
             } else {
                 Err("Try-runtime must be enabled by `--features try-runtime`.".into())
@@ -266,7 +267,7 @@ pub fn run() -> Result<()> {
             runner.run_node_until_exit(|config| async move {
                 let hwbench = if !cli.no_hardware_benchmarks {
                     config.database.path().map(|database_path| {
-                        let _ = std::fs::create_dir_all(&database_path);
+                        let _ = std::fs::create_dir_all(database_path);
                         sc_sysinfo::gather_hwbench(Some(database_path))
                     })
                 } else {
@@ -275,7 +276,7 @@ pub fn run() -> Result<()> {
 
                 let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
                     .map(|e| e.para_id)
-                    .ok_or_else(|| "Could not find parachain ID in chain-spec.")?;
+                    .ok_or("Could not find parachain ID in chain-spec.")?;
 
                 let polkadot_cli = RelayChainCli::new(
                     &config,

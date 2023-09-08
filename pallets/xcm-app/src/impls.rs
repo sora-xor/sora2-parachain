@@ -78,7 +78,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
             target: "xcm::XCMApp",
             "ensure_can_withdraw",
         );
-        Ok(())
+        fail!(Error::<T>::MethodNotAvailible)
     }
 
     fn transfer(
@@ -133,7 +133,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
             target: "xcm::XCMApp",
             "can_slash",
         );
-        true
+        false
     }
 
     fn slash(
@@ -159,7 +159,7 @@ impl<T: Config> sp_runtime::traits::Convert<AssetId, Option<MultiLocation>> for 
 
 impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<AssetId>> for Pallet<T> {
     fn convert(multilocation: MultiLocation) -> Option<AssetId> {
-        let maybe_asset_id = Pallet::<T>::get_asset_id_from_multilocation(multilocation.clone());
+        let maybe_asset_id = Pallet::<T>::get_asset_id_from_multilocation(multilocation);
         if maybe_asset_id.is_none() {
             Self::deposit_event(Event::<T>::MultilocationMappingError(multilocation));
         }

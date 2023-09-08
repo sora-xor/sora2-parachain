@@ -1,11 +1,11 @@
 [package]
-name = "parachain-template-runtime"
+name = "sora2-parachain-runtime"
 version = "0.1.0"
 authors = ["Anonymous"]
-description = "A new Cumulus FRAME-based Substrate Runtime, ready for hacking together a parachain."
+description = "sora2 parachain runtime"
 license = "Unlicense"
-homepage = "https://substrate.io"
-repository = "https://github.com/paritytech/cumulus/"
+homepage = "https://sora.org/"
+repository = "https://github.com/sora-xor/sora2-parachain"
 edition = "2021"
 
 [package.metadata.docs.rs]
@@ -27,6 +27,7 @@ serde = { version = "1.0.119", optional = true, features = ["derive"] }
 smallvec = "1.6.1"
 
 xcm-app = { path = "../pallets/xcm-app", default-features = false }
+xcm-app-sudo-wrapper = { path = "../pallets/xcm-app-sudo-wrapper", default-features = false }
 parachain-common = { path = "../parachain-common", default-features = false }
 beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false } 
 beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false } 
@@ -175,6 +176,7 @@ std = [
 	"sp-transaction-pool/std",
 	"sp-version/std",
 	"xcm-app/std",
+	"xcm-app-sudo-wrapper/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
 	"xcm/std",
@@ -199,8 +201,17 @@ runtime-benchmarks = [
 	"xcm-builder/runtime-benchmarks",
 	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
 	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
+	"dispatch/runtime-benchmarks",
+	"beefy-light-client/runtime-benchmarks",
+	"multisig-verifier/runtime-benchmarks",
 ]
 
 try-runtime = ["frame-executive/try-runtime", "frame-try-runtime"]
 
 parachain-gen = []
+
+rococo = []
+
+kusama = []
+
+polkadot = []

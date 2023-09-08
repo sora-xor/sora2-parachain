@@ -27,39 +27,3 @@
 // OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-use crate::XCMApp;
-use xcm::{latest::Weight as XcmWeight, prelude::*};
-use xcm_executor::{traits::WeightTrader, Assets};
-
-/// Does not take any fees but checks if there are enought assets to pass through the bridge
-pub struct ParachainTrader;
-
-impl WeightTrader for ParachainTrader {
-    fn new() -> Self {
-        log::trace!(target: "xcm::weight", "creating new WeightTrader instance");
-        Self
-    }
-
-    fn buy_weight(&mut self, weight: XcmWeight, assets: Assets) -> Result<Assets, XcmError> {
-        log::trace!(target: "xcm::weight", "buy_weight weight: {:?}, payment: {:?}", weight, assets);
-        if assets.fungible.is_empty() {
-            return Err(XcmError::AssetNotFound);
-        }
-
-        for (asset_id, val) in &assets.fungible {
-            let ml = match asset_id {
-                Concrete(m) => m,
-                _ => return Err(XcmError::AssetNotFound),
-            };
-            let Some(minimum_amount) = XCMApp::asset_minimum_amount(ml) else {
-                return Err(XcmError::TooExpensive);
-            };
-            if *val < minimum_amount {
-                return Err(XcmError::TooExpensive);
-            }
-        }
-
-        Ok(assets)
-    }
-}

@@ -7,7 +7,7 @@
 
 use std::sync::Arc;
 
-use parachain_template_runtime::{opaque::Block, AccountId, Balance, BlockNumber, Index as Nonce};
+use sora2_parachain_runtime::{opaque::Block, AccountId, Balance, BlockNumber, Index as Nonce};
 
 use beefy_light_client_rpc::{BeefyLightClientAPIServer, BeefyLightClientClient};
 use sc_client_api::AuxStore;
@@ -70,13 +70,10 @@ where
     B::State: sc_client_api::StateBackend<sp_runtime::traits::HashFor<Block>>,
 {
     use beefy_gadget_rpc::{Beefy, BeefyApiServer};
+    use bridge_channel_rpc::{BridgeChannelAPIServer, BridgeChannelClient};
     use leaf_provider_rpc::{LeafProviderAPIServer, LeafProviderClient};
     use mmr_rpc::{Mmr, MmrApiServer};
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
-    use substrate_bridge_channel_rpc::{
-        BridgeChannelAPIServer as SubstrateBridgeChannelAPIServer,
-        BridgeChannelClient as SubstrateBridgeChannelClient,
-    };
     use substrate_frame_rpc_system::{System, SystemApiServer};
 
     let mut module = RpcExtension::new(());
@@ -97,11 +94,13 @@ where
         .into_rpc(),
     )?;
     if let Some(storage) = backend.offchain_storage() {
-        module.merge(
-            <SubstrateBridgeChannelClient<_> as SubstrateBridgeChannelAPIServer>::into_rpc(
-                SubstrateBridgeChannelClient::new(storage),
-            ),
-        )?;
+        module.merge(<BridgeChannelClient<_, _> as BridgeChannelAPIServer<
+            bridge_types::types::BridgeOffchainData<
+                sora2_parachain_runtime::BlockNumber,
+                sora2_parachain_runtime::BridgeMaxMessagesPerCommit,
+                sora2_parachain_runtime::BridgeMaxMessagePayloadSize,
+            >,
+        >>::into_rpc(BridgeChannelClient::new(storage)))?;
     }
 
     module.merge(LeafProviderClient::new(client.clone()).into_rpc())?;
