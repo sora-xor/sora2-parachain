@@ -309,7 +309,7 @@ pub fn run() -> Result<()> {
                     collator_options,
                     id,
                     hwbench,
-                    cli.disable_beefy,
+                    cli.enable_beefy,
                 )
                 .await
                 .map(|r| r.0)

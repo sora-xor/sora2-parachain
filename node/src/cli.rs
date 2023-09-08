@@ -75,7 +75,7 @@ pub struct Cli {
 
     /// Disable BEEFY gadget. Enabled by default
     #[clap(long)]
-    pub disable_beefy: bool,
+    pub enable_beefy: bool,
 }
 
 #[derive(Debug)]

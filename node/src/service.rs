@@ -227,7 +227,7 @@ async fn start_node_impl<Executor, RB, BIQ, BIC>(
     build_import_queue: BIQ,
     build_consensus: BIC,
     hwbench: Option<sc_sysinfo::HwBench>,
-    disable_beefy: bool,
+    enable_beefy: bool,
 ) -> sc_service::error::Result<(
     TaskManager,
     Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
@@ -303,7 +303,7 @@ where
             client.clone(),
         );
 
-    if !disable_beefy {
+    if enable_beefy {
         parachain_config.network.extra_sets.push(
             beefy_gadget::communication::beefy_peers_set_config(gossip_protocol_name.clone()),
         );
@@ -344,7 +344,7 @@ where
     let (beefy_block_import, beefy_voter_links, beefy_rpc_links) =
         beefy_gadget::beefy_block_import_and_links(client.clone(), backend.clone(), client.clone());
 
-    if !disable_beefy {
+    if enable_beefy {
         let justifications_protocol_name = beefy_on_demand_justifications_handler.protocol_name();
         let payload_provider = sp_beefy::mmr::MmrRootProvider::new(client.clone());
 
@@ -534,7 +534,7 @@ pub async fn start_parachain_node(
     collator_options: CollatorOptions,
     id: ParaId,
     hwbench: Option<sc_sysinfo::HwBench>,
-    disable_beefy: bool,
+    enable_beefy: bool,
 ) -> sc_service::error::Result<(
     TaskManager,
     Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<ParachainNativeExecutor>>>,
@@ -611,7 +611,7 @@ pub async fn start_parachain_node(
             ))
         },
         hwbench,
-        disable_beefy,
+        enable_beefy,
     )
     .await
 }
