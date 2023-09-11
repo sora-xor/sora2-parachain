@@ -111,7 +111,9 @@ multisig-verifier = { git = "https://github.com/sora-xor/sora2-common.git", bran
 
 # SORA Substrate
 pallet-collective = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38", default-features = false }
-# pallet-collective = { git = "https://github.com/sora-xor/substrate.git", branch = "polkadot-v0.9.38" }
+pallet-democracy = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38", default-features = false }
+pallet-preimage = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38", default-features = false }
+pallet-scheduler = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38", default-features = false }
 
 [dev-dependencies]
 #Polkadot
@@ -154,8 +156,11 @@ std = [
 	"pallet-beefy/std",
 	"pallet-collective/std",
 	"pallet-collator-selection/std",
+	"pallet-democracy/std",
 	"pallet-mmr/std",
+	"pallet-preimage/std",
 	"pallet-randomness-collective-flip/std",
+	"pallet-scheduler/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
 	"pallet-timestamp/std",

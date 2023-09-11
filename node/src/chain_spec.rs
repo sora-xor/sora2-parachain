@@ -6,7 +6,7 @@ use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sora2_parachain_runtime::{
     AccountId, AuraId, BeefyId, BeefyLightClientConfig, MultisigVerifierConfig, Signature,
-    EXISTENTIAL_DEPOSIT, TechnicalCommitteeConfig,
+    EXISTENTIAL_DEPOSIT, TechnicalCommitteeConfig, CouncilConfig, DemocracyConfig,
 };
 use sp_core::{sr25519, ByteArray, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
@@ -235,7 +235,8 @@ pub fn coded_config(relay_chain: RelayChain, para_id: u32) -> ChainSpec {
                 endowed_accounts.clone(),
                 para_id.into(),
                 bridge_network_id,
-                endowed_accounts.clone(),
+                vec![],
+                vec![],
             )
         },
         Vec::new(),
@@ -296,6 +297,7 @@ pub fn development_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
                     get_account_id_from_seed::<sr25519::Public>("Dave"),
                 ],
+                vec![],
             )
         },
         Vec::new(),
@@ -371,6 +373,7 @@ pub fn local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Bob"),
                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
                 ],
+                vec![],
             )
         },
         // Bootnodes
@@ -429,6 +432,7 @@ pub fn docker_local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
                     get_account_id_from_seed::<sr25519::Public>("Dave"),
                 ],
+                vec![],
             )
         },
         // Bootnodes
@@ -503,6 +507,7 @@ pub fn bridge_dev_config() -> ChainSpec {
                     hex!("54036a0a47f28c64885fd8f0300c8ff436c3007e6b5ef70d4c3f1d3ee8856f5c").into(),
                     hex!("7a2eaa9ba604e1c6575c0cada3e50155f98cd625566ea7239577c9565236662a").into(),
                 ],
+                vec![],
             )
         },
         // Bootnodes
@@ -530,6 +535,7 @@ fn testnet_genesis(
     id: ParaId,
     bridge_network_id: SubNetworkId,
     technical_committee_accounts: Vec<AccountId>,
+    council_accounts: Vec<AccountId>,
 ) -> sora2_parachain_runtime::GenesisConfig {
     sora2_parachain_runtime::GenesisConfig {
         beefy_light_client: BeefyLightClientConfig { network_id: bridge_network_id },
@@ -577,5 +583,10 @@ fn testnet_genesis(
             members: technical_committee_accounts,
             phantom: Default::default(),
         },
+        council: CouncilConfig {
+            members: council_accounts,
+            phantom: Default::default(),
+        },
+        democracy: DemocracyConfig::default(),
     }
 }
