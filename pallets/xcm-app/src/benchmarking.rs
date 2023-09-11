@@ -33,7 +33,9 @@ use crate::Pallet as XCMApp;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
 use frame_support::traits::EnsureOrigin;
 use frame_system::RawOrigin;
-use xcm::{opaque::latest::Junction::GeneralKey, v3::MultiLocation};
+use xcm::latest::prelude::AssetId as XCMAssetId;
+use xcm::{latest::prelude::*, opaque::latest::Junction::GeneralKey, v3::MultiLocation};
+use frame_support::pallet_prelude::Weight;
 
 fn alice<T: Config>() -> T::AccountId {
     let bytes = [66; 32];
@@ -96,6 +98,19 @@ benchmarks! {
     verify {
         assert_eq!(XCMApp::<T>::asset_minimum_amount(multilocation).expect("set_asset_minimum_amount: no min amount"), amount);
     }
+
+    sudo_send_xcm {
+        let asset = MultiAsset {id: XCMAssetId::Concrete(xcm::v3::MultiLocation{ parents: 1, interior: Here }), fun: xcm::prelude::Fungible(100000000000000)};
+        let msg = Xcm(scale_info::prelude::vec![
+            WithdrawAsset(asset.clone().into()),
+            BuyExecution { fees: asset, weight_limit: WeightLimit::Unlimited },
+            Transact{ origin_kind: OriginKind::Native, require_weight_at_most: Weight::from_parts(4000000000, 10000), call: scale_info::prelude::vec![0; 5000].into()},
+            RefundSurplus,
+            DepositAsset{ assets: MultiAssetFilter::Wild(xcm::v3::WildMultiAsset::All), beneficiary: xcm::v3::MultiLocation{ parents: 1, interior: Here }},
+        ]);
+        let versioned_dest: bridge_types::substrate::VersionedMultiLocation = MultiLocation::parent().into();
+        let versioned_msg = xcm::VersionedXcm::from(msg);
+    }: _(RawOrigin::Root, Box::new(versioned_dest), Box::new(versioned_msg))
 }
 
 impl_benchmark_test_suite!(XCMApp, crate::mock::new_test_ext(), crate::mock::Test,);
