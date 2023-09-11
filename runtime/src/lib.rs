@@ -777,21 +777,7 @@ parameter_types! {
 pub type CouncilCollective = pallet_collective::Instance1;
 // pub type TechnicalCollective = pallet_collective::Instance2;
 
-// type MoreThanHalfCouncil = EitherOfDiverse<
-//     EnsureRoot<AccountId>,
-//     pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
-// >;
-// type AtLeastHalfCouncil = EitherOfDiverse<
-//     pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>,
-//     EnsureRoot<AccountId>,
-// >;
-// type AtLeastTwoThirdsCouncil = EitherOfDiverse<
-//     pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>,
-//     EnsureRoot<AccountId>,
-// >;
-
 impl pallet_collective::Config<CouncilCollective> for Runtime {
-// impl pallet_collective::Config for Runtime {
     type RuntimeOrigin = RuntimeOrigin;
     type Proposal = RuntimeCall;
     type RuntimeEvent = RuntimeEvent;
@@ -802,10 +788,7 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
     type WeightInfo = ();
 }
 
-// pub struct Lol;
 // pub struct CollectiveWeightInfo<T>(frame_support::pallet_prelude::PhantomData<T>);
-// use frame_support::weights::Weight;
-// use sp_weights::weight_v2::Weight;
 
 // impl<T: frame_system::Config> pallet_collective::WeightInfo for CollectiveWeightInfo<T> {
 //     fn set_members(m: u32, n: u32, p: u32) -> frame_support::weights::Weight {
@@ -837,39 +820,6 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 //     }
 //     fn disapprove_proposal(p: u32) -> frame_support::weights::Weight {
 //         Default::default()
-//     }
-// }
-
-// impl pallet_collective::WeightInfo for Lol {
-// 	fn set_members(m: u32, n: u32, p: u32, ) -> Weight {
-//         todo!()
-//     }
-// 	fn execute(b: u32, m: u32, ) -> Weight{
-//         todo!()
-//     }
-// 	fn propose_execute(b: u32, m: u32, ) -> Weight{
-//         todo!()
-//     }
-// 	fn propose_proposed(b: u32, m: u32, p: u32, ) -> Weight{
-//         todo!()
-//     }
-// 	fn vote(m: u32, ) -> Weight{
-//         todo!()
-//     }
-// 	fn close_early_disapproved(m: u32, p: u32, ) -> Weight{
-//         todo!()
-//     }
-// 	fn close_early_approved(b: u32, m: u32, p: u32, ) -> Weight{
-//         todo!()
-//     }
-// 	fn close_disapproved(m: u32, p: u32, ) -> Weight{
-//         todo!()
-//     }
-// 	fn close_approved(b: u32, m: u32, p: u32, ) -> Weight{
-//         todo!()
-//     }
-// 	fn disapprove_proposal(p: u32, ) -> Weight{
-//         todo!()
 //     }
 // }
 
