@@ -774,10 +774,21 @@ parameter_types! {
     pub const CouncilCollectiveMaxMembers: u32 = 100;
 }
 
-pub type CouncilCollective = pallet_collective::Instance1;
-// pub type TechnicalCollective = pallet_collective::Instance2;
+pub type TechnicalCollective = pallet_collective::Instance1;
+pub type CouncilCollective = pallet_collective::Instance2;
 
-impl pallet_collective::Config<CouncilCollective> for Runtime {
+// impl pallet_collective::Config<CouncilCollective> for Runtime {
+//     type RuntimeOrigin = RuntimeOrigin;
+//     type Proposal = RuntimeCall;
+//     type RuntimeEvent = RuntimeEvent;
+//     type MotionDuration = CouncilCollectiveMotionDuration;
+//     type MaxProposals = CouncilCollectiveMaxProposals;
+//     type MaxMembers = CouncilCollectiveMaxMembers;
+//     type DefaultVote = pallet_collective::PrimeDefaultVote;
+//     type WeightInfo = ();
+// }
+
+impl pallet_collective::Config<TechnicalCollective> for Runtime {
     type RuntimeOrigin = RuntimeOrigin;
     type Proposal = RuntimeCall;
     type RuntimeEvent = RuntimeEvent;
@@ -883,11 +894,12 @@ construct_runtime!(
         BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
         MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
 
-		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T, Instance1>, Config<T>} = 110,
+        TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 110,
+		// Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 111,
 		// Council: pallet_collective::<Instance1> = 110,
 		// Council: pallet_collective = 110,
 		// Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>} = 110,
-		// TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 111,
+
 
         #[cfg(feature = "rococo")]
         XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
