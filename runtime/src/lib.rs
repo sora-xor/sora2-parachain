@@ -774,7 +774,7 @@ parameter_types! {
     pub const CouncilCollectiveMaxMembers: u32 = 100;
 }
 
-// pub type CouncilCollective = pallet_collective::Instance1;
+pub type CouncilCollective = pallet_collective::Instance1;
 // pub type TechnicalCollective = pallet_collective::Instance2;
 
 // type MoreThanHalfCouncil = EitherOfDiverse<
@@ -790,20 +790,55 @@ parameter_types! {
 //     EnsureRoot<AccountId>,
 // >;
 
-// impl pallet_collective::Config<CouncilCollective> for Runtime {
-//     type RuntimeOrigin = RuntimeOrigin;
-//     type Proposal = RuntimeCall;
-//     type RuntimeEvent = RuntimeEvent;
-//     type MotionDuration = CouncilCollectiveMotionDuration;
-//     type MaxProposals = CouncilCollectiveMaxProposals;
-//     type MaxMembers = CouncilCollectiveMaxMembers;
-//     type DefaultVote = pallet_collective::PrimeDefaultVote;
-//     type WeightInfo = Lol;
-// }
+impl pallet_collective::Config<CouncilCollective> for Runtime {
+// impl pallet_collective::Config for Runtime {
+    type RuntimeOrigin = RuntimeOrigin;
+    type Proposal = RuntimeCall;
+    type RuntimeEvent = RuntimeEvent;
+    type MotionDuration = CouncilCollectiveMotionDuration;
+    type MaxProposals = CouncilCollectiveMaxProposals;
+    type MaxMembers = CouncilCollectiveMaxMembers;
+    type DefaultVote = pallet_collective::PrimeDefaultVote;
+    type WeightInfo = ();
+}
 
 // pub struct Lol;
-// // use frame_support::weights::Weight;
-// // use sp_weights::weight_v2::Weight;
+// pub struct CollectiveWeightInfo<T>(frame_support::pallet_prelude::PhantomData<T>);
+// use frame_support::weights::Weight;
+// use sp_weights::weight_v2::Weight;
+
+// impl<T: frame_system::Config> pallet_collective::WeightInfo for CollectiveWeightInfo<T> {
+//     fn set_members(m: u32, n: u32, p: u32) -> frame_support::weights::Weight {
+//         todo!()
+//     }
+//     fn execute(b: u32, m: u32) -> frame_support::weights::Weight{
+//         Default::default()
+//     }
+//     fn propose_execute(b: u32, m: u32) -> frame_support::weights::Weight {
+//         Default::default()
+//     }
+//     fn propose_proposed(b: u32, m: u32, p: u32) -> frame_support::weights::Weight {
+//         Default::default()
+//     }
+//     fn vote(m: u32) -> frame_support::weights::Weight {
+//         Default::default()
+//     }
+//     fn close_early_disapproved(m: u32, p: u32) -> frame_support::weights::Weight {
+//         Default::default()
+//     }
+//     fn close_early_approved(bytes: u32, m: u32, p: u32) -> frame_support::weights::Weight {
+//         Default::default()
+//     }
+//     fn close_disapproved(m: u32, p: u32) -> frame_support::weights::Weight {
+//         Default::default()
+//     }
+//     fn close_approved(bytes: u32, m: u32, p: u32) -> frame_support::weights::Weight {
+//         Default::default()
+//     }
+//     fn disapprove_proposal(p: u32) -> frame_support::weights::Weight {
+//         Default::default()
+//     }
+// }
 
 // impl pallet_collective::WeightInfo for Lol {
 // 	fn set_members(m: u32, n: u32, p: u32, ) -> Weight {
@@ -898,7 +933,9 @@ construct_runtime!(
         BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
         MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
 
-		// Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 110,
+		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T, Instance1>, Config<T>} = 110,
+		// Council: pallet_collective::<Instance1> = 110,
+		// Council: pallet_collective = 110,
 		// Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>} = 110,
 		// TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 111,
 
