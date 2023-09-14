@@ -777,12 +777,12 @@ parameter_types! {
     pub const DemocracyLaunchPeriod: BlockNumber = 28 * DAYS;
     pub const DemocracyVotingPeriod: BlockNumber = 14 * DAYS;
     // TODO! fill right values!!!
-    pub const DemocracyMinimumDeposit: Balance = 1;
+    pub const DemocracyMinimumDeposit: Balance = 1_000_000_000_000_000_000;
     pub const DemocracyFastTrackVotingPeriod: BlockNumber = 3 * HOURS;
     pub const DemocracyInstantAllowed: bool = true;
     pub const DemocracyCooloffPeriod: BlockNumber = 28 * DAYS;
     // TODO! fill right values!!!
-    pub const DemocracyPreimageByteDeposit: Balance = 1;
+    pub const DemocracyPreimageByteDeposit: Balance = 2_000_000_000_000;
     pub const DemocracyMaxVotes: u32 = 100;
     pub const DemocracyMaxProposals: u32 = 100;
     pub const DemocracyMaxDeposits: u32 = 100;
@@ -971,7 +971,8 @@ parameter_types! {
     pub ExpirationsSchedulerMaxWeight: Weight = Weight::from_parts(1000, 0); 
     // TODO! Change
     // pub SchedulerMaxWeight: Weight = Perbill::from_percent(80) * BlockWeights::get().max_block;
-    pub SchedulerMaxWeight: Weight = Weight::from_parts(100000000, 0);
+    // pub SchedulerMaxWeight: Weight = Weight::from_parts(100_000_000, 1_000);
+    pub SchedulerMaxWeight: Weight = Weight::MAX;
     pub const MaxScheduledPerBlock: u32 = 50;
 }
 
