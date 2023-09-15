@@ -5,8 +5,8 @@ use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sora2_parachain_runtime::{
-    AccountId, AuraId, BeefyId, BeefyLightClientConfig, MultisigVerifierConfig, Signature,
-    EXISTENTIAL_DEPOSIT, TechnicalCommitteeConfig, CouncilConfig, DemocracyConfig,
+    AccountId, AuraId, BeefyId, BeefyLightClientConfig, CouncilConfig, DemocracyConfig,
+    MultisigVerifierConfig, Signature, TechnicalCommitteeConfig, EXISTENTIAL_DEPOSIT,
 };
 use sp_core::{sr25519, ByteArray, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
@@ -583,10 +583,7 @@ fn testnet_genesis(
             members: technical_committee_accounts,
             phantom: Default::default(),
         },
-        council: CouncilConfig {
-            members: council_accounts,
-            phantom: Default::default(),
-        },
+        council: CouncilConfig { members: council_accounts, phantom: Default::default() },
         democracy: DemocracyConfig::default(),
     }
 }

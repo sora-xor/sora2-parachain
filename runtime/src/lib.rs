@@ -38,11 +38,11 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 #[cfg(test)]
 mod xcm_tests;
 
+mod impls;
 mod migrations;
 mod trader;
 mod weights;
 pub mod xcm_config;
-mod impls;
 
 use bridge_types::{GenericNetworkId, SubNetworkId};
 use codec::{Decode, Encode};
@@ -778,12 +778,10 @@ parameter_types! {
     pub const DemocracyEnactmentPeriod: BlockNumber = 30 * DAYS;
     pub const DemocracyLaunchPeriod: BlockNumber = 28 * DAYS;
     pub const DemocracyVotingPeriod: BlockNumber = 14 * DAYS;
-    // TODO! fill right values!!!
     pub const DemocracyMinimumDeposit: Balance = 1_000_000_000_000_000_000;
     pub const DemocracyFastTrackVotingPeriod: BlockNumber = 3 * HOURS;
     pub const DemocracyInstantAllowed: bool = true;
     pub const DemocracyCooloffPeriod: BlockNumber = 28 * DAYS;
-    // TODO! fill right values!!!
     pub const DemocracyPreimageByteDeposit: Balance = 2_000_000_000_000;
     pub const DemocracyMaxVotes: u32 = 100;
     pub const DemocracyMaxProposals: u32 = 100;
@@ -794,10 +792,6 @@ parameter_types! {
 pub type TechnicalCollective = pallet_collective::Instance1;
 pub type CouncilCollective = pallet_collective::Instance2;
 
-type MoreThanHalfCouncil = EitherOfDiverse<
-    EnsureRoot<AccountId>,
-    pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
->;
 type AtLeastHalfCouncil = EitherOfDiverse<
     pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>,
     EnsureRoot<AccountId>,
@@ -877,8 +871,11 @@ impl pallet_democracy::Config for Runtime {
 
 pub struct Slash;
 
-//TODO! Fill
-impl frame_support::traits::OnUnbalanced<polkadot_runtime_common::NegativeImbalance<Runtime>> for Slash {}
+impl frame_support::traits::OnUnbalanced<polkadot_runtime_common::NegativeImbalance<Runtime>>
+    for Slash
+{
+	fn on_nonzero_unbalanced(_: polkadot_runtime_common::NegativeImbalance<Runtime>) {}
+}
 
 impl pallet_scheduler::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
@@ -892,9 +889,6 @@ impl pallet_scheduler::Config for Runtime {
     type OriginPrivilegeCmp = OriginPrivilegeCmp;
     type Preimages = Preimage;
 }
-
-
-
 
 /// Used the compare the privilege of an origin inside the scheduler.
 pub struct OriginPrivilegeCmp;
@@ -919,7 +913,6 @@ impl frame_support::traits::PrivilegeCmp<OriginCaller> for OriginPrivilegeCmp {
         }
     }
 }
-// pub use parachain_common::weights;
 
 parameter_types! {
     pub PreimageBaseDeposit: Balance = 1;
@@ -988,10 +981,7 @@ construct_runtime!(
         MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
 
         TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 110,
-		Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 111,
-		// Council: pallet_collective::<Instance1> = 110,
-		// Council: pallet_collective = 110,
-		// Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>} = 110,
+        Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 111,
         Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 112,
         Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 113,
         Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 114,

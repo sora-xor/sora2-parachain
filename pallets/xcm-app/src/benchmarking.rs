@@ -31,11 +31,11 @@
 use super::*;
 use crate::Pallet as XCMApp;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
+use frame_support::pallet_prelude::Weight;
 use frame_support::traits::EnsureOrigin;
 use frame_system::RawOrigin;
 use xcm::latest::prelude::AssetId as XCMAssetId;
 use xcm::{latest::prelude::*, opaque::latest::Junction::GeneralKey, v3::MultiLocation};
-use frame_support::pallet_prelude::Weight;
 
 fn alice<T: Config>() -> T::AccountId {
     let bytes = [66; 32];

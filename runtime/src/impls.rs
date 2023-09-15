@@ -251,11 +251,7 @@ mod test {
         t(1, Weight::from_parts(248_829_705, 0), "1");
         t(500_000, Weight::from_parts(1_101_328_000, 0), "500_000");
         t(1_000_000, Weight::from_parts(1_953_828_000, 0), "1_000_000");
-        t(
-            5 * MEBIBYTE,
-            Weight::from_parts(9_187_938_400, 0),
-            "5 * MEBIBYTE",
-        );
+        t(5 * MEBIBYTE, Weight::from_parts(9_187_938_400, 0), "5 * MEBIBYTE");
     }
 
     #[test]
