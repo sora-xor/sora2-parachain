@@ -42,6 +42,7 @@ mod migrations;
 mod trader;
 mod weights;
 pub mod xcm_config;
+mod impls;
 
 use bridge_types::{GenericNetworkId, SubNetworkId};
 use codec::{Decode, Encode};
@@ -49,6 +50,7 @@ use frame_support::{
     dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
     traits::{Contains, EitherOfDiverse},
 };
+use impls::{CollectiveWeightInfo, DemocracyWeightInfo, PreimageWeightInfo};
 use scale_info::TypeInfo;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -813,7 +815,7 @@ impl pallet_collective::Config<TechnicalCollective> for Runtime {
     type MaxProposals = CouncilCollectiveMaxProposals;
     type MaxMembers = CouncilCollectiveMaxMembers;
     type DefaultVote = pallet_collective::PrimeDefaultVote;
-    type WeightInfo = ();
+    type WeightInfo = CollectiveWeightInfo<Self>;
 }
 
 impl pallet_collective::Config<CouncilCollective> for Runtime {
@@ -824,54 +826,8 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
     type MaxProposals = CouncilCollectiveMaxProposals;
     type MaxMembers = CouncilCollectiveMaxMembers;
     type DefaultVote = pallet_collective::PrimeDefaultVote;
-    type WeightInfo = ();
+    type WeightInfo = CollectiveWeightInfo<Self>;
 }
-
-// pub struct CollectiveWeightInfo<T>(frame_support::pallet_prelude::PhantomData<T>);
-
-// impl<T: frame_system::Config> pallet_collective::WeightInfo for CollectiveWeightInfo<T> {
-//     fn set_members(m: u32, n: u32, p: u32) -> frame_support::weights::Weight {
-//         todo!()
-//     }
-//     fn execute(b: u32, m: u32) -> frame_support::weights::Weight{
-//         Default::default()
-//     }
-//     fn propose_execute(b: u32, m: u32) -> frame_support::weights::Weight {
-//         Default::default()
-//     }
-//     fn propose_proposed(b: u32, m: u32, p: u32) -> frame_support::weights::Weight {
-//         Default::default()
-//     }
-//     fn vote(m: u32) -> frame_support::weights::Weight {
-//         Default::default()
-//     }
-//     fn close_early_disapproved(m: u32, p: u32) -> frame_support::weights::Weight {
-//         Default::default()
-//     }
-//     fn close_early_approved(bytes: u32, m: u32, p: u32) -> frame_support::weights::Weight {
-//         Default::default()
-//     }
-//     fn close_disapproved(m: u32, p: u32) -> frame_support::weights::Weight {
-//         Default::default()
-//     }
-//     fn close_approved(bytes: u32, m: u32, p: u32) -> frame_support::weights::Weight {
-//         Default::default()
-//     }
-//     fn disapprove_proposal(p: u32) -> frame_support::weights::Weight {
-//         Default::default()
-//     }
-// }
-
-// impl pallet_collective::Config<TechnicalCollective> for Runtime {
-//     type RuntimeOrigin = RuntimeOrigin;
-//     type Proposal = RuntimeCall;
-//     type RuntimeEvent = RuntimeEvent;
-//     type MotionDuration = TechnicalCollectiveMotionDuration;
-//     type MaxProposals = TechnicalCollectiveMaxProposals;
-//     type MaxMembers = TechnicalCollectiveMaxMembers;
-//     type DefaultVote = pallet_collective::PrimeDefaultVote;
-//     type WeightInfo = CollectiveWeightInfo<Self>;
-// }
 
 impl pallet_democracy::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
@@ -911,7 +867,7 @@ impl pallet_democracy::Config for Runtime {
     type Scheduler = Scheduler;
     type PalletsOrigin = OriginCaller;
     type MaxVotes = DemocracyMaxVotes;
-    type WeightInfo = ();
+    type WeightInfo = DemocracyWeightInfo;
     type MaxProposals = DemocracyMaxProposals;
     type VoteLockingPeriod = DemocracyEnactmentPeriod;
     type Preimages = Preimage;
@@ -963,21 +919,18 @@ impl frame_support::traits::PrivilegeCmp<OriginCaller> for OriginPrivilegeCmp {
         }
     }
 }
+// pub use parachain_common::weights;
 
 parameter_types! {
     pub PreimageBaseDeposit: Balance = 1;
     pub PreimageByteDeposit: Balance = 1;
-    // TODO! Change
-    pub ExpirationsSchedulerMaxWeight: Weight = Weight::from_parts(1000, 0); 
-    // TODO! Change
-    // pub SchedulerMaxWeight: Weight = Perbill::from_percent(80) * BlockWeights::get().max_block;
-    // pub SchedulerMaxWeight: Weight = Weight::from_parts(100_000_000, 1_000);
-    pub SchedulerMaxWeight: Weight = Weight::MAX;
+    pub ExpirationsSchedulerMaxWeight: Weight = Perbill::from_percent(15) * parachain_common::weights::BlockWeights::get().max_block;
+    pub SchedulerMaxWeight: Weight = Perbill::from_percent(80) * parachain_common::weights::BlockWeights::get().max_block;
     pub const MaxScheduledPerBlock: u32 = 50;
 }
 
 impl pallet_preimage::Config for Runtime {
-    type WeightInfo = ();
+    type WeightInfo = PreimageWeightInfo;
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type ManagerOrigin = EnsureRoot<AccountId>;

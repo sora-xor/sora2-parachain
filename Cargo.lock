@@ -6799,10 +6799,12 @@ version = "0.1.0"
 dependencies = [
  "bridge-types",
  "frame-support",
+ "frame-system",
  "parity-scale-codec",
  "polkadot-parachain",
  "scale-info",
  "serde",
+ "sp-arithmetic",
  "xcm",
  "xcm-builder",
 ]

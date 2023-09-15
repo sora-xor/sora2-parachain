@@ -28,9 +28,46 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+use frame_support::parameter_types;
+use frame_support::weights::constants::{
+    BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_REF_TIME_PER_SECOND,
+};
 use frame_support::weights::Weight;
+use frame_system::limits;
+use sp_arithmetic::Perbill;
 
-pub type AssetId = bridge_types::H256;
-pub const EXTRINSIC_FIXED_WEIGHT: Weight = Weight::from_ref_time(100_000_000);
+use crate::primitives::Balance;
+use frame_support::dispatch::DispatchClass;
 
-pub type Balance = u128;
+/// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be used
+/// by  Operational  extrinsics.
+const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
+/// We allow for 2 seconds of compute with a 6 second average block time.
+const MAXIMUM_BLOCK_WEIGHT: Weight =
+    Weight::from_parts(2u64 * WEIGHT_REF_TIME_PER_SECOND, u64::MAX);
+pub const ON_INITIALIZE_RATIO: Perbill = Perbill::from_perthousand(20);
+
+parameter_types! {
+    /// Block weights base values and limits.
+    pub BlockWeights: limits::BlockWeights = limits::BlockWeights::builder()
+    .base_block(BlockExecutionWeight::get())
+    .for_class(DispatchClass::all(), |weights| {
+        weights.base_extrinsic = ExtrinsicBaseWeight::get();
+    })
+    .for_class(DispatchClass::Normal, |weights| {
+        weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
+    })
+    .for_class(DispatchClass::Operational, |weights| {
+        weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
+        // Operational transactions have an extra reserved space, so that they
+        // are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
+        weights.reserved = Some(
+            MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT,
+        );
+    })
+    .avg_block_initialization(ON_INITIALIZE_RATIO)
+    .build_or_panic();
+    pub BlockLength: limits::BlockLength =
+        limits::BlockLength::max_with_normal_ratio(7 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+    pub const TransactionByteFee: Balance = 0;
+}
