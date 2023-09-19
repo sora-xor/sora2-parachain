@@ -201,7 +201,7 @@ pub mod pallet {
         /// [Sora AssetId, XCM Multilocation]
         MappingDeleted(AssetId, MultiLocation),
         /// Asset Added to channel
-        /// [SubstrateAppMessage]
+        /// [ParachainAppCall]
         AssetAddedToChannel(ParachainAppCall),
         /// Asset transfered from this parachain
         /// [From, To, AssedId, amount]
