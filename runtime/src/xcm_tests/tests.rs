@@ -30,7 +30,7 @@
 
 use super::*;
 use bridge_types::{
-    substrate::SubstrateAppCall, traits::OutboundChannel, GenericTimepoint, SubNetworkId,
+    substrate::ParachainAppCall, traits::OutboundChannel, GenericTimepoint, SubNetworkId,
 };
 use cumulus_primitives_core::ParaId;
 use frame_support::{assert_ok, traits::Currency};
@@ -137,7 +137,7 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
     SoraParachain::execute_with(|| {
         assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
             == crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
-                SubstrateAppCall::Transfer {
+                ParachainAppCall::Transfer {
                     asset_id: relay_native_asset_id(),
                     sender: None,
                     recipient: BOB,
@@ -190,7 +190,7 @@ fn send_sibling_asset_to_sora_from_sibling() {
     SoraParachain::execute_with(|| {
         assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
             == crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
-                SubstrateAppCall::Transfer {
+                ParachainAppCall::Transfer {
                     asset_id: para_x_asset_id(),
                     sender: None,
                     recipient: BOB,
@@ -354,7 +354,7 @@ fn send_relay_chain_asset_to_sora_from_relay() {
     SoraParachain::execute_with(|| {
         assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
             == crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
-                SubstrateAppCall::Transfer {
+                ParachainAppCall::Transfer {
                     asset_id: relay_native_asset_id(),
                     sender: None,
                     recipient: ALICE,

@@ -104,7 +104,7 @@ pub mod pallet {
     use super::*;
     use bridge_types::types::CallOriginOutput;
     use bridge_types::{
-        substrate::{SubstrateAppCall, SubstrateBridgeMessageEncode},
+        substrate::{ParachainAppCall, SubstrateBridgeMessageEncode},
         traits::OutboundChannel,
         SubNetworkId,
     };
@@ -201,8 +201,8 @@ pub mod pallet {
         /// [Sora AssetId, XCM Multilocation]
         MappingDeleted(AssetId, MultiLocation),
         /// Asset Added to channel
-        /// [SubstrateAppMessage]
-        AssetAddedToChannel(SubstrateAppCall),
+        /// [ParachainAppCall]
+        AssetAddedToChannel(ParachainAppCall),
         /// Asset transfered from this parachain
         /// [From, To, AssedId, amount]
         AssetTransferred(T::AccountId, MultiLocation, AssetId, u128),
@@ -298,7 +298,7 @@ pub mod pallet {
             T::OutboundChannel::submit(
                 SubNetworkId::Mainnet,
                 &RawOrigin::Root,
-                &SubstrateAppCall::FinalizeAssetRegistration { asset_id, asset_kind }
+                &ParachainAppCall::FinalizeAssetRegistration { asset_id, asset_kind }
                     .prepare_message(),
                 (),
             )?;
@@ -330,7 +330,7 @@ pub mod pallet {
                 let Some(message_id) = message_id else {
                     fail!(Error::<T>::InvalidTrappedMessage);
                 };
-                let message = SubstrateAppCall::ReportXCMTransferResult {
+                let message = ParachainAppCall::ReportXCMTransferResult {
                     message_id,
                     transfer_status:
                         bridge_types::substrate::XCMAppTransferStatus::XCMTransferError,
@@ -342,7 +342,7 @@ pub mod pallet {
                 mes_bytes
             } else {
                 // otherwise - send assets to bridge
-                let message = SubstrateAppCall::Transfer {
+                let message = ParachainAppCall::Transfer {
                     asset_id,
                     recipient: T::AccountIdConverter::convert(recipient.clone()),
                     sender: None,
@@ -399,7 +399,7 @@ pub mod pallet {
             amount: u128,
         ) -> sp_runtime::DispatchResult {
             let raw_origin = Some(account_id.clone()).into();
-            let xcm_mes = SubstrateAppCall::Transfer {
+            let xcm_mes = ParachainAppCall::Transfer {
                 asset_id,
                 recipient: T::AccountIdConverter::convert(account_id.clone()),
                 sender: None,
@@ -434,7 +434,7 @@ pub mod pallet {
             );
             match Self::xcm_transfer_asset(asset_id, sender.clone(), recipient, amount) {
                 Ok(_) => {
-                    let message = SubstrateAppCall::ReportXCMTransferResult {
+                    let message = ParachainAppCall::ReportXCMTransferResult {
                         message_id: origin_output.message_id,
                         transfer_status: bridge_types::substrate::XCMAppTransferStatus::Success,
                     };
@@ -487,7 +487,7 @@ pub mod pallet {
         /// Perform refund if XCM transfer returned an errror
         pub fn refund(account_id: T::AccountId, asset_id: AssetId, amount: u128, message_id: H256) {
             let raw_origin = Some(account_id.clone()).into();
-            let message = SubstrateAppCall::ReportXCMTransferResult {
+            let message = ParachainAppCall::ReportXCMTransferResult {
                 message_id,
                 transfer_status: bridge_types::substrate::XCMAppTransferStatus::XCMTransferError,
             };
