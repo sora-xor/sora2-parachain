@@ -50,7 +50,7 @@ use frame_support::{
     dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
     traits::{Contains, EitherOfDiverse},
 };
-use impls::{CollectiveWeightInfo, DemocracyWeightInfo, PreimageWeightInfo};
+use impls::{CollectiveWeightInfo, PreimageWeightInfo};
 use scale_info::TypeInfo;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -861,7 +861,7 @@ impl pallet_democracy::Config for Runtime {
     type Scheduler = Scheduler;
     type PalletsOrigin = OriginCaller;
     type MaxVotes = DemocracyMaxVotes;
-    type WeightInfo = DemocracyWeightInfo;
+    type WeightInfo = ();
     type MaxProposals = DemocracyMaxProposals;
     type VoteLockingPeriod = DemocracyEnactmentPeriod;
     type Preimages = Preimage;
@@ -917,8 +917,8 @@ impl frame_support::traits::PrivilegeCmp<OriginCaller> for OriginPrivilegeCmp {
 parameter_types! {
     pub PreimageBaseDeposit: Balance = 1;
     pub PreimageByteDeposit: Balance = 1;
-    pub ExpirationsSchedulerMaxWeight: Weight = Perbill::from_percent(15) * parachain_common::weights::BlockWeights::get().max_block;
-    pub SchedulerMaxWeight: Weight = Perbill::from_percent(80) * parachain_common::weights::BlockWeights::get().max_block;
+    pub ExpirationsSchedulerMaxWeight: Weight = Perbill::from_percent(15) * RuntimeBlockWeights::get().max_block;
+    pub SchedulerMaxWeight: Weight = Perbill::from_percent(80) * RuntimeBlockWeights::get().max_block;
     pub const MaxScheduledPerBlock: u32 = 50;
 }
 

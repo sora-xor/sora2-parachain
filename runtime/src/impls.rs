@@ -34,11 +34,7 @@ use frame_support::dispatch::DispatchClass;
 use frame_support::weights::constants::BlockExecutionWeight;
 use frame_support::weights::Weight;
 
-pub use parachain_common::weights::{BlockLength, BlockWeights, TransactionByteFee};
-
 pub struct CollectiveWeightInfo<T>(PhantomData<T>);
-
-pub struct DemocracyWeightInfo;
 
 pub struct PreimageWeightInfo;
 
@@ -46,7 +42,7 @@ const MAX_PREIMAGE_BYTES: u32 = 5 * 1024 * 1024;
 
 impl pallet_preimage::WeightInfo for PreimageWeightInfo {
     fn note_preimage(bytes: u32) -> Weight {
-        let max_weight: Weight = BlockWeights::get()
+        let max_weight: Weight = crate::RuntimeBlockWeights::get()
             .get(DispatchClass::Normal)
             .max_extrinsic
             .expect("Democracy pallet must have max extrinsic weight");
@@ -125,7 +121,7 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for CollectiveWeight
         <() as pallet_collective::WeightInfo>::close_early_disapproved(m, p)
     }
     fn close_early_approved(bytes: u32, m: u32, p: u32) -> Weight {
-        let max_weight: Weight = BlockWeights::get()
+        let max_weight: Weight = crate::RuntimeBlockWeights::get()
             .get(DispatchClass::Normal)
             .max_extrinsic
             .expect("Collective pallet must have max extrinsic weight");
@@ -142,7 +138,7 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for CollectiveWeight
         <() as pallet_collective::WeightInfo>::close_disapproved(m, p)
     }
     fn close_approved(bytes: u32, m: u32, p: u32) -> Weight {
-        let max_weight: Weight = BlockWeights::get()
+        let max_weight: Weight = crate::RuntimeBlockWeights::get()
             .get(DispatchClass::Normal)
             .max_extrinsic
             .expect("Collective pallet must have max extrinsic weight");
@@ -157,75 +153,6 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for CollectiveWeight
     }
     fn disapprove_proposal(p: u32) -> Weight {
         <() as pallet_collective::WeightInfo>::disapprove_proposal(p)
-    }
-}
-
-impl pallet_democracy::WeightInfo for DemocracyWeightInfo {
-    fn on_initialize_base_with_launch_period(r: u32) -> Weight {
-        <() as pallet_democracy::WeightInfo>::on_initialize_base_with_launch_period(r)
-    }
-    fn propose() -> Weight {
-        <() as pallet_democracy::WeightInfo>::propose()
-    }
-    fn second() -> Weight {
-        <() as pallet_democracy::WeightInfo>::second()
-    }
-    fn vote_new() -> Weight {
-        <() as pallet_democracy::WeightInfo>::vote_new()
-    }
-    fn vote_existing() -> Weight {
-        <() as pallet_democracy::WeightInfo>::vote_existing()
-    }
-    fn emergency_cancel() -> Weight {
-        <() as pallet_democracy::WeightInfo>::emergency_cancel()
-    }
-    fn blacklist() -> Weight {
-        <() as pallet_democracy::WeightInfo>::blacklist()
-    }
-    fn external_propose() -> Weight {
-        <() as pallet_democracy::WeightInfo>::external_propose()
-    }
-    fn external_propose_majority() -> Weight {
-        <() as pallet_democracy::WeightInfo>::external_propose_majority()
-    }
-    fn external_propose_default() -> Weight {
-        <() as pallet_democracy::WeightInfo>::external_propose_default()
-    }
-    fn fast_track() -> Weight {
-        <() as pallet_democracy::WeightInfo>::fast_track()
-    }
-    fn veto_external() -> Weight {
-        <() as pallet_democracy::WeightInfo>::veto_external()
-    }
-    fn cancel_proposal() -> Weight {
-        <() as pallet_democracy::WeightInfo>::cancel_proposal()
-    }
-    fn cancel_referendum() -> Weight {
-        <() as pallet_democracy::WeightInfo>::cancel_referendum()
-    }
-    fn on_initialize_base(r: u32) -> Weight {
-        <() as pallet_democracy::WeightInfo>::on_initialize_base(r)
-    }
-    fn delegate(r: u32) -> Weight {
-        <() as pallet_democracy::WeightInfo>::delegate(r)
-    }
-    fn undelegate(r: u32) -> Weight {
-        <() as pallet_democracy::WeightInfo>::undelegate(r)
-    }
-    fn clear_public_proposals() -> Weight {
-        <() as pallet_democracy::WeightInfo>::clear_public_proposals()
-    }
-    fn unlock_remove(r: u32) -> Weight {
-        <() as pallet_democracy::WeightInfo>::unlock_remove(r)
-    }
-    fn unlock_set(r: u32) -> Weight {
-        <() as pallet_democracy::WeightInfo>::unlock_set(r)
-    }
-    fn remove_vote(r: u32) -> Weight {
-        <() as pallet_democracy::WeightInfo>::remove_vote(r)
-    }
-    fn remove_other_vote(r: u32) -> Weight {
-        <() as pallet_democracy::WeightInfo>::remove_other_vote(r)
     }
 }
 
