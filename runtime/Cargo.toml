@@ -72,6 +72,11 @@ pallet-timestamp = { git = "https://github.com/paritytech/substrate.git", defaul
 pallet-transaction-payment = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
 pallet-randomness-collective-flip = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
+sp-weights = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
+pallet-collective = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38", default-features = false }
+pallet-democracy = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38", default-features = false }
+pallet-preimage = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38", default-features = false }
+pallet-scheduler = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38", default-features = false }
 
 # Cumulus dependencies
 cumulus-pallet-aura-ext = { git = 'https://github.com/paritytech/cumulus', branch = 'polkadot-v0.9.38', default-features = false }
@@ -147,9 +152,13 @@ std = [
 	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-beefy/std",
+	"pallet-collective/std",
 	"pallet-collator-selection/std",
+	"pallet-democracy/std",
 	"pallet-mmr/std",
+	"pallet-preimage/std",
 	"pallet-randomness-collective-flip/std",
+	"pallet-scheduler/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
 	"pallet-timestamp/std",
@@ -194,6 +203,7 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-collator-selection/runtime-benchmarks",
+	"pallet-collective/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",

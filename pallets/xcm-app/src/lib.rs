@@ -42,6 +42,7 @@ pub mod weights;
 
 pub use pallet::*;
 
+use crate::weights::WeightInfo;
 use bridge_types::substrate::XCMAppCall;
 use bridge_types::H256;
 use codec::{Decode, Encode};
@@ -54,7 +55,6 @@ use xcm::{
     opaque::latest::{AssetId::Concrete, Fungibility::Fungible},
     v3::{MultiAsset, MultiLocation},
 };
-use crate::weights::WeightInfo;
 
 pub type ParachainAssetId = xcm::VersionedMultiAsset;
 
