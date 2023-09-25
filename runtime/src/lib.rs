@@ -38,6 +38,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 #[cfg(test)]
 mod xcm_tests;
 
+mod impls;
 mod migrations;
 mod trader;
 mod weights;
@@ -47,8 +48,9 @@ use bridge_types::{GenericNetworkId, SubNetworkId};
 use codec::{Decode, Encode};
 use frame_support::{
     dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
-    traits::Contains,
+    traits::{Contains, EitherOfDiverse},
 };
+use impls::{CollectiveWeightInfo, PreimageWeightInfo};
 use scale_info::TypeInfo;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
@@ -768,6 +770,167 @@ impl multisig_verifier::Config for Runtime {
     type WeightInfo = multisig_verifier::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+    pub const CouncilCollectiveMotionDuration: BlockNumber = 5 * DAYS;
+    pub const CouncilCollectiveMaxProposals: u32 = 100;
+    pub const CouncilCollectiveMaxMembers: u32 = 100;
+
+    pub const DemocracyEnactmentPeriod: BlockNumber = 30 * DAYS;
+    pub const DemocracyLaunchPeriod: BlockNumber = 28 * DAYS;
+    pub const DemocracyVotingPeriod: BlockNumber = 14 * DAYS;
+    pub const DemocracyMinimumDeposit: Balance = 1_000_000_000_000_000_000;
+    pub const DemocracyFastTrackVotingPeriod: BlockNumber = 3 * HOURS;
+    pub const DemocracyInstantAllowed: bool = true;
+    pub const DemocracyCooloffPeriod: BlockNumber = 28 * DAYS;
+    pub const DemocracyPreimageByteDeposit: Balance = 2_000_000_000_000;
+    pub const DemocracyMaxVotes: u32 = 100;
+    pub const DemocracyMaxProposals: u32 = 100;
+    pub const DemocracyMaxDeposits: u32 = 100;
+    pub const DemocracyMaxBlacklisted: u32 = 100;
+}
+
+pub type TechnicalCollective = pallet_collective::Instance1;
+pub type CouncilCollective = pallet_collective::Instance2;
+
+type AtLeastHalfCouncil = EitherOfDiverse<
+    pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>,
+    EnsureRoot<AccountId>,
+>;
+type AtLeastTwoThirdsCouncil = EitherOfDiverse<
+    pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>,
+    EnsureRoot<AccountId>,
+>;
+
+impl pallet_collective::Config<TechnicalCollective> for Runtime {
+    type RuntimeOrigin = RuntimeOrigin;
+    type Proposal = RuntimeCall;
+    type RuntimeEvent = RuntimeEvent;
+    type MotionDuration = CouncilCollectiveMotionDuration;
+    type MaxProposals = CouncilCollectiveMaxProposals;
+    type MaxMembers = CouncilCollectiveMaxMembers;
+    type DefaultVote = pallet_collective::PrimeDefaultVote;
+    type WeightInfo = CollectiveWeightInfo<Self>;
+}
+
+impl pallet_collective::Config<CouncilCollective> for Runtime {
+    type RuntimeOrigin = RuntimeOrigin;
+    type Proposal = RuntimeCall;
+    type RuntimeEvent = RuntimeEvent;
+    type MotionDuration = CouncilCollectiveMotionDuration;
+    type MaxProposals = CouncilCollectiveMaxProposals;
+    type MaxMembers = CouncilCollectiveMaxMembers;
+    type DefaultVote = pallet_collective::PrimeDefaultVote;
+    type WeightInfo = CollectiveWeightInfo<Self>;
+}
+
+impl pallet_democracy::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type Currency = Balances;
+    type EnactmentPeriod = DemocracyEnactmentPeriod;
+    type LaunchPeriod = DemocracyLaunchPeriod;
+    type VotingPeriod = DemocracyVotingPeriod;
+    type MinimumDeposit = DemocracyMinimumDeposit;
+    /// `external_propose` call condition
+    type ExternalOrigin = AtLeastHalfCouncil;
+    /// A super-majority can have the next scheduled referendum be a straight majority-carries vote.
+    /// `external_propose_majority` call condition
+    type ExternalMajorityOrigin = AtLeastHalfCouncil;
+    /// `external_propose_default` call condition
+    type ExternalDefaultOrigin = AtLeastHalfCouncil;
+    /// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
+    /// be tabled immediately and with a shorter voting/enactment period.
+    type FastTrackOrigin = EitherOfDiverse<
+        pallet_collective::EnsureProportionMoreThan<AccountId, TechnicalCollective, 1, 2>,
+        EnsureRoot<AccountId>,
+    >;
+    type InstantOrigin = EitherOfDiverse<
+        pallet_collective::EnsureProportionAtLeast<AccountId, TechnicalCollective, 2, 3>,
+        EnsureRoot<AccountId>,
+    >;
+    type InstantAllowed = DemocracyInstantAllowed;
+    type FastTrackVotingPeriod = DemocracyFastTrackVotingPeriod;
+    /// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
+    /// `emergency_cancel` call condition.
+    type CancellationOrigin = AtLeastTwoThirdsCouncil;
+    type CancelProposalOrigin = AtLeastTwoThirdsCouncil;
+    type BlacklistOrigin = EnsureRoot<AccountId>;
+    /// `veto_external` - vetoes and blacklists the external proposal hash
+    type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
+    type CooloffPeriod = DemocracyCooloffPeriod;
+    type Slash = Slash;
+    type Scheduler = Scheduler;
+    type PalletsOrigin = OriginCaller;
+    type MaxVotes = DemocracyMaxVotes;
+    type WeightInfo = ();
+    type MaxProposals = DemocracyMaxProposals;
+    type VoteLockingPeriod = DemocracyEnactmentPeriod;
+    type Preimages = Preimage;
+    type MaxDeposits = DemocracyMaxDeposits;
+    type MaxBlacklisted = DemocracyMaxBlacklisted;
+}
+
+pub struct Slash;
+
+impl frame_support::traits::OnUnbalanced<polkadot_runtime_common::NegativeImbalance<Runtime>>
+    for Slash
+{
+	fn on_nonzero_unbalanced(_: polkadot_runtime_common::NegativeImbalance<Runtime>) {}
+}
+
+impl pallet_scheduler::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeOrigin = RuntimeOrigin;
+    type PalletsOrigin = OriginCaller;
+    type RuntimeCall = RuntimeCall;
+    type MaximumWeight = SchedulerMaxWeight;
+    type ScheduleOrigin = frame_system::EnsureRoot<AccountId>;
+    type MaxScheduledPerBlock = MaxScheduledPerBlock;
+    type WeightInfo = ();
+    type OriginPrivilegeCmp = OriginPrivilegeCmp;
+    type Preimages = Preimage;
+}
+
+/// Used the compare the privilege of an origin inside the scheduler.
+pub struct OriginPrivilegeCmp;
+use scale_info::prelude::cmp::Ordering;
+
+impl frame_support::traits::PrivilegeCmp<OriginCaller> for OriginPrivilegeCmp {
+    fn cmp_privilege(left: &OriginCaller, right: &OriginCaller) -> Option<Ordering> {
+        if left == right {
+            return Some(Ordering::Equal);
+        }
+
+        match (left, right) {
+            // Root is greater than anything.
+            (OriginCaller::system(frame_system::RawOrigin::Root), _) => Some(Ordering::Greater),
+            // Check which one has more yes votes.
+            (
+                OriginCaller::Council(pallet_collective::RawOrigin::Members(l_yes_votes, l_count)),
+                OriginCaller::Council(pallet_collective::RawOrigin::Members(r_yes_votes, r_count)),
+            ) => Some((l_yes_votes * r_count).cmp(&(r_yes_votes * l_count))),
+            // For every other origin we don't care, as they are not used for `ScheduleOrigin`.
+            _ => None,
+        }
+    }
+}
+
+parameter_types! {
+    pub PreimageBaseDeposit: Balance = 1;
+    pub PreimageByteDeposit: Balance = 1;
+    pub ExpirationsSchedulerMaxWeight: Weight = Perbill::from_percent(15) * RuntimeBlockWeights::get().max_block;
+    pub SchedulerMaxWeight: Weight = Perbill::from_percent(80) * RuntimeBlockWeights::get().max_block;
+    pub const MaxScheduledPerBlock: u32 = 50;
+}
+
+impl pallet_preimage::Config for Runtime {
+    type WeightInfo = PreimageWeightInfo;
+    type RuntimeEvent = RuntimeEvent;
+    type Currency = Balances;
+    type ManagerOrigin = EnsureRoot<AccountId>;
+    type BaseDeposit = PreimageBaseDeposit;
+    type ByteDeposit = PreimageByteDeposit;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -816,6 +979,13 @@ construct_runtime!(
         LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
         BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
         MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
+
+        TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 110,
+        Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 111,
+        Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 112,
+        Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 113,
+        Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 114,
+
 
         #[cfg(feature = "rococo")]
         XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
