@@ -27,3 +27,6 @@ lint:
 
 meta:
 	cargo build --release -p parachain-gen --features rococo
+
+check:
+	cargo check --features rococo
