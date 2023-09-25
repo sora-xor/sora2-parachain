@@ -4,7 +4,7 @@ set -e
 benchmarkcmd="cargo build --release --locked --features runtime-benchmarks,kusama --bin parachain-collator"
 buidcmd="cargo b -r --features"
 testcmd="cargo test -r --features"
-becnchfeature="runtime-benchmarks"
+benchfeature="runtime-benchmarks"
 networks=(kusama rococo polkadot)
 binaryfile="target/release/parachain-collator"
 binaryfilepath="housekeeping/parachain-collator"
@@ -30,7 +30,7 @@ do
    else
       printf "⚡️ There is no tag here, only tests run. \n"
       printf "🏃 Running tests for "$network"... \n"
-      $testcmd "$network" "$becnchfeature"
+      $testcmd "$network" "$benchfeature"
       wasm_in="./target/release/wbuild/sora2-parachain-runtime/"
       wasm_out=./sora2-parachain-runtime_$network.compact.compressed.wasm     
       wasm_file=$(ls "$wasm_in" | grep ".compact.compressed.wasm")
