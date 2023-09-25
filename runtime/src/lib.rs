@@ -219,10 +219,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("sora_ksm"),
     impl_name: create_runtime_str!("sora_ksm"),
     authoring_version: 1,
-    spec_version: 5,
+    spec_version: 6,
     impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
-    transaction_version: 5,
+    transaction_version: 6,
     state_version: 1,
 };
 
@@ -638,7 +638,10 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
         origin: Self::RuntimeOrigin,
     ) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {
         match self.0 {
-            bridge_types::substrate::BridgeCall::ParachainApp(_msg) => Ok(().into()),
+            bridge_types::substrate::BridgeCall::ParachainApp(_msg) => Err(sp_runtime::DispatchErrorWithPostInfo {
+                post_info: Default::default(),
+                error: sp_runtime::DispatchError::Other("Unavailable"),
+            }),
             bridge_types::substrate::BridgeCall::XCMApp(msg) => {
                 let call: xcm_app::Call<crate::Runtime> = msg.into();
                 let call: crate::RuntimeCall = call.into();
@@ -649,7 +652,11 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
                 let call: crate::RuntimeCall = call.into();
                 call.dispatch(origin)
             },
-            bridge_types::substrate::BridgeCall::MultisigVerifier(_) => Ok(().into()),
+            bridge_types::substrate::BridgeCall::MultisigVerifier(msg) => {
+                let call: multisig_verifier::Call<crate::Runtime> = msg.into();
+                let call: crate::RuntimeCall = call.into();
+                call.dispatch(origin)
+            },
         }
     }
 }
@@ -657,7 +664,7 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
 impl frame_support::dispatch::GetDispatchInfo for DispatchableSubstrateBridgeCall {
     fn get_dispatch_info(&self) -> DispatchInfo {
         match &self.0 {
-            bridge_types::substrate::BridgeCall::ParachainApp(_) => todo!(),
+            bridge_types::substrate::BridgeCall::ParachainApp(_) => Default::default(),
             bridge_types::substrate::BridgeCall::XCMApp(msg) => {
                 let call: xcm_app::Call<crate::Runtime> = msg.clone().into();
                 call.get_dispatch_info()
