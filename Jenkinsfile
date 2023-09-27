@@ -1,4 +1,4 @@
-@Library('jenkins-library') _
+@Library('jenkins-library@feature/DOPS-2746/rust_sonar_dojo_slither') _
 
 def pipeline = new org.rust.AppPipeline(steps: this,
       envImageName: 'docker.soramitsu.co.jp/sora2/parachain-env:latest',
@@ -6,7 +6,11 @@ def pipeline = new org.rust.AppPipeline(steps: this,
       cargoClippyTag: ':parachain',
       buildTestCmds: ['housekeeping/scripts/build.sh'],
       cargoClippyCmds: ['housekeeping/scripts/clippy.sh'],
-      codeCoverage: false,
-      buildArtifacts: 'sora2-parachain-runtime_rococo.compact.compressed.wasm, sora2-parachain-runtime_kusama.compact.compressed.wasm, sora2-parachain-runtime_polkadot.compact.compressed.wasm'
+      codeCoverage: true,
+      codeCoverageCommand: './housekeeping/coverage.sh',
+      buildArtifacts: 'sora2-parachain-runtime_rococo.compact.compressed.wasm, sora2-parachain-runtime_kusama.compact.compressed.wasm, sora2-parachain-runtime_polkadot.compact.compressed.wasm',
+      sonarProjectKey: 'sora:sora2-parachain',
+      sonarProjectName: 'sora2-parachain',
+      dojoProductType: 'sora'
 )
 pipeline.runPipeline()
