@@ -1,11 +1,14 @@
 #!/bin/bash
 set -e
 
+clippycommand="SKIP_WASM_BUILD=1 cargo clippy --features"
+clippyfeatures=("kusama" "polkadot" "rococo,runtime-benchmarks")
+
 if [ "$pr" = true ] && [ "$prBranch" != "master" ]; then
-    printf "👷‍♂️ starting clippy \n"
-    SKIP_WASM_BUILD=1 cargo clippy --features kusama
-    SKIP_WASM_BUILD=1 cargo clippy --features polkadot
-    SKIP_WASM_BUILD=1 cargo clippy --features rococo,runtime-benchmarks
+    for clippyfeature in "${clippyfeatures[@]}"; do
+        printf "👷‍♂️ starting clippy with $clippyfeature feature \n"
+        $clippycommand $clippyfeature
+    done
 else
     printf "👷‍♂️ starting a regular clippy \n"
     cargo clippy -- -D warnings || exit 0
