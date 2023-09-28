@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-clippycommand="SKIP_WASM_BUILD=1 cargo clippy --features"
+clippycommand="cargo clippy --features"
 clippyfeatures=("kusama" "polkadot" "rococo,runtime-benchmarks")
 
 if [ "$pr" = true ] && [ "$prBranch" != "master" ]; then
