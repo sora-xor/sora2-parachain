@@ -16,7 +16,7 @@ if [[ $buildTag != null ]] && [[ ${TAG_NAME} != null || ${TAG_NAME} != '' ]]; th
    if [[ ${TAG_NAME} =~ 'benchmarking'* ]]; then
          buildcmd="cargo build --release --locked --bin parachain-collator --features" 
          buildfeature="runtime-benchmarks,kusama"
-   elif [[ $buildTag = 'dev' ]] || [[ $buildTag =~ 'stage'* ]]; then
+   elif [[ $buildTag = 'dev' ]] || [[ $buildTag =~ 'stage'* ]] || [[ $buildTag =~ 'test'* ]]; then
          buildfeature="rococo"
    elif [[ ${TAG_NAME} =~ 'kusama'* ]]; then
          buildfeature="kusama"
@@ -46,6 +46,12 @@ else
       wasm_out=./sora2-parachain-runtime_$network.compact.compressed.wasm     
       wasm_file=$(ls "$wasm_in" | grep ".compact.compressed.wasm")
       mv "$wasm_in$wasm_file" "$wasm_out"
+      if [ -f "$wasm_out" ]; then
+         printf "✅ "$wasm_out" found!\n"
+      else
+         printf "❌"$wasm_out" can't found!\n"
+         exit 1
+      fi
    done
 fi
 
