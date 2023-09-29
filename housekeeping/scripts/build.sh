@@ -20,11 +20,12 @@ if [[ $buildTag != null ]] && [[ ${TAG_NAME} != null || ${TAG_NAME} != '' ]]; th
          buildfeature="rococo"
    elif [[ ${TAG_NAME} =~ 'kusama-'* ]]; then
          buildfeature="kusama"
-   elif [[ ${TAG_NAME} =~ 'polkadot-'* ]]; then 
+   elif [[ ${TAG_NAME} =~ 'polkadot-'* ]]; then
          buildfeature="polkadot"
    fi
-   printf "🕙 Building with feature $buildfeature will start now... \n"
+   printf "🕙 Testing with feature $buildfeature will start now... \n"
    $testcmd "$buildfeature"
+   printf "🕙 Building with feature $buildfeature will start now... \n"
    $buidcmd "$buildfeature"
    wasm_in="./target/release/wbuild/sora2-parachain-runtime/"
    wasm_out=./sora2-parachain-runtime_$buildfeature.compact.compressed.wasm
