@@ -9,9 +9,6 @@ networks=(kusama polkadot rococo)
 binaryfile="target/release/parachain-collator"
 binaryfilepath="housekeeping/parachain-collator"
 errorfile="benchmarking_errors.txt"
-wasm_in="./target/release/wbuild/sora2-parachain-runtime/"
-wasm_out=./sora2-parachain-runtime_$buildfeature.compact.compressed.wasm
-wasm_file=$(ls "$wasm_in" | grep ".compact.compressed.wasm")
 
 rm -rf ~/.cargo/registry/
 
@@ -29,6 +26,9 @@ if [[ $buildTag != null ]] && [[ ${TAG_NAME} != null || ${TAG_NAME} != '' ]]; th
    printf "🕙 Building with feature $buildfeature will start now... \n"
    $testcmd "$buildfeature"
    $buidcmd "$buildfeature"
+   wasm_in="./target/release/wbuild/sora2-parachain-runtime/"
+   wasm_out=./sora2-parachain-runtime_$buildfeature.compact.compressed.wasm
+   wasm_file=$(ls "$wasm_in" | grep ".compact.compressed.wasm")
    mv "$wasm_in$wasm_file" "$wasm_out"
    if [ -f "$wasm_out" ]; then
       printf "✅ "$wasm_out" found!\n"
