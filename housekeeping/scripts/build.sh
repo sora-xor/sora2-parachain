@@ -16,11 +16,11 @@ if [[ $buildTag != null ]] && [[ ${TAG_NAME} != null || ${TAG_NAME} != '' ]]; th
    if [[ ${TAG_NAME} =~ 'benchmarking'* ]]; then
          buildcmd="cargo build --release --locked --bin parachain-collator --features" 
          buildfeature="runtime-benchmarks,kusama"
-   elif [[ $buildTag = 'dev' ]] || [[ $buildTag =~ 'stage'* ]] || [[ $buildTag =~ 'test'* ]]; then
+   elif [[ $buildTag = 'dev' ]] || [[ $buildTag =~ 'stage-'* ]] || [[ $buildTag =~ 'test-'* ]]; then
          buildfeature="rococo"
-   elif [[ ${TAG_NAME} =~ 'kusama'* ]]; then
+   elif [[ ${TAG_NAME} =~ 'kusama-'* ]]; then
          buildfeature="kusama"
-   elif [[ ${TAG_NAME} =~ 'polkadot'* ]]; then 
+   elif [[ ${TAG_NAME} =~ 'polkadot-'* ]]; then 
          buildfeature="polkadot"
    fi
    printf "🕙 Building with feature $buildfeature will start now... \n"
