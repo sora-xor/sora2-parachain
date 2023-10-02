@@ -638,10 +638,11 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
         origin: Self::RuntimeOrigin,
     ) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {
         match self.0 {
-            bridge_types::substrate::BridgeCall::ParachainApp(_msg) => Err(sp_runtime::DispatchErrorWithPostInfo {
-                post_info: Default::default(),
-                error: sp_runtime::DispatchError::Other("Unavailable"),
-            }),
+            bridge_types::substrate::BridgeCall::ParachainApp(_msg) =>
+                Err(sp_runtime::DispatchErrorWithPostInfo {
+                    post_info: Default::default(),
+                    error: sp_runtime::DispatchError::Other("Unavailable"),
+                }),
             bridge_types::substrate::BridgeCall::XCMApp(msg) => {
                 let call: xcm_app::Call<crate::Runtime> = msg.into();
                 let call: crate::RuntimeCall = call.into();
@@ -775,6 +776,7 @@ impl multisig_verifier::Config for Runtime {
     type OutboundChannel = SubstrateBridgeOutboundChannel;
     type MaxPeers = BridgeMaxPeers;
     type WeightInfo = multisig_verifier::weights::SubstrateWeight<Runtime>;
+    type ThisNetworkId = ThisNetworkId;
 }
 
 parameter_types! {
@@ -881,7 +883,7 @@ pub struct Slash;
 impl frame_support::traits::OnUnbalanced<polkadot_runtime_common::NegativeImbalance<Runtime>>
     for Slash
 {
-	fn on_nonzero_unbalanced(_: polkadot_runtime_common::NegativeImbalance<Runtime>) {}
+    fn on_nonzero_unbalanced(_: polkadot_runtime_common::NegativeImbalance<Runtime>) {}
 }
 
 impl pallet_scheduler::Config for Runtime {
@@ -904,7 +906,7 @@ use scale_info::prelude::cmp::Ordering;
 impl frame_support::traits::PrivilegeCmp<OriginCaller> for OriginPrivilegeCmp {
     fn cmp_privilege(left: &OriginCaller, right: &OriginCaller) -> Option<Ordering> {
         if left == right {
-            return Some(Ordering::Equal);
+            return Some(Ordering::Equal)
         }
 
         match (left, right) {
@@ -985,7 +987,8 @@ construct_runtime!(
         SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
         LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
         BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
-        MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
+        // MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
+        MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call} = 109,
 
         TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 110,
         Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 111,

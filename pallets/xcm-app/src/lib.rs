@@ -43,11 +43,9 @@ pub mod weights;
 pub use pallet::*;
 
 use crate::weights::WeightInfo;
-use bridge_types::substrate::XCMAppCall;
-use bridge_types::H256;
+use bridge_types::{substrate::XCMAppCall, H256};
 use codec::{Decode, Encode};
-use orml_traits::xcm_transfer::XcmTransfer;
-use orml_traits::MultiCurrency;
+use orml_traits::{xcm_transfer::XcmTransfer, MultiCurrency};
 use parachain_common::primitives::AssetId;
 use scale_info::prelude::boxed::Box;
 use sp_runtime::{AccountId32, RuntimeDebug};
@@ -64,9 +62,8 @@ where
 {
     fn from(value: XCMAppCall) -> Self {
         match value {
-            XCMAppCall::Transfer { sender, recipient, amount, asset_id } => {
-                Call::transfer { sender: sender.into(), recipient, amount, asset_id }
-            },
+            XCMAppCall::Transfer { sender, recipient, amount, asset_id } =>
+                Call::transfer { sender: sender.into(), recipient, amount, asset_id },
             XCMAppCall::RegisterAsset {
                 asset_id,
                 sidechain_asset,
@@ -78,9 +75,8 @@ where
                 asset_kind,
                 minimal_xcm_amount,
             },
-            XCMAppCall::SetAssetMinAmount { asset_id, minimal_xcm_amount } => {
-                Call::set_asset_minimum_amount { asset_id, minimal_xcm_amount }
-            },
+            XCMAppCall::SetAssetMinAmount { asset_id, minimal_xcm_amount } =>
+                Call::set_asset_minimum_amount { asset_id, minimal_xcm_amount },
         }
     }
 }
@@ -102,10 +98,10 @@ pub struct TrappedMessage<AccountId> {
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
-    use bridge_types::types::CallOriginOutput;
     use bridge_types::{
         substrate::{ParachainAppCall, SubstrateBridgeMessageEncode},
         traits::OutboundChannel,
+        types::CallOriginOutput,
         SubNetworkId,
     };
     use frame_support::{dispatch::DispatchResultWithPostInfo, fail, pallet_prelude::*};
@@ -477,7 +473,7 @@ pub mod pallet {
                 xcm::v3::WeightLimit::Unlimited,
             ) {
                 Self::deposit_event(Event::<T>::TrasferringAssetError(e, asset_id));
-                return Err(e);
+                return Err(e)
             }
 
             Self::deposit_event(Event::<T>::AssetTransferred(sender, recipient, asset_id, amount));
@@ -542,8 +538,8 @@ pub mod pallet {
             multilocation: MultiLocation,
         ) -> DispatchResultWithPostInfo {
             ensure!(
-                AssetIdToMultilocation::<T>::get(asset_id).is_none()
-                    && MultilocationToAssetId::<T>::get(multilocation).is_none(),
+                AssetIdToMultilocation::<T>::get(asset_id).is_none() &&
+                    MultilocationToAssetId::<T>::get(multilocation).is_none(),
                 Error::<T>::MappingAlreadyExists
             );
             AssetIdToMultilocation::<T>::insert(asset_id, multilocation);

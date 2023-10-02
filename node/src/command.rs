@@ -26,7 +26,6 @@ const NETWORK_NAME: &'static str = "Polkadot";
 #[cfg(feature = "rococo")]
 const NETWORK_NAME: &'static str = "Rococo";
 
-
 fn set_default_ss58_version() {
     sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::custom(
         sora2_parachain_runtime::SS58Prefix::get(),
@@ -60,10 +59,13 @@ impl SubstrateCli for Cli {
     }
 
     fn description() -> String {
-        format!("SORA {} Parachain Node\n\nThe command-line arguments provided first will be \
+        format!(
+            "SORA {} Parachain Node\n\nThe command-line arguments provided first will be \
 		passed to the parachain node, while the arguments provided after -- will be passed \
 		to the relay chain node.\n\n\
-		parachain-collator <parachain-args> -- <relay-chain-args>", NETWORK_NAME)
+		parachain-collator <parachain-args> -- <relay-chain-args>",
+            NETWORK_NAME
+        )
     }
 
     fn author() -> String {
@@ -221,9 +223,8 @@ pub fn run() -> Result<()> {
             let runner = cli.create_runner(cmd)?;
             // Switch on the concrete benchmark sub-command-
             match cmd {
-                BenchmarkCmd::Pallet(cmd) => {
-                    runner.sync_run(|config| cmd.run::<Block, ParachainNativeExecutor>(config))
-                },
+                BenchmarkCmd::Pallet(cmd) =>
+                    runner.sync_run(|config| cmd.run::<Block, ParachainNativeExecutor>(config)),
                 BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
                     let partials = new_partial::<RuntimeApi, ParachainNativeExecutor, _>(
                         &config,

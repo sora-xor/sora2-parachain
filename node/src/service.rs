@@ -202,7 +202,7 @@ async fn build_relay_chain_interface(
             task_manager,
             collator_options.relay_chain_rpc_urls,
         )
-        .await;
+        .await
     }
     cumulus_relay_chain_inprocess_interface::build_inprocess_relay_chain(
         polkadot_config,
