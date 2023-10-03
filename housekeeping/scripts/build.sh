@@ -14,8 +14,8 @@ rm -rf ~/.cargo/registry/
 
 if [[ $buildTag != null ]] && [[ ${TAG_NAME} != null || ${TAG_NAME} != '' ]]; then
    if [[ ${TAG_NAME} =~ 'benchmarking'* ]]; then
-         buildcmd="cargo build --release --locked --bin parachain-collator --features" 
-         buildfeature="runtime-benchmarks,kusama"
+         buildcmd="cargo build --release --locked --features runtime-benchmarks,kusama --bin parachain-collator"
+         buildfeature=""
    elif [[ $buildTag = 'dev' ]] || [[ $buildTag = 'stage-'* ]] || [[ $buildTag = 'test-'* ]]; then
          buildfeature="rococo"
    elif [[ ${TAG_NAME} = 'kusama-'* ]]; then
