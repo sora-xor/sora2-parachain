@@ -987,7 +987,6 @@ construct_runtime!(
         SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
         LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
         BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
-        // MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
         MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call} = 109,
 
         TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 110,
