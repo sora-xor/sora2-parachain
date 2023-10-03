@@ -7,7 +7,7 @@ def pipeline = new org.rust.AppPipeline(steps: this,
       buildTestCmds: ['housekeeping/scripts/build.sh'],
       cargoClippyCmds: ['housekeeping/scripts/clippy.sh'],
       codeCoverage: false,
-      dockerImageTags: ['develop': 'dev', 'develop': 'latest', 'feature/dops-2765/update_build': 'latest'],
+      dockerImageTag: ['develop': 'dev', 'develop': 'latest', 'feature/dops-2765/update_build': 'latest'],
       buildArtifacts: 'sora2-parachain-runtime_rococo.compact.compressed.wasm, sora2-parachain-runtime_kusama.compact.compressed.wasm, sora2-parachain-runtime_polkadot.compact.compressed.wasm'
 )
 pipeline.runPipeline()
