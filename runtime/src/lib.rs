@@ -83,8 +83,10 @@ use frame_system::{
     EnsureRoot,
 };
 pub use sp_beefy::crypto::AuthorityId as BeefyId;
+#[cfg(feature = "rococo")]
 use sp_beefy::mmr::MmrLeafVersion;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+use sp_mmr_primitives as mmr;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 
@@ -431,6 +433,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 impl parachain_info::Config for Runtime {}
 
 /// Configure Merkle Mountain Range pallet.
+#[cfg(feature = "rococo")]
 impl pallet_mmr::Config for Runtime {
     const INDEXING_PREFIX: &'static [u8] = b"mmr";
     type Hashing = Keccak256;
@@ -443,9 +446,13 @@ impl pallet_mmr::Config for Runtime {
 impl pallet_beefy::Config for Runtime {
     type BeefyId = BeefyId;
     type MaxAuthorities = MaxAuthorities;
+    #[cfg(feature = "rococo")]
     type OnNewValidatorSet = BeefyMmr;
+    #[cfg(not(feature = "rococo"))]
+    type OnNewValidatorSet = ();
 }
 
+#[cfg(feature = "rococo")]
 parameter_types! {
     /// Version of the produced MMR leaf.
     ///
@@ -463,6 +470,7 @@ parameter_types! {
     pub LeafVersion: MmrLeafVersion = MmrLeafVersion::new(0, 0);
 }
 
+#[cfg(feature = "rococo")]
 impl pallet_beefy_mmr::Config for Runtime {
     type LeafVersion = LeafVersion;
     type BeefyAuthorityToMerkleLeaf = pallet_beefy_mmr::BeefyEcdsaToEthereum;
@@ -638,10 +646,11 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
         origin: Self::RuntimeOrigin,
     ) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {
         match self.0 {
-            bridge_types::substrate::BridgeCall::ParachainApp(_msg) => Err(sp_runtime::DispatchErrorWithPostInfo {
-                post_info: Default::default(),
-                error: sp_runtime::DispatchError::Other("Unavailable"),
-            }),
+            bridge_types::substrate::BridgeCall::ParachainApp(_msg) =>
+                Err(sp_runtime::DispatchErrorWithPostInfo {
+                    post_info: Default::default(),
+                    error: sp_runtime::DispatchError::Other("Unavailable"),
+                }),
             bridge_types::substrate::BridgeCall::XCMApp(msg) => {
                 let call: xcm_app::Call<crate::Runtime> = msg.into();
                 let call: crate::RuntimeCall = call.into();
@@ -881,7 +890,7 @@ pub struct Slash;
 impl frame_support::traits::OnUnbalanced<polkadot_runtime_common::NegativeImbalance<Runtime>>
     for Slash
 {
-	fn on_nonzero_unbalanced(_: polkadot_runtime_common::NegativeImbalance<Runtime>) {}
+    fn on_nonzero_unbalanced(_: polkadot_runtime_common::NegativeImbalance<Runtime>) {}
 }
 
 impl pallet_scheduler::Config for Runtime {
@@ -904,7 +913,7 @@ use scale_info::prelude::cmp::Ordering;
 impl frame_support::traits::PrivilegeCmp<OriginCaller> for OriginPrivilegeCmp {
     fn cmp_privilege(left: &OriginCaller, right: &OriginCaller) -> Option<Ordering> {
         if left == right {
-            return Some(Ordering::Equal);
+            return Some(Ordering::Equal)
         }
 
         match (left, right) {
@@ -952,9 +961,8 @@ construct_runtime!(
         } = 1,
         Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
         ParachainInfo: parachain_info::{Pallet, Storage, Config} = 3,
-        Mmr: pallet_mmr = 4,
-        Beefy: pallet_beefy = 5,
-        BeefyMmr: pallet_beefy_mmr = 6,
+        // Leaf provider should be placed before any pallet which is using it.
+        LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
 
         // Monetary stuff.
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
@@ -983,9 +991,15 @@ construct_runtime!(
         SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Storage, Event<T>, ValidateUnsigned} = 104,
         SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 105,
         SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
-        LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
         BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
         MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
+
+        // Beefy pallets should be placed after channels
+        #[cfg(feature = "rococo")]
+        Mmr: pallet_mmr = 4,
+        Beefy: pallet_beefy = 5,
+        #[cfg(feature = "rococo")]
+        BeefyMmr: pallet_beefy_mmr = 6,
 
         TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 110,
         Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 111,
@@ -1099,29 +1113,45 @@ impl_runtime_apis! {
 
     impl sp_beefy::BeefyApi<Block> for Runtime {
         fn validator_set() -> Option<sp_beefy::ValidatorSet<BeefyId>> {
+            #[cfg(not(feature = "rococo"))]
+            return None;
+
+            #[cfg(feature = "rococo")]
             Beefy::validator_set()
         }
     }
 
-    impl sp_mmr_primitives::MmrApi<Block, Hash, BlockNumber> for Runtime {
-        fn mmr_root() -> Result<Hash, sp_mmr_primitives::Error> {
+    impl mmr::MmrApi<Block, Hash, BlockNumber> for Runtime {
+        fn mmr_root() -> Result<Hash, mmr::Error> {
+            #[cfg(not(feature = "rococo"))]
+            return Err(mmr::Error::PalletNotIncluded);
+
+            #[cfg(feature = "rococo")]
             Ok(Mmr::mmr_root())
         }
 
-        fn mmr_leaf_count() -> Result<sp_mmr_primitives::LeafIndex, sp_mmr_primitives::Error> {
+        fn mmr_leaf_count() -> Result<mmr::LeafIndex, mmr::Error> {
+            #[cfg(not(feature = "rococo"))]
+            return Err(mmr::Error::PalletNotIncluded);
+
+            #[cfg(feature = "rococo")]
             Ok(Mmr::mmr_leaves())
         }
 
         fn generate_proof(
-            block_numbers: Vec<BlockNumber>,
-            best_known_block_number: Option<BlockNumber>,
-        ) -> Result<(Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, sp_mmr_primitives::Proof<Hash>), sp_mmr_primitives::Error> {
-            Mmr::generate_proof(block_numbers, best_known_block_number).map(
+            _block_numbers: Vec<BlockNumber>,
+            _best_known_block_number: Option<BlockNumber>,
+        ) -> Result<(Vec<mmr::EncodableOpaqueLeaf>, mmr::Proof<Hash>), mmr::Error> {
+            #[cfg(not(feature = "rococo"))]
+            return Err(mmr::Error::PalletNotIncluded);
+
+            #[cfg(feature = "rococo")]
+            Mmr::generate_proof(_block_numbers, _best_known_block_number).map(
                 |(leaves, proof)| {
                     (
                         leaves
                             .into_iter()
-                            .map(|leaf| sp_mmr_primitives::EncodableOpaqueLeaf::from_leaf(&leaf))
+                            .map(|leaf| mmr::EncodableOpaqueLeaf::from_leaf(&leaf))
                             .collect(),
                         proof,
                     )
@@ -1129,24 +1159,36 @@ impl_runtime_apis! {
             )
         }
 
-        fn verify_proof(leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>, proof: sp_mmr_primitives::Proof<Hash>)
-            -> Result<(), sp_mmr_primitives::Error>
+        fn verify_proof(_leaves: Vec<mmr::EncodableOpaqueLeaf>, _proof: mmr::Proof<Hash>)
+            -> Result<(), mmr::Error>
         {
-            pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as sp_mmr_primitives::LeafDataProvider>::LeafData;
-            let leaves = leaves.into_iter().map(|leaf|
-                leaf.into_opaque_leaf()
-                .try_decode()
-                .ok_or(sp_mmr_primitives::Error::Verify)).collect::<Result<Vec<MmrLeaf>, sp_mmr_primitives::Error>>()?;
-            Mmr::verify_leaves(leaves, proof)
+            #[cfg(not(feature = "rococo"))]
+            return Err(mmr::Error::PalletNotIncluded);
+
+            #[cfg(feature = "rococo")]
+            {
+                pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as mmr::LeafDataProvider>::LeafData;
+                let leaves = _leaves.into_iter().map(|leaf|
+                    leaf.into_opaque_leaf()
+                    .try_decode()
+                    .ok_or(mmr::Error::Verify)).collect::<Result<Vec<MmrLeaf>, mmr::Error>>()?;
+                Mmr::verify_leaves(leaves, _proof)
+            }
         }
 
         fn verify_proof_stateless(
-            root: Hash,
-            leaves: Vec<sp_mmr_primitives::EncodableOpaqueLeaf>,
-            proof: sp_mmr_primitives::Proof<Hash>
-        ) -> Result<(), sp_mmr_primitives::Error> {
-            let nodes = leaves.into_iter().map(|leaf|sp_mmr_primitives::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
-            pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(root, nodes, proof)
+            _root: Hash,
+            _leaves: Vec<mmr::EncodableOpaqueLeaf>,
+            _proof: mmr::Proof<Hash>
+        ) -> Result<(), mmr::Error> {
+            #[cfg(not(feature = "rococo"))]
+            return Err(mmr::Error::PalletNotIncluded);
+
+            #[cfg(feature = "rococo")]
+            {
+                let nodes = _leaves.into_iter().map(|leaf|mmr::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
+                pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(_root, nodes, _proof)
+            }
         }
     }
 
