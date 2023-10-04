@@ -784,6 +784,7 @@ impl multisig_verifier::Config for Runtime {
     type OutboundChannel = SubstrateBridgeOutboundChannel;
     type MaxPeers = BridgeMaxPeers;
     type WeightInfo = multisig_verifier::weights::SubstrateWeight<Runtime>;
+    type ThisNetworkId = ThisNetworkId;
 }
 
 parameter_types! {
@@ -992,7 +993,7 @@ construct_runtime!(
         SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 105,
         SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
         BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
-        MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call, Config} = 109,
+        MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call} = 109,
 
         // Beefy pallets should be placed after channels
         #[cfg(feature = "rococo")]
