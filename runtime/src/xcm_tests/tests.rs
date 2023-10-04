@@ -135,8 +135,8 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
     });
 
     SoraParachain::execute_with(|| {
-        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
-            == crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
+        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event ==
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
                 ParachainAppCall::Transfer {
                     asset_id: relay_native_asset_id(),
                     sender: None,
@@ -188,8 +188,8 @@ fn send_sibling_asset_to_sora_from_sibling() {
     });
 
     SoraParachain::execute_with(|| {
-        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
-            == crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
+        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event ==
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
                 ParachainAppCall::Transfer {
                     asset_id: para_x_asset_id(),
                     sender: None,
@@ -352,8 +352,8 @@ fn send_relay_chain_asset_to_sora_from_relay() {
     });
 
     SoraParachain::execute_with(|| {
-        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
-            == crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
+        assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event ==
+            crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
                 ParachainAppCall::Transfer {
                     asset_id: relay_native_asset_id(),
                     sender: None,

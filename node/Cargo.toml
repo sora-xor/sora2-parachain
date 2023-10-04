@@ -20,7 +20,7 @@ name = "parachain-collator"
 path = "src/main.rs"
 
 [dependencies]
-clap = { version = "4.0.9", features = ["derive"] }
+clap = { version = "=4.3.24", features = ["derive"] }
 derive_more = "0.99.2"
 log = "0.4.14"
 codec = { package = "parity-scale-codec", version = "3.1.5" }
@@ -32,7 +32,6 @@ jsonrpsee = { version = "0.16.2", features = ["server"] }
 beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
 beefy-light-client-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
 beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
-bridge-channel-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
 leaf-provider-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
 leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
 bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false }

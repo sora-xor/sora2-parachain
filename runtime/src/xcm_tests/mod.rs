@@ -37,11 +37,12 @@ use frame_support::{pallet_prelude::*, parameter_types};
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 use sp_io::TestExternalities;
-use sp_runtime::traits::{Convert, Zero};
-use sp_runtime::AccountId32;
+use sp_runtime::{
+    traits::{Convert, Zero},
+    AccountId32,
+};
 use xcm::{latest::Weight, prelude::*};
-use xcm_executor::traits::WeightTrader;
-use xcm_executor::Assets;
+use xcm_executor::{traits::WeightTrader, Assets};
 use xcm_simulator::{decl_test_network, decl_test_parachain, decl_test_relay_chain};
 
 pub const ALICE: AccountId32 = AccountId32::new([10u8; 32]);
@@ -213,13 +214,12 @@ impl Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
     fn convert(l: MultiLocation) -> Option<CurrencyId> {
         let x = para_x_general_key();
         if l == MultiLocation::parent() {
-            return Some(CurrencyId::R);
+            return Some(CurrencyId::R)
         }
         match l {
             MultiLocation { parents, interior } if parents == 1 => match interior {
-                X2(Parachain(1), GeneralKey { length: 32, data: k }) if k == x => {
-                    Some(CurrencyId::X)
-                },
+                X2(Parachain(1), GeneralKey { length: 32, data: k }) if k == x =>
+                    Some(CurrencyId::X),
                 _ => None,
             },
             MultiLocation { parents, interior } if parents == 0 => match interior {

@@ -33,11 +33,9 @@ pub struct BeefyDeps {
 }
 
 /// Full client dependencies
-pub struct FullDeps<C, P, B> {
+pub struct FullDeps<C, P> {
     /// The client instance to use.
     pub client: Arc<C>,
-    /// The backend instance to use.
-    pub backend: Arc<B>,
     /// Transaction pool instance.
     pub pool: Arc<P>,
     /// Whether to deny unsafe calls
@@ -47,8 +45,8 @@ pub struct FullDeps<C, P, B> {
 }
 
 /// Instantiate all RPC extensions.
-pub fn create_full<C, P, B>(
-    deps: FullDeps<C, P, B>,
+pub fn create_full<C, P>(
+    deps: FullDeps<C, P>,
 ) -> Result<RpcExtension, Box<dyn std::error::Error + Send + Sync>>
 where
     C: ProvideRuntimeApi<Block>
@@ -66,18 +64,15 @@ where
     C::Api: sp_beefy::BeefyApi<Block>,
     C::Api: BlockBuilder<Block>,
     P: TransactionPool + Sync + Send + 'static,
-    B: sc_client_api::Backend<Block> + Send + Sync + 'static,
-    B::State: sc_client_api::StateBackend<sp_runtime::traits::HashFor<Block>>,
 {
     use beefy_gadget_rpc::{Beefy, BeefyApiServer};
-    use bridge_channel_rpc::{BridgeChannelAPIServer, BridgeChannelClient};
     use leaf_provider_rpc::{LeafProviderAPIServer, LeafProviderClient};
     use mmr_rpc::{Mmr, MmrApiServer};
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
     use substrate_frame_rpc_system::{System, SystemApiServer};
 
     let mut module = RpcExtension::new(());
-    let FullDeps { client, pool, deny_unsafe, beefy, backend } = deps;
+    let FullDeps { client, pool, deny_unsafe, beefy } = deps;
 
     // Default RPC:
     module.merge(System::new(client.clone(), pool, deny_unsafe).into_rpc())?;
@@ -93,15 +88,6 @@ where
         )?
         .into_rpc(),
     )?;
-    if let Some(storage) = backend.offchain_storage() {
-        module.merge(<BridgeChannelClient<_, _> as BridgeChannelAPIServer<
-            bridge_types::types::BridgeOffchainData<
-                sora2_parachain_runtime::BlockNumber,
-                sora2_parachain_runtime::BridgeMaxMessagesPerCommit,
-                sora2_parachain_runtime::BridgeMaxMessagePayloadSize,
-            >,
-        >>::into_rpc(BridgeChannelClient::new(storage)))?;
-    }
 
     module.merge(LeafProviderClient::new(client.clone()).into_rpc())?;
     module.merge(BeefyLightClientClient::new(client).into_rpc())?;

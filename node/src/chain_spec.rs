@@ -5,8 +5,8 @@ use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sora2_parachain_runtime::{
-    AccountId, AuraId, BeefyId, BeefyLightClientConfig, CouncilConfig, DemocracyConfig,
-    MultisigVerifierConfig, Signature, TechnicalCommitteeConfig, EXISTENTIAL_DEPOSIT,
+    AccountId, AuraId, BeefyId, BeefyLightClientConfig, CouncilConfig, DemocracyConfig, Signature,
+    TechnicalCommitteeConfig, EXISTENTIAL_DEPOSIT,
 };
 use sp_core::{sr25519, ByteArray, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
@@ -539,9 +539,6 @@ fn testnet_genesis(
 ) -> sora2_parachain_runtime::GenesisConfig {
     sora2_parachain_runtime::GenesisConfig {
         beefy_light_client: BeefyLightClientConfig { network_id: bridge_network_id },
-        multisig_verifier: MultisigVerifierConfig {
-            network_id: bridge_types::GenericNetworkId::Sub(bridge_network_id),
-        },
         substrate_bridge_outbound_channel: Default::default(),
         system: sora2_parachain_runtime::SystemConfig {
             code: sora2_parachain_runtime::WASM_BINARY
