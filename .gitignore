@@ -16,3 +16,6 @@
 .DS_Store
 .idea
 run
+
+# Generated metadata.scale
+parachain-gen/bytes/metadata.scale
