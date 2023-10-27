@@ -2,6 +2,7 @@
 name = "parachain-gen"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
 
 [build-dependencies]
 sora2-parachain-runtime = { path = "../runtime", features = [
