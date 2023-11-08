@@ -37,14 +37,14 @@ use parachain_common::primitives::AssetId;
 use sp_core::H256;
 use sp_runtime::{
     testing::Header,
-    traits::{BlakeTwo256, IdentityLookup},
+    traits::{BlakeTwo256, Identity, IdentityLookup},
 };
 use xcm::latest::prelude::*;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
-type AccountId = u128;
+type AccountId = sp_runtime::AccountId32;
 type Balance = u128;
 
 // Configure a mock runtime to test the pallet.
@@ -55,6 +55,7 @@ frame_support::construct_runtime!(
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
         System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+        Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>},
     }
 );
@@ -82,13 +83,34 @@ impl system::Config for Test {
     type BlockHashCount = BlockHashCount;
     type Version = ();
     type PalletInfo = PalletInfo;
-    type AccountData = ();
+    type AccountData = pallet_balances::AccountData<Balance>;
     type OnNewAccount = ();
     type OnKilledAccount = ();
     type SystemWeightInfo = ();
     type SS58Prefix = SS58Prefix;
     type OnSetCode = ();
     type MaxConsumers = frame_support::traits::ConstU32<16>;
+}
+
+parameter_types! {
+    pub const ExistentialDeposit: u128 = 0;
+}
+
+impl pallet_balances::Config for Test {
+    type Balance = Balance;
+    type RuntimeEvent = RuntimeEvent;
+    type DustRemoval = ();
+    type ExistentialDeposit = ExistentialDeposit;
+    type AccountStore = System;
+    type WeightInfo = ();
+    type MaxLocks = ();
+    type MaxReserves = ();
+    type ReserveIdentifier = ();
+}
+
+parameter_types! {
+    pub SelfLocation: MultiLocation = MultiLocation::parent().pushed_with_interior(Junction::Parachain(2011)).unwrap();
+    pub XorAssetId: AssetId = AssetId::repeat_byte(2);
 }
 
 impl xcm_app::Config for Test {
@@ -99,17 +121,12 @@ impl xcm_app::Config for Test {
     type AccountIdToMultiLocation = TestAccountIdToMultiLocation;
     type XcmTransfer = TestXcmTransfer;
     type CallOrigin = TestCallOrigin;
-    type AccountIdConverter = TestAccountIdConverter;
-    type BalanceConverter = ();
+    type AccountIdConverter = Identity;
+    type BalanceConverter = Identity;
     type XcmSender = ();
-}
-
-pub struct TestAccountIdConverter;
-impl sp_runtime::traits::Convert<AccountId, sp_runtime::AccountId32> for TestAccountIdConverter {
-    fn convert(a: AccountId) -> sp_runtime::AccountId32 {
-        let b: [u8; 32] = [a.to_be_bytes(), a.to_be_bytes()].concat().try_into().unwrap();
-        b.into()
-    }
+    type SelfLocation = SelfLocation;
+    type Currency = Balances;
+    type XorAssetId = XorAssetId;
 }
 
 // Build genesis storage according to the mock runtime.
@@ -141,12 +158,7 @@ impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
 pub struct TestAccountIdToMultiLocation;
 impl sp_runtime::traits::Convert<AccountId, MultiLocation> for TestAccountIdToMultiLocation {
     fn convert(account: AccountId) -> MultiLocation {
-        let arr: [u8; 16] = account.to_be_bytes();
-        let arrarr: [u8; 32] = [arr, arr]
-            .concat()
-            .try_into()
-            .expect("Failed to convert account if to xcm multilocaton");
-        X1(AccountId32 { network: Some(xcm::v3::NetworkId::Rococo), id: arrarr.into() }).into()
+        X1(AccountId32 { network: Some(xcm::v3::NetworkId::Rococo), id: account.into() }).into()
     }
 }
 

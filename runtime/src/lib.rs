@@ -572,6 +572,10 @@ impl pallet_collator_selection::Config for Runtime {
     type WeightInfo = ();
 }
 
+parameter_types! {
+    pub XorAssetId: H256 = H256(hex_literal::hex!("0200000000000000000000000000000000000000000000000000000000000000"));
+}
+
 impl xcm_app::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type WeightInfo = xcm_app::weights::SubstrateWeight<Runtime>;
@@ -584,6 +588,9 @@ impl xcm_app::Config for Runtime {
     type AccountIdConverter = sp_runtime::traits::Identity;
     type BalanceConverter = sp_runtime::traits::Identity;
     type XcmSender = XCMSenderWrapper;
+    type Currency = Balances;
+    type SelfLocation = xcm_config::SelfLocation;
+    type XorAssetId = XorAssetId;
 }
 
 pub struct XCMSenderWrapper;
