@@ -29,52 +29,48 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::*;
-use frame_support::{traits::OnRuntimeUpgrade, weights::Weight};
-use sp_core::ecdsa;
-use sp_runtime::impl_opaque_keys;
-use sp_std::vec::Vec;
+use frame_support::{
+    traits::{Currency, ExistenceRequirement, LockableCurrency, OnRuntimeUpgrade, WithdrawReasons},
+    weights::Weight,
+};
+use sp_std::collections::btree_set::BTreeSet;
 
-use crate::{AccountId, Aura, BeefyId, RuntimeBlockWeights, Session};
+pub type Migrations = (RemoveMintedAccountsBalance,);
 
-pub type Migrations = (
-    pallet_xcm::migration::v1::MigrateToV1<Runtime>,
-    pallet_balances::migration::MigrateManyToTrackInactive<Runtime, EmptyAccountList>,
-);
+pub struct RemoveMintedAccountsBalance;
 
-impl_opaque_keys! {
-    pub struct SessionKeysOld {
-        pub aura: Aura,
-    }
-}
-
-/// Generates a `BeefyId` from the given `AccountId`. The resulting `BeefyId` is
-/// a dummy value and this is a utility function meant to be used when migration
-/// session keys.
-pub fn dummy_beefy_id_from_account_id(a: AccountId) -> BeefyId {
-    let mut id_raw = [0u8; 33];
-
-    // NOTE: AccountId is 32 bytes, whereas BeefyId is 33 bytes.
-    id_raw[1..].copy_from_slice(a.as_ref());
-    id_raw[0..4].copy_from_slice(b"beef");
-
-    ecdsa::Public(id_raw).into()
-}
-
-pub struct SessionKeysMigration;
-
-impl OnRuntimeUpgrade for SessionKeysMigration {
+impl OnRuntimeUpgrade for RemoveMintedAccountsBalance {
     fn on_runtime_upgrade() -> Weight {
-        Session::upgrade_keys::<SessionKeysOld, _>(|id, keys| crate::SessionKeys {
-            aura: keys.aura,
-            beefy: dummy_beefy_id_from_account_id(id),
-        });
+        let mut accounts_to_skip =
+            pallet_collator_selection::Invulnerables::<Runtime>::get().to_vec();
+        if let Some(sudo_key) = Sudo::key() {
+            // Fees was updated, so we need to update sudo account balance
+            // to be able to resolve possible issues after runtime upgrade.
+            let _ = Balances::deposit_creating(&sudo_key, UNIT * 1000);
+            accounts_to_skip.push(sudo_key);
+        }
+        let accounts_to_skip = BTreeSet::from_iter(accounts_to_skip.into_iter());
+        for (account, info) in frame_system::Account::<Runtime>::iter() {
+            if accounts_to_skip.contains(&account) {
+                continue
+            }
+            let locks = Balances::locks(&account);
+            for lock in locks {
+                Balances::remove_lock(lock.id, &account);
+            }
+            if let Err(err) = Balances::withdraw(
+                &account,
+                info.data.free,
+                WithdrawReasons::all(),
+                ExistenceRequirement::AllowDeath,
+            ) {
+                frame_support::log::error!(
+                    "Failed to withdraw funds from account {:?}: {:?}",
+                    account,
+                    err
+                );
+            }
+        }
         RuntimeBlockWeights::get().max_block
-    }
-}
-pub struct EmptyAccountList;
-
-impl sp_core::Get<Vec<AccountId>> for EmptyAccountList {
-    fn get() -> Vec<AccountId> {
-        Default::default()
     }
 }
