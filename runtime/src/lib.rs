@@ -302,6 +302,20 @@ parameter_types! {
         })
         .avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
         .build_or_panic();
+}
+
+#[cfg(feature = "rococo")]
+parameter_types! {
+    pub const SS58Prefix: u16 = 420;
+}
+
+#[cfg(feature = "polkadot")]
+parameter_types! {
+    pub const SS58Prefix: u16 = 81;
+}
+
+#[cfg(feature = "kusama")]
+parameter_types! {
     pub const SS58Prefix: u16 = 420;
 }
 
