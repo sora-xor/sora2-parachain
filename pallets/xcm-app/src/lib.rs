@@ -407,6 +407,7 @@ pub mod pallet {
         #[pallet::weight(<T as Config>::WeightInfo::sudo_send_xcm())]
         pub fn send_xor_to_mainnet(
             origin: OriginFor<T>,
+            recipient: T::AccountId,
             amount: u128,
         ) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
@@ -416,7 +417,7 @@ pub mod pallet {
                 WithdrawReasons::TRANSFER,
                 ExistenceRequirement::AllowDeath,
             )?;
-            Self::add_to_channel(who, T::XorAssetId::get(), amount)?;
+            Self::add_to_channel(recipient, T::XorAssetId::get(), amount)?;
             Ok(().into())
         }
     }
