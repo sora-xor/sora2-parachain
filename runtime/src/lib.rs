@@ -39,7 +39,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 mod xcm_tests;
 
 mod impls;
-mod migrations;
+pub mod migrations;
 mod trader;
 mod weights;
 pub mod xcm_config;
@@ -246,9 +246,9 @@ pub const HOURS: BlockNumber = MINUTES * 60;
 pub const DAYS: BlockNumber = HOURS * 24;
 
 // Unit = the base number of indivisible units for balances
-pub const UNIT: Balance = 1_000_000_000_000;
-pub const MILLIUNIT: Balance = 1_000_000_000;
-pub const MICROUNIT: Balance = 1_000_000;
+pub const UNIT: Balance = 1_000_000_000_000_000_000;
+pub const MILLIUNIT: Balance = UNIT / 1000;
+pub const MICROUNIT: Balance = MILLIUNIT / 1000;
 
 /// The existential deposit. Set to 1/10 of the Connected Relay Chain.
 pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
@@ -302,6 +302,20 @@ parameter_types! {
         })
         .avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
         .build_or_panic();
+}
+
+#[cfg(feature = "rococo")]
+parameter_types! {
+    pub const SS58Prefix: u16 = 420;
+}
+
+#[cfg(feature = "polkadot")]
+parameter_types! {
+    pub const SS58Prefix: u16 = 81;
+}
+
+#[cfg(feature = "kusama")]
+parameter_types! {
     pub const SS58Prefix: u16 = 420;
 }
 
@@ -847,6 +861,41 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
     type WeightInfo = CollectiveWeightInfo<Self>;
 }
 
+parameter_types! {
+    pub const ElectionsCandidacyBond: Balance = UNIT;
+    // 1 storage item created, key size is 32 bytes, value size is 16+16.
+    pub const ElectionsVotingBondBase: Balance = MICROUNIT;
+    // additional data per vote is 32 bytes (account id).
+    pub const ElectionsVotingBondFactor: Balance = MICROUNIT;
+    pub const ElectionsTermDuration: BlockNumber = 7 * DAYS;
+    /// 13 members initially, to be increased to 23 eventually.
+    pub const ElectionsDesiredMembers: u32 = 13;
+    pub const ElectionsDesiredRunnersUp: u32 = 20;
+    pub const ElectionsMaxVoters: u32 = 10000;
+    pub const ElectionsMaxCandidates: u32 = 1000;
+    pub const ElectionsModuleId: frame_support::traits::LockIdentifier = *b"phrelect";
+}
+
+impl pallet_elections_phragmen::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type PalletId = ElectionsModuleId;
+    type Currency = Balances;
+    type ChangeMembers = Council;
+    type InitializeMembers = Council;
+    type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
+    type CandidacyBond = ElectionsCandidacyBond;
+    type VotingBondBase = ElectionsVotingBondBase;
+    type VotingBondFactor = ElectionsVotingBondFactor;
+    type LoserCandidate = ();
+    type KickedMember = ();
+    type DesiredMembers = ElectionsDesiredMembers;
+    type DesiredRunnersUp = ElectionsDesiredRunnersUp;
+    type TermDuration = ElectionsTermDuration;
+    type MaxVoters = ElectionsMaxVoters;
+    type MaxCandidates = ElectionsMaxCandidates;
+    type WeightInfo = ();
+}
+
 impl pallet_democracy::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
@@ -1014,7 +1063,7 @@ construct_runtime!(
         Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 112,
         Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 113,
         Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 114,
-
+        ElectionsPhragmen: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>} = 115,
 
         #[cfg(feature = "rococo")]
         XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
