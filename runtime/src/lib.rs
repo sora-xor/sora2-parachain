@@ -221,10 +221,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("sora_ksm"),
     impl_name: create_runtime_str!("sora_ksm"),
     authoring_version: 1,
-    spec_version: 7,
+    spec_version: 8,
     impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
-    transaction_version: 7,
+    transaction_version: 8,
     state_version: 1,
 };
 
@@ -586,6 +586,10 @@ impl pallet_collator_selection::Config for Runtime {
     type WeightInfo = ();
 }
 
+parameter_types! {
+    pub XorAssetId: H256 = H256(hex_literal::hex!("0200000000000000000000000000000000000000000000000000000000000000"));
+}
+
 impl xcm_app::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type WeightInfo = xcm_app::weights::SubstrateWeight<Runtime>;
@@ -598,6 +602,9 @@ impl xcm_app::Config for Runtime {
     type AccountIdConverter = sp_runtime::traits::Identity;
     type BalanceConverter = sp_runtime::traits::Identity;
     type XcmSender = XCMSenderWrapper;
+    type Currency = Balances;
+    type SelfLocation = xcm_config::SelfLocation;
+    type XorAssetId = XorAssetId;
 }
 
 pub struct XCMSenderWrapper;
