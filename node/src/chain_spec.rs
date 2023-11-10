@@ -538,6 +538,7 @@ fn testnet_genesis(
     council_accounts: Vec<AccountId>,
 ) -> sora2_parachain_runtime::GenesisConfig {
     sora2_parachain_runtime::GenesisConfig {
+        elections_phragmen: Default::default(),
         beefy_light_client: BeefyLightClientConfig { network_id: bridge_network_id },
         substrate_bridge_outbound_channel: Default::default(),
         system: sora2_parachain_runtime::SystemConfig {

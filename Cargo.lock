@@ -10975,6 +10975,7 @@ dependencies = [
  "pallet-collator-selection",
  "pallet-collective",
  "pallet-democracy",
+ "pallet-elections-phragmen",
  "pallet-mmr",
  "pallet-preimage",
  "pallet-randomness-collective-flip",
