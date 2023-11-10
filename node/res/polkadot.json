@@ -8,7 +8,7 @@
   "telemetryEndpoints": null,
   "protocolId": "sora_polkadot",
   "properties": {
-    "ss58Format": 420,
+    "ss58Format": 81,
     "tokenDecimals": 18,
     "tokenSymbol": "XOR"
   },
