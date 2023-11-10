@@ -269,3 +269,11 @@ impl Default for RuntimeOrigin {
         RuntimeOrigin::root()
     }
 }
+
+pub fn alice() -> AccountId {
+    AccountId::new([1; 32])
+}
+
+pub fn bob() -> AccountId {
+    AccountId::new([2; 32])
+}
