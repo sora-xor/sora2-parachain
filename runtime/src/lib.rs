@@ -478,6 +478,7 @@ impl pallet_beefy_mmr::Config for Runtime {
     type BeefyDataProvider = LeafProvider;
 }
 
+#[cfg(feature = "rococo")]
 impl pallet_sudo::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
@@ -985,6 +986,7 @@ construct_runtime!(
         // ORML
         XTokens: orml_xtokens::{Pallet, Storage, Event<T>} = 41,
 
+        #[cfg(feature = "rococo")]
         Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
         XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,

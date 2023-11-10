@@ -575,6 +575,7 @@ fn testnet_genesis(
         polkadot_xcm: sora2_parachain_runtime::PolkadotXcmConfig {
             safe_xcm_version: Some(SAFE_XCM_VERSION),
         },
+        #[cfg(feature = "rococo")]
         sudo: sora2_parachain_runtime::SudoConfig { key: Some(root_key) },
         technical_committee: TechnicalCommitteeConfig {
             members: technical_committee_accounts,
