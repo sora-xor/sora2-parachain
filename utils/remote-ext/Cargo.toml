@@ -35,5 +35,9 @@ frame-election-provider-support = { git = "https://github.com/paritytech/substra
 
 sora2-parachain-runtime = { path = "../../runtime", default-features = false, features = [
     "std",
-    "kusama",
 ] }
+
+[features]
+rococo = ["sora2-parachain-runtime/rococo"]
+kusama = ["sora2-parachain-runtime/kusama"]
+polkadot = ["sora2-parachain-runtime/polkadot"]

@@ -20,11 +20,11 @@ use crate::{
 };
 
 #[cfg(feature = "kusama")]
-const NETWORK_NAME: &'static str = "Kusama";
+const NETWORK_NAME: &str = "Kusama";
 #[cfg(feature = "polkadot")]
-const NETWORK_NAME: &'static str = "Polkadot";
+const NETWORK_NAME: &str = "Polkadot";
 #[cfg(feature = "rococo")]
-const NETWORK_NAME: &'static str = "Rococo";
+const NETWORK_NAME: &str = "Rococo";
 
 fn set_default_ss58_version() {
     sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::custom(
