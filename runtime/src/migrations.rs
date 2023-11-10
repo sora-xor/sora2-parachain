@@ -60,9 +60,9 @@ impl OnRuntimeUpgrade for RemoveMintedAccountsBalance {
             }
             if let Err(err) = Balances::withdraw(
                 &account,
-                info.data.free,
+                info.data.free - EXISTENTIAL_DEPOSIT,
                 WithdrawReasons::all(),
-                ExistenceRequirement::AllowDeath,
+                ExistenceRequirement::KeepAlive,
             ) {
                 frame_support::log::error!(
                     "Failed to withdraw funds from account {:?}: {:?}",

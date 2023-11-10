@@ -39,7 +39,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 mod xcm_tests;
 
 mod impls;
-mod migrations;
+pub mod migrations;
 mod trader;
 mod weights;
 pub mod xcm_config;
