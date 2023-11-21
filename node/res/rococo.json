@@ -6,9 +6,9 @@
   "telemetryEndpoints": null,
   "protocolId": "sora_rococo",
   "properties": {
-    "ss58Format": 42,
-    "tokenDecimals": 12,
-    "tokenSymbol": "RXOR"
+    "ss58Format": 420,
+    "tokenDecimals": 18,
+    "tokenSymbol": "XOR"
   },
   "relay_chain": "rococo",
   "para_id": 2011,

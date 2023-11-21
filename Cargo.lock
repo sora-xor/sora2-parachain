@@ -8882,6 +8882,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dbb5fb1acd8a1a18b3dd5be62d25485eb770e05afb408a9627d14d451bae12da"
 
 [[package]]
+name = "remote-ext"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "env_logger 0.9.3",
+ "frame-election-provider-support",
+ "frame-remote-externalities",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "jsonrpsee",
+ "log",
+ "parity-scale-codec",
+ "serde",
+ "serde_json",
+ "sora2-parachain-runtime",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-version",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "resolv-conf"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -10829,7 +10855,7 @@ dependencies = [
 
 [[package]]
 name = "sora2-parachain-node"
-version = "0.1.0"
+version = "2.1.0"
 dependencies = [
  "beefy-gadget",
  "beefy-gadget-rpc",
@@ -10908,7 +10934,7 @@ dependencies = [
 
 [[package]]
 name = "sora2-parachain-runtime"
-version = "0.1.0"
+version = "2.1.0"
 dependencies = [
  "beefy-light-client",
  "beefy-light-client-runtime-api",
@@ -10949,6 +10975,7 @@ dependencies = [
  "pallet-collator-selection",
  "pallet-collective",
  "pallet-democracy",
+ "pallet-elections-phragmen",
  "pallet-mmr",
  "pallet-preimage",
  "pallet-randomness-collective-flip",
@@ -13896,6 +13923,7 @@ dependencies = [
  "frame-system",
  "log",
  "orml-traits",
+ "pallet-balances",
  "parachain-common",
  "parity-scale-codec",
  "scale-info",

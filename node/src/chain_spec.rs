@@ -251,9 +251,9 @@ pub fn coded_config(relay_chain: RelayChain, para_id: u32) -> ChainSpec {
 pub fn development_config() -> ChainSpec {
     // Give your base currency a unit name and decimal places
     let mut properties = sc_chain_spec::Properties::new();
-    properties.insert("tokenSymbol".into(), "UNIT".into());
-    properties.insert("tokenDecimals".into(), 12.into());
-    properties.insert("ss58Format".into(), 42.into());
+    properties.insert("tokenSymbol".into(), "XOR".into());
+    properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), sora2_parachain_runtime::SS58Prefix::get().into());
 
     ChainSpec::from_genesis(
         // Name
@@ -315,9 +315,9 @@ pub fn development_config() -> ChainSpec {
 pub fn local_testnet_config() -> ChainSpec {
     // Give your base currency a unit name and decimal places
     let mut properties = sc_chain_spec::Properties::new();
-    properties.insert("tokenSymbol".into(), "UNIT".into());
-    properties.insert("tokenDecimals".into(), 12.into());
-    properties.insert("ss58Format".into(), 42.into());
+    properties.insert("tokenSymbol".into(), "XOR".into());
+    properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), sora2_parachain_runtime::SS58Prefix::get().into());
 
     ChainSpec::from_genesis(
         // Name
@@ -398,9 +398,9 @@ pub fn local_testnet_config() -> ChainSpec {
 pub fn docker_local_testnet_config() -> ChainSpec {
     // Give your base currency a unit name and decimal places
     let mut properties = sc_chain_spec::Properties::new();
-    properties.insert("tokenSymbol".into(), "UNIT".into());
-    properties.insert("tokenDecimals".into(), 12.into());
-    properties.insert("ss58Format".into(), 42.into());
+    properties.insert("tokenSymbol".into(), "XOR".into());
+    properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), sora2_parachain_runtime::SS58Prefix::get().into());
 
     ChainSpec::from_genesis(
         // Name
@@ -457,9 +457,9 @@ pub fn docker_local_testnet_config() -> ChainSpec {
 pub fn bridge_dev_config() -> ChainSpec {
     // Give your base currency a unit name and decimal places
     let mut properties = sc_chain_spec::Properties::new();
-    properties.insert("tokenSymbol".into(), "UNIT".into());
-    properties.insert("tokenDecimals".into(), 12.into());
-    properties.insert("ss58Format".into(), 42.into());
+    properties.insert("tokenSymbol".into(), "XOR".into());
+    properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), sora2_parachain_runtime::SS58Prefix::get().into());
 
     ChainSpec::from_genesis(
         // Name
@@ -538,6 +538,7 @@ fn testnet_genesis(
     council_accounts: Vec<AccountId>,
 ) -> sora2_parachain_runtime::GenesisConfig {
     sora2_parachain_runtime::GenesisConfig {
+        elections_phragmen: Default::default(),
         beefy_light_client: BeefyLightClientConfig { network_id: bridge_network_id },
         substrate_bridge_outbound_channel: Default::default(),
         system: sora2_parachain_runtime::SystemConfig {

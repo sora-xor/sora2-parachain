@@ -7,7 +7,11 @@
   ],
   "telemetryEndpoints": null,
   "protocolId": "sora_ksm",
-  "properties": null,
+  "properties": {
+    "ss58Format": 420,
+    "tokenDecimals": 18,
+    "tokenSymbol": "XOR"
+  },
   "relay_chain": "kusama",
   "para_id": 2011,
   "consensusEngine": null,
