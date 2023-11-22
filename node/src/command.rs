@@ -19,6 +19,13 @@ use crate::{
     service::{new_partial, ParachainNativeExecutor},
 };
 
+#[cfg(feature = "kusama")]
+const NETWORK_NAME: &str = "Kusama";
+#[cfg(feature = "polkadot")]
+const NETWORK_NAME: &str = "Polkadot";
+#[cfg(feature = "rococo")]
+const NETWORK_NAME: &str = "Rococo";
+
 fn set_default_ss58_version() {
     sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::custom(
         sora2_parachain_runtime::SS58Prefix::get(),
@@ -44,7 +51,7 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 
 impl SubstrateCli for Cli {
     fn impl_name() -> String {
-        "SORA Kusama Parachain Node".into()
+        format!("SORA {} Parachain Node", NETWORK_NAME)
     }
 
     fn impl_version() -> String {
@@ -52,11 +59,13 @@ impl SubstrateCli for Cli {
     }
 
     fn description() -> String {
-        "SORA Kusama Parachain Node\n\nThe command-line arguments provided first will be \
+        format!(
+            "SORA {} Parachain Node\n\nThe command-line arguments provided first will be \
 		passed to the parachain node, while the arguments provided after -- will be passed \
 		to the relay chain node.\n\n\
-		parachain-collator <parachain-args> -- <relay-chain-args>"
-            .into()
+		parachain-collator <parachain-args> -- <relay-chain-args>",
+            NETWORK_NAME
+        )
     }
 
     fn author() -> String {
@@ -214,9 +223,8 @@ pub fn run() -> Result<()> {
             let runner = cli.create_runner(cmd)?;
             // Switch on the concrete benchmark sub-command-
             match cmd {
-                BenchmarkCmd::Pallet(cmd) => {
-                    runner.sync_run(|config| cmd.run::<Block, ParachainNativeExecutor>(config))
-                },
+                BenchmarkCmd::Pallet(cmd) =>
+                    runner.sync_run(|config| cmd.run::<Block, ParachainNativeExecutor>(config)),
                 BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
                     let partials = new_partial::<RuntimeApi, ParachainNativeExecutor, _>(
                         &config,
@@ -303,13 +311,15 @@ pub fn run() -> Result<()> {
                 info!("Parachain genesis state: {}", genesis_state);
                 info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
+                let enable_beefy = if cfg!(feature = "rococo") { cli.enable_beefy } else { false };
+
                 crate::service::start_parachain_node(
                     config,
                     polkadot_config,
                     collator_options,
                     id,
                     hwbench,
-                    cli.enable_beefy,
+                    enable_beefy,
                 )
                 .await
                 .map(|r| r.0)

@@ -29,13 +29,13 @@ sp-runtime = { git = "https://github.com/paritytech/substrate.git", default-feat
 # Polkadot
 xcm = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" }
 xcm-executor = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" } # needed to compile pallet as standalone crate 
-xcm-builder = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" } # needed to compile pallet as standalone crate 
+xcm-builder = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" }  # needed to compile pallet as standalone crate 
 
 # Local
 parachain-common = { path = "../../parachain-common", default-features = false }
 
 # Sora
-bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false } 
+bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false }
 
 # ORML
 orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.38" }
@@ -47,12 +47,13 @@ serde = { version = "1.0.132" }
 sp-core = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
 sp-io = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
 sp-runtime = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
+pallet-balances = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
 
 [features]
 default = ["std"]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
-	"xcm-builder/runtime-benchmarks"
+	"xcm-builder/runtime-benchmarks",
 ]
 std = [
 	"bridge-types/std",
@@ -64,5 +65,6 @@ std = [
 	"xcm/std",
 	"xcm-executor/std",
 	"xcm-builder/std",
+	"pallet-balances/std",
 ]
 try-runtime = ["frame-support/try-runtime"]

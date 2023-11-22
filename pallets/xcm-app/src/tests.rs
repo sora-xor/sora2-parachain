@@ -30,7 +30,7 @@
 
 use crate::{mock::*, Error};
 use bridge_types::{types::AssetKind, H256};
-use frame_support::{assert_noop, assert_ok};
+use frame_support::{assert_err, assert_noop, assert_ok, traits::Currency};
 use xcm::{
     opaque::latest::{
         Junction::{GeneralKey, Parachain},
@@ -254,5 +254,100 @@ fn it_works_register_asset() {
                 .expect("it_works_register_asset, Create: asset id is None"),
             asset_id
         );
+    });
+}
+
+#[test]
+fn it_fails_send_xor_insufficient_balance() {
+    new_test_ext().execute_with(|| {
+        let _ = Balances::deposit_creating(&bob(), 10000000);
+        assert_err!(
+            XCMApp::send_xor_to_mainnet(RuntimeOrigin::signed(alice()), bob(), 1000000),
+            pallet_balances::Error::<Test>::InsufficientBalance
+        );
+        assert_eq!(Balances::total_balance(&bob()), 10000000);
+    });
+}
+
+#[test]
+fn it_works_send_xor() {
+    new_test_ext().execute_with(|| {
+        let _ = Balances::deposit_creating(&bob(), 10000000);
+        let _ = Balances::deposit_creating(&alice(), 10000000);
+        assert_ok!(XCMApp::send_xor_to_mainnet(RuntimeOrigin::signed(alice()), bob(), 1000000),);
+        assert_eq!(Balances::total_balance(&bob()), 10000000);
+        assert_eq!(Balances::total_balance(&alice()), 9000000);
+    });
+}
+
+#[test]
+fn it_fails_receive_xor() {
+    new_test_ext().execute_with(|| {
+        let asset_id = [1; 32].into();
+        assert_eq!(Balances::total_balance(&bob()), 0);
+        assert_err!(
+            XCMApp::xcm_transfer_asset(
+                asset_id,
+                alice(),
+                xcm::VersionedMultiLocation::V3(
+                    xcm::v3::MultiLocation::parent()
+                        .pushed_with_interior(xcm::v3::Junction::Parachain(2011))
+                        .unwrap()
+                        .pushed_with_interior(xcm::v3::Junction::AccountId32 {
+                            network: None,
+                            id: bob().into()
+                        })
+                        .unwrap()
+                ),
+                1000000
+            ),
+            crate::Error::<Test>::InvalidAssetId
+        );
+        assert_eq!(Balances::total_balance(&bob()), 0);
+        assert_err!(
+            XCMApp::xcm_transfer_asset(
+                asset_id,
+                alice(),
+                xcm::VersionedMultiLocation::V2(
+                    xcm::v2::MultiLocation::parent()
+                        .pushed_with_interior(xcm::v2::Junction::Parachain(2011))
+                        .unwrap()
+                        .pushed_with_interior(xcm::v2::Junction::AccountId32 {
+                            network: xcm::v2::NetworkId::Any,
+                            id: bob().into()
+                        })
+                        .unwrap()
+                ),
+                1000000
+            ),
+            crate::Error::<Test>::WrongXCMVersion
+        );
+        assert_eq!(Balances::total_balance(&bob()), 0);
+    });
+}
+
+#[test]
+fn it_works_receive_xor() {
+    new_test_ext().execute_with(|| {
+        let asset_id = XorAssetId::get();
+        assert_eq!(Balances::total_balance(&bob()), 0);
+        assert_eq!(Balances::total_balance(&alice()), 0);
+        assert_ok!(XCMApp::xcm_transfer_asset(
+            asset_id,
+            alice(),
+            xcm::VersionedMultiLocation::V3(
+                xcm::v3::MultiLocation::parent()
+                    .pushed_with_interior(xcm::v3::Junction::Parachain(2011))
+                    .unwrap()
+                    .pushed_with_interior(xcm::v3::Junction::AccountId32 {
+                        network: None,
+                        id: bob().into()
+                    })
+                    .unwrap()
+            ),
+            1000000
+        ),);
+        assert_eq!(Balances::total_balance(&alice()), 0);
+        assert_eq!(Balances::total_balance(&bob()), 1000000);
     });
 }

@@ -202,7 +202,7 @@ async fn build_relay_chain_interface(
             task_manager,
             collator_options.relay_chain_rpc_urls,
         )
-        .await;
+        .await
     }
     cumulus_relay_chain_inprocess_interface::build_inprocess_relay_chain(
         polkadot_config,
@@ -373,17 +373,17 @@ where
             Some("beefy-gadget"),
             gadget,
         );
+
+        // TODO add mmr gadget before trustless bridge release
     }
 
     let rpc_builder = {
         let client = client.clone();
-        let backend = backend.clone();
         let transaction_pool = transaction_pool.clone();
 
         Box::new(move |deny_unsafe, subscription_executor| {
             let deps = crate::rpc::FullDeps {
                 client: client.clone(),
-                backend: backend.clone(),
                 pool: transaction_pool.clone(),
                 deny_unsafe,
                 beefy: crate::rpc::BeefyDeps {

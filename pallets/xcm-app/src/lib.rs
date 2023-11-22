@@ -43,11 +43,9 @@ pub mod weights;
 pub use pallet::*;
 
 use crate::weights::WeightInfo;
-use bridge_types::substrate::XCMAppCall;
-use bridge_types::H256;
-use codec::{Decode, Encode};
-use orml_traits::xcm_transfer::XcmTransfer;
-use orml_traits::MultiCurrency;
+use bridge_types::{substrate::XCMAppCall, H256};
+use codec::{Decode, Encode, MaxEncodedLen};
+use orml_traits::{xcm_transfer::XcmTransfer, MultiCurrency};
 use parachain_common::primitives::AssetId;
 use scale_info::prelude::boxed::Box;
 use sp_runtime::{AccountId32, RuntimeDebug};
@@ -64,9 +62,8 @@ where
 {
     fn from(value: XCMAppCall) -> Self {
         match value {
-            XCMAppCall::Transfer { sender, recipient, amount, asset_id } => {
-                Call::transfer { sender: sender.into(), recipient, amount, asset_id }
-            },
+            XCMAppCall::Transfer { sender, recipient, amount, asset_id } =>
+                Call::transfer { sender: sender.into(), recipient, amount, asset_id },
             XCMAppCall::RegisterAsset {
                 asset_id,
                 sidechain_asset,
@@ -78,14 +75,15 @@ where
                 asset_kind,
                 minimal_xcm_amount,
             },
-            XCMAppCall::SetAssetMinAmount { asset_id, minimal_xcm_amount } => {
-                Call::set_asset_minimum_amount { asset_id, minimal_xcm_amount }
-            },
+            XCMAppCall::SetAssetMinAmount { asset_id, minimal_xcm_amount } =>
+                Call::set_asset_minimum_amount { asset_id, minimal_xcm_amount },
         }
     }
 }
 
-#[derive(Clone, RuntimeDebug, Encode, Decode, PartialEq, Eq, scale_info::TypeInfo)]
+#[derive(
+    Clone, RuntimeDebug, Encode, Decode, PartialEq, Eq, scale_info::TypeInfo, MaxEncodedLen,
+)]
 pub struct TrappedMessage<AccountId> {
     /// Trapped Sora Asset Id
     pub asset_id: AssetId,
@@ -102,16 +100,21 @@ pub struct TrappedMessage<AccountId> {
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
-    use bridge_types::types::CallOriginOutput;
     use bridge_types::{
         substrate::{ParachainAppCall, SubstrateBridgeMessageEncode},
         traits::OutboundChannel,
+        types::CallOriginOutput,
         SubNetworkId,
     };
-    use frame_support::{dispatch::DispatchResultWithPostInfo, fail, pallet_prelude::*};
+    use frame_support::{
+        dispatch::DispatchResultWithPostInfo,
+        fail,
+        pallet_prelude::*,
+        traits::{Currency, ExistenceRequirement, WithdrawReasons},
+    };
     use frame_system::{pallet_prelude::*, RawOrigin};
     use parachain_common::primitives::AssetId;
-    use sp_runtime::traits::Convert;
+    use sp_runtime::traits::{Convert, ConvertBack};
 
     #[pallet::config]
     pub trait Config: frame_system::Config {
@@ -139,16 +142,23 @@ pub mod pallet {
 
         type XcmTransfer: XcmTransfer<Self::AccountId, u128, AssetId>;
 
-        type AccountIdConverter: Convert<Self::AccountId, AccountId32>;
+        type AccountIdConverter: ConvertBack<Self::AccountId, AccountId32>;
 
         type BalanceConverter: Convert<Self::Balance, u128>;
 
         type XcmSender: XcmSender<Self>;
+
+        #[pallet::constant]
+        type SelfLocation: Get<MultiLocation>;
+
+        #[pallet::constant]
+        type XorAssetId: Get<AssetId>;
+
+        type Currency: Currency<Self::AccountId, Balance = u128>;
     }
 
     #[pallet::pallet]
     #[pallet::generate_store(pub(super) trait Store)]
-    #[pallet::without_storage_info]
     pub struct Pallet<T>(_);
 
     #[pallet::storage]
@@ -249,6 +259,8 @@ pub mod pallet {
         TrappedMessageNotFound,
         /// Invalid trapped message
         InvalidTrappedMessage,
+        /// Invalid asset id
+        InvalidAssetId,
     }
 
     #[pallet::hooks]
@@ -390,6 +402,24 @@ pub mod pallet {
             T::XcmSender::send_xcm(origin, dest, message)?;
             Ok(().into())
         }
+
+        #[pallet::call_index(5)]
+        #[pallet::weight(<T as Config>::WeightInfo::sudo_send_xcm())]
+        pub fn send_xor_to_mainnet(
+            origin: OriginFor<T>,
+            recipient: T::AccountId,
+            amount: u128,
+        ) -> DispatchResultWithPostInfo {
+            let who = ensure_signed(origin)?;
+            T::Currency::withdraw(
+                &who,
+                amount,
+                WithdrawReasons::TRANSFER,
+                ExistenceRequirement::AllowDeath,
+            )?;
+            Self::add_to_channel(recipient, T::XorAssetId::get(), amount)?;
+            Ok(().into())
+        }
     }
 
     impl<T: Config> Pallet<T> {
@@ -469,7 +499,15 @@ pub mod pallet {
                 xcm::VersionedMultiLocation::V3(m) => m,
                 _ => fail!(Error::<T>::WrongXCMVersion),
             };
-            if let Err(e) = <T as Config>::XcmTransfer::transfer(
+            if let Some(xcm::v3::Junction::AccountId32 { id: recipient, .. }) =
+                recipient.match_and_split(&T::SelfLocation::get())
+            {
+                ensure!(asset_id == T::XorAssetId::get(), Error::<T>::InvalidAssetId);
+                T::Currency::deposit_creating(
+                    &T::AccountIdConverter::convert_back(AccountId32::new(*recipient)),
+                    amount,
+                );
+            } else if let Err(e) = <T as Config>::XcmTransfer::transfer(
                 sender.clone(),
                 asset_id,
                 amount,
@@ -477,7 +515,7 @@ pub mod pallet {
                 xcm::v3::WeightLimit::Unlimited,
             ) {
                 Self::deposit_event(Event::<T>::TrasferringAssetError(e, asset_id));
-                return Err(e);
+                return Err(e)
             }
 
             Self::deposit_event(Event::<T>::AssetTransferred(sender, recipient, asset_id, amount));
@@ -542,8 +580,8 @@ pub mod pallet {
             multilocation: MultiLocation,
         ) -> DispatchResultWithPostInfo {
             ensure!(
-                AssetIdToMultilocation::<T>::get(asset_id).is_none()
-                    && MultilocationToAssetId::<T>::get(multilocation).is_none(),
+                AssetIdToMultilocation::<T>::get(asset_id).is_none() &&
+                    MultilocationToAssetId::<T>::get(multilocation).is_none(),
                 Error::<T>::MappingAlreadyExists
             );
             AssetIdToMultilocation::<T>::insert(asset_id, multilocation);
