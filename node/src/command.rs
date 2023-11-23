@@ -36,6 +36,7 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
     Ok(match id {
         "dev" => Box::new(chain_spec::development_config()),
         "bridge-dev" => Box::new(chain_spec::bridge_dev_config()),
+        "bridge-test" => Box::new(chain_spec::bridge_test_config()),
         "kusama" => Box::new(chain_spec::kusama_chain_spec()?),
         "kusama-coded" => Box::new(chain_spec::coded_config(RelayChain::Kusama, 2011)),
         "polkadot" => Box::new(chain_spec::polkadot_chain_spec()?),
@@ -43,6 +44,8 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
         "rococo" => Box::new(chain_spec::rococo_chain_spec()?),
         "rococo-coded" => Box::new(chain_spec::coded_config(RelayChain::Rococo, 2011)),
         "template-rococo" => Box::new(chain_spec::local_testnet_config()),
+        "alpha" => Box::new(chain_spec::alpha_chain_spec()?),
+        "alpha-coded" => Box::new(chain_spec::coded_config(RelayChain::Alpha, 2011)),
         "" | "local" => Box::new(chain_spec::local_testnet_config()),
         "docker-local" => Box::new(chain_spec::docker_local_testnet_config()),
         path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
