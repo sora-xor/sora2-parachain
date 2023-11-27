@@ -25,6 +25,8 @@ const NETWORK_NAME: &str = "Kusama";
 const NETWORK_NAME: &str = "Polkadot";
 #[cfg(feature = "rococo")]
 const NETWORK_NAME: &str = "Rococo";
+#[cfg(feature = "alphanet")]
+const NETWORK_NAME: &str = "Alphanet";
 
 fn set_default_ss58_version() {
     sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::custom(

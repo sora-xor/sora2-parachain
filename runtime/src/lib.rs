@@ -309,6 +309,11 @@ parameter_types! {
     pub const SS58Prefix: u16 = 420;
 }
 
+#[cfg(feature = "alphanet")]
+parameter_types! {
+    pub const SS58Prefix: u16 = 420;
+}
+
 #[cfg(feature = "polkadot")]
 parameter_types! {
     pub const SS58Prefix: u16 = 81;
@@ -728,6 +733,11 @@ parameter_types! {
     pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Rococo);
 }
 
+#[cfg(feature = "alphanet")]
+parameter_types! {
+    pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Alphanet);
+}
+
 #[cfg(feature = "polkadot")]
 parameter_types! {
     pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Polkadot);
@@ -1065,7 +1075,7 @@ construct_runtime!(
         Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 114,
         ElectionsPhragmen: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>} = 115,
 
-        #[cfg(feature = "rococo")]
+        #[cfg(any(feature = "rococo"))]
         XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
     }
 );
