@@ -225,7 +225,7 @@ pub fn rococo_chain_spec() -> Result<ChainSpec, String> {
 }
 
 pub fn alpha_chain_spec() -> Result<ChainSpec, String> {
-    ChainSpec::from_json_bytes(&include_bytes!("../res/alpha.json")[..])
+    ChainSpec::from_json_bytes(&include_bytes!("../res/alphanet.json")[..])
 }
 
 pub fn coded_config(relay_chain: RelayChain, para_id: u32) -> ChainSpec {
@@ -546,7 +546,7 @@ pub fn bridge_dev_config() -> ChainSpec {
 
 /// Config for bridge private testnet
 pub fn bridge_test_config() -> ChainSpec {
-    // Give your base currency a unit name and decimal places
+     // base currency unit name and decimal places
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "XOR".into());
     properties.insert("tokenDecimals".into(), 18.into());
