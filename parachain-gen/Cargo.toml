@@ -12,5 +12,6 @@ sp-core = { git = "https://github.com/paritytech/substrate.git", branch = "polka
 [features]
 default = []
 rococo = ["sora2-parachain-runtime/rococo"]
+alphanet = ["sora2-parachain-runtime/alphanet"]
 kusama = ["sora2-parachain-runtime/kusama"]
 polkadot = ["sora2-parachain-runtime/polkadot"]

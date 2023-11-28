@@ -8,6 +8,9 @@ polkadot:
 rococo:
 	cargo build --release --features rococo
 
+alpha:
+	cargo build --release --features alphanet
+
 test-kusama:
 	cargo test --release --features kusama
 

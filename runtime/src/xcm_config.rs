@@ -57,6 +57,12 @@ parameter_types! {
     pub const RelayNetwork: NetworkId = NetworkId::Rococo;
 }
 
+#[cfg(feature = "alphanet")]
+parameter_types! {
+    // Alphanet is based on Westend
+    pub const RelayNetwork: NetworkId = NetworkId::Westend;
+}
+
 #[cfg(feature = "polkadot")]
 parameter_types! {
     pub const RelayNetwork: NetworkId = NetworkId::Polkadot;
