@@ -59,6 +59,7 @@ parameter_types! {
 
 #[cfg(feature = "alphanet")]
 parameter_types! {
+    // Alphanet based on Westend
     pub const RelayNetwork: NetworkId = NetworkId::Westend;
 }
 
