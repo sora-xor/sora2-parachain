@@ -221,10 +221,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("sora_ksm"),
     impl_name: create_runtime_str!("sora_ksm"),
     authoring_version: 1,
-    spec_version: 8,
+    spec_version: 9,
     impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
-    transaction_version: 8,
+    transaction_version: 9,
     state_version: 1,
 };
 
@@ -1014,6 +1014,13 @@ impl pallet_preimage::Config for Runtime {
     type ByteDeposit = PreimageByteDeposit;
 }
 
+impl pallet_utility::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeCall = RuntimeCall;
+    type WeightInfo = ();
+    type PalletsOrigin = OriginCaller;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -1074,6 +1081,7 @@ construct_runtime!(
         Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 113,
         Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 114,
         ElectionsPhragmen: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>} = 115,
+        Utility: pallet_utility::{Pallet, Call, Event} = 116,
 
         #[cfg(any(feature = "rococo"))]
         XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
