@@ -22,7 +22,7 @@ if [[ $buildTag != null ]] && [[ ${TAG_NAME} != null || ${TAG_NAME} != '' ]]; th
          buildfeature="kusama"
    elif [[ ${TAG_NAME} = 'polkadot-'* ]]; then
          buildfeature="polkadot"
-   elif [[ ${TAG_NAME} = 'alphanet-'* ]]; then
+   elif [[ ${TAG_NAME} = 'alphanet-'* ]] || [[ ${TAG_NAME} = 'stage-alphanet-'* ]] ; then
          buildfeature="alphanet"
    fi
    printf "🕙 Testing with feature $buildfeature will start now... \n"
