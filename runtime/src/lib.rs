@@ -309,6 +309,11 @@ parameter_types! {
     pub const SS58Prefix: u16 = 420;
 }
 
+#[cfg(feature = "alphanet")]
+parameter_types! {
+    pub const SS58Prefix: u16 = 420;
+}
+
 #[cfg(feature = "polkadot")]
 parameter_types! {
     pub const SS58Prefix: u16 = 81;
@@ -729,6 +734,11 @@ parameter_types! {
     pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Rococo);
 }
 
+#[cfg(feature = "alphanet")]
+parameter_types! {
+    pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Alphanet);
+}
+
 #[cfg(feature = "polkadot")]
 parameter_types! {
     pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Polkadot);
@@ -1005,6 +1015,13 @@ impl pallet_preimage::Config for Runtime {
     type ByteDeposit = PreimageByteDeposit;
 }
 
+impl pallet_utility::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeCall = RuntimeCall;
+    type WeightInfo = ();
+    type PalletsOrigin = OriginCaller;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -1066,8 +1083,9 @@ construct_runtime!(
         Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 113,
         Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 114,
         ElectionsPhragmen: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>} = 115,
+        Utility: pallet_utility::{Pallet, Call, Event} = 116,
 
-        #[cfg(feature = "rococo")]
+        #[cfg(any(feature = "rococo"))]
         XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
     }
 );

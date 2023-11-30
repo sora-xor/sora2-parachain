@@ -118,5 +118,6 @@ runtime-benchmarks = [
 ]
 try-runtime = ["sora2-parachain-runtime/try-runtime"]
 rococo = ["sora2-parachain-runtime/rococo"]
+alphanet = ["sora2-parachain-runtime/alphanet"]
 kusama = ["sora2-parachain-runtime/kusama"]
 polkadot = ["sora2-parachain-runtime/polkadot"]
