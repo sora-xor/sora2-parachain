@@ -1,6 +1,6 @@
 [package]
 name = "sora2-parachain-node"
-version = "2.1.0"
+version = "2.2.0"
 authors = ["Anonymous"]
 description = "Sora2 Parachain node. Is used as a gateway to SORA2 from any relaychain ecosysytem"
 license = "Unlicense"
