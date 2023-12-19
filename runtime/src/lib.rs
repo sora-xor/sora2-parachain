@@ -221,10 +221,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("sora_ksm"),
     impl_name: create_runtime_str!("sora_ksm"),
     authoring_version: 1,
-    spec_version: 9,
+    spec_version: 10,
     impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
-    transaction_version: 9,
+    transaction_version: 10,
     state_version: 1,
 };
 
@@ -497,6 +497,7 @@ impl pallet_beefy_mmr::Config for Runtime {
     type BeefyDataProvider = LeafProvider;
 }
 
+#[cfg(feature = "rococo")]
 impl pallet_sudo::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
@@ -1058,6 +1059,7 @@ construct_runtime!(
         // ORML
         XTokens: orml_xtokens::{Pallet, Storage, Event<T>} = 41,
 
+        #[cfg(feature = "rococo")]
         Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
         XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
