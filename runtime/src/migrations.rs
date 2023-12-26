@@ -39,7 +39,7 @@ use frame_support::{
 #[cfg(feature = "kusama")]
 pub type Migrations = (RemoveSudoKey,);
 
-#[cfg(any(feature = "rococo", feature = "polkadot"))]
+#[cfg(any(feature = "rococo", feature = "polkadot", feature = "alphanet"))]
 pub type Migrations = ();
 
 #[cfg(feature = "kusama")]
