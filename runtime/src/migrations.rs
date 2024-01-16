@@ -31,16 +31,27 @@
 #[cfg(feature = "kusama")]
 use crate::*;
 #[cfg(feature = "kusama")]
-use frame_support::{
-    traits::OnRuntimeUpgrade,
-    weights::Weight,
-};
+use frame_support::{traits::OnRuntimeUpgrade, weights::Weight};
 
 #[cfg(feature = "kusama")]
 pub type Migrations = (RemoveSudoKey,);
 
-#[cfg(any(feature = "rococo", feature = "polkadot"))]
+#[cfg(feature = "rococo")]
 pub type Migrations = ();
+
+#[cfg(feature = "polkadot")]
+pub type Migrations =
+    (pallet_balances::migration::MigrateManyToTrackInactive<crate::Runtime, EmptyAccountList>,);
+
+#[cfg(feature = "polkadot")]
+pub struct EmptyAccountList;
+
+#[cfg(feature = "polkadot")]
+impl sp_core::Get<crate::Vec<crate::AccountId>> for EmptyAccountList {
+    fn get() -> crate::Vec<crate::AccountId> {
+        Default::default()
+    }
+}
 
 #[cfg(feature = "kusama")]
 pub struct RemoveSudoKey;
@@ -48,7 +59,9 @@ pub struct RemoveSudoKey;
 #[cfg(feature = "kusama")]
 impl OnRuntimeUpgrade for RemoveSudoKey {
     fn on_runtime_upgrade() -> Weight {
-        if let Some(key) = frame_support::storage::migration::take_storage_value::<AccountId>(b"Sudo", b"Key", &[]) {
+        if let Some(key) =
+            frame_support::storage::migration::take_storage_value::<AccountId>(b"Sudo", b"Key", &[])
+        {
             frame_support::log::error!("Sudo key removed: {:?}", key);
         } else {
             frame_support::log::error!("Sudo key not found in storage");
