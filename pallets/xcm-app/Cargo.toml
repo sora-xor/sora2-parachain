@@ -5,7 +5,7 @@ description = "FRAME pallet that converts AssetId to Multilocation"
 version = "0.1.0"
 license = "Unlicense"
 homepage = "https://substrate.io"
-repository = "https://github.com/paritytech/substrate.git/"
+repository = "https://github.com/paritytech/polkadot-sdk.git-sdk.git/"
 edition = "2021"
 
 [package.metadata.docs.rs]
@@ -21,15 +21,15 @@ scale-info = { version = "2.0.0", default-features = false, features = [
 log = { version = "0.4.14", default-features = false }
 
 # Substrate
-frame-benchmarking = { git = "https://github.com/paritytech/substrate.git", default-features = false, optional = true, branch = "polkadot-v0.9.38" }
-frame-support = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
-frame-system = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
-sp-runtime = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
+frame-benchmarking = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, optional = true, branch = "release-polkadot-v1.1.0" }
+frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+frame-system = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
 
 # Polkadot
-xcm = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" }
-xcm-executor = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" } # needed to compile pallet as standalone crate 
-xcm-builder = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" }  # needed to compile pallet as standalone crate 
+xcm = { git = "https://github.com/paritytech/polkadot-sdk.git.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+xcm-executor = { git = "https://github.com/paritytech/polkadot-sdk.git.git", default-features = false, branch = "release-polkadot-v1.1.0" } # needed to compile pallet as standalone crate 
+xcm-builder = { git = "https://github.com/paritytech/polkadot-sdk.git.git", default-features = false, branch = "release-polkadot-v1.1.0" }  # needed to compile pallet as standalone crate 
 
 # Local
 parachain-common = { path = "../../parachain-common", default-features = false }
@@ -38,16 +38,16 @@ parachain-common = { path = "../../parachain-common", default-features = false }
 bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false }
 
 # ORML
-orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v0.9.38" }
+orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "release-polkadot-v1.1.0" }
 
 [dev-dependencies]
 serde = { version = "1.0.132" }
 
 # Substrate
-sp-core = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
-sp-io = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
-sp-runtime = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
-pallet-balances = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+sp-io = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
 
 [features]
 default = ["std"]

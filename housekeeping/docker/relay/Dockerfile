@@ -19,7 +19,7 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path --default-tool
     command -v wasm-gc || \
         cargo install --git https://github.com/alexcrichton/wasm-gc --force
 # Build project
-RUN git clone https://github.com/paritytech/polkadot.git  /polkadot
+RUN git clone https://github.com/paritytech/polkadot-sdk.git.git  /polkadot
 WORKDIR /polkadot
 RUN git checkout ${POLKADOT_COMMIT}
 RUN cargo build --release

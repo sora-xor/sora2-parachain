@@ -15,13 +15,13 @@ serde = { version = "1.0.137", features = ["derive"], default-features = false }
 scale-info = { version = "2.1.1", default-features = false, features = [
 	"derive",
 ] }
-frame-support = { git = "https://github.com/paritytech/substrate.git", default-features = false, branch = "polkadot-v0.9.38" }
-polkadot-parachain = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" }
-xcm-builder = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" }
-xcm = { git = "https://github.com/paritytech/polkadot.git", default-features = false, branch = "release-v0.9.38" }
+frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+polkadot-parachain = { git = "https://github.com/paritytech/polkadot-sdk.git.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+xcm-builder = { git = "https://github.com/paritytech/polkadot-sdk.git.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+xcm = { git = "https://github.com/paritytech/polkadot-sdk.git.git", default-features = false, branch = "release-polkadot-v1.1.0" }
 bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false } 
-sp-arithmetic = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38", default-features = false }
-frame-system = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38", default-features = false }
+sp-arithmetic = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", branch = "release-polkadot-v1.1.0", default-features = false }
+frame-system = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", branch = "release-polkadot-v1.1.0", default-features = false }
 
 
 [features]
