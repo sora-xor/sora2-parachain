@@ -29,7 +29,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::XCMApp;
-use xcm::{latest::Weight as XcmWeight, prelude::*};
+use staging_xcm::{latest::Weight as XcmWeight, prelude::*};
 use xcm_executor::{traits::WeightTrader, Assets};
 
 /// Does not take any fees but checks if there are enought assets to pass through the bridge

@@ -44,7 +44,6 @@ pub mod pallet {
     }
 
     #[pallet::pallet]
-    #[pallet::generate_store(pub(super) trait Store)]
     #[pallet::without_storage_info]
     pub struct Pallet<T>(_);
 
@@ -60,7 +59,7 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         #[pallet::call_index(0)]
-        #[pallet::weight(0)]
+        #[pallet::weight(Weight::from_parts(0, 0))]
         pub fn test_channel_transfer(
             origin: OriginFor<T>,
             account_id: T::AccountId,
@@ -73,12 +72,12 @@ pub mod pallet {
         }
 
         #[pallet::call_index(1)]
-        #[pallet::weight(0)]
+        #[pallet::weight(Weight::from_parts(0, 0))]
         pub fn test_xcm_transfer(
             origin: OriginFor<T>,
             asset_id: AssetId,
             sender: T::AccountId,
-            recipient: scale_info::prelude::boxed::Box<xcm::VersionedMultiLocation>,
+            recipient: scale_info::prelude::boxed::Box<staging_xcm::VersionedMultiLocation>,
             amount: u128,
         ) -> DispatchResultWithPostInfo {
             ensure_root(origin)?;

@@ -5,7 +5,7 @@ description = "pallet for testing"
 version = "0.1.0"
 license = "Unlicense"
 homepage = "https://substrate.io"
-repository = "https://github.com/paritytech/polkadot-sdk.git-sdk.git/"
+repository = "https://github.com/paritytech/polkadot-sdk.git/"
 edition = "2021"
 
 [package.metadata.docs.rs]
@@ -23,13 +23,13 @@ xcm-app = { path = "../xcm-app", default-features = false }
 
 
 # Substrate
-frame-benchmarking = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, optional = true, branch = "release-polkadot-v1.1.0" }
-frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
-frame-system = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
-sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+frame-benchmarking = { git = "https://github.com/paritytech/polkadot-sdk.git", default-features = false, optional = true, branch = "release-polkadot-v1.1.0" }
+frame-support = { git = "https://github.com/paritytech/polkadot-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+frame-system = { git = "https://github.com/paritytech/polkadot-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
 
 # Polkadot
-xcm = { git = "https://github.com/paritytech/polkadot-sdk.git.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+staging-xcm = { git = "https://github.com/paritytech/polkadot-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
 
 # Local
 parachain-common = { path = "../../parachain-common", default-features = false }
@@ -38,15 +38,15 @@ parachain-common = { path = "../../parachain-common", default-features = false }
 bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false } 
 
 # ORML
-orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library.git", default-features = false, branch = "polkadot-v1.1.0" }
 
 [dev-dependencies]
 serde = { version = "1.0.132" }
 
 # Substrate
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
-sp-io = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
-sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+sp-io = { git = "https://github.com/paritytech/polkadot-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", default-features = false, branch = "release-polkadot-v1.1.0" }
 
 [features]
 default = ["std"]
@@ -57,5 +57,6 @@ std = [
 	"frame-benchmarking/std",
 	"frame-support/std",
 	"frame-system/std",
+	"bridge-types/std",
 ]
 try-runtime = ["frame-support/try-runtime"]

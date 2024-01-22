@@ -7,7 +7,7 @@ edition = "2021"
 sora2-parachain-runtime = { path = "../runtime", features = [
     "parachain-gen",
 ] }
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git-sdk.git", branch = "release-polkadot-v1.1.0", default-features = false }
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0", default-features = false }
 
 [features]
 default = []

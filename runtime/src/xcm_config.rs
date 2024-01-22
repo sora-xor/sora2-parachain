@@ -43,7 +43,7 @@ use parachain_common::primitives::AssetId;
 use polkadot_parachain::primitives::Sibling;
 #[cfg(not(feature = "parachain-gen"))]
 use sp_core::Get;
-use xcm::{latest::Weight as XcmWeight, prelude::*};
+use staging_xcm::{latest::Weight as XcmWeight, prelude::*};
 use xcm_builder::{
     AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
     AllowTopLevelPaidExecutionFrom, EnsureXcmOrigin, FixedWeightBounds, ParentIsPreset,

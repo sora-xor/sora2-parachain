@@ -49,12 +49,12 @@ use orml_traits::{xcm_transfer::XcmTransfer, MultiCurrency};
 use parachain_common::primitives::AssetId;
 use scale_info::prelude::boxed::Box;
 use sp_runtime::{AccountId32, RuntimeDebug};
-use xcm::{
+use staging_xcm::{
     opaque::latest::{AssetId::Concrete, Fungibility::Fungible},
     v3::{MultiAsset, MultiLocation},
 };
 
-pub type ParachainAssetId = xcm::VersionedMultiAsset;
+pub type ParachainAssetId = staging_xcm::VersionedMultiAsset;
 
 impl<T: Config> From<XCMAppCall> for Call<T>
 where
@@ -158,7 +158,7 @@ pub mod pallet {
     }
 
     #[pallet::pallet]
-    #[pallet::generate_store(pub(super) trait Store)]
+    // #[pallet::generate_store(pub(super) trait Store)]
     pub struct Pallet<T>(_);
 
     #[pallet::storage]
@@ -274,7 +274,7 @@ pub mod pallet {
             origin: OriginFor<T>,
             asset_id: AssetId,
             sender: T::AccountId,
-            recipient: xcm::VersionedMultiLocation,
+            recipient: staging_xcm::VersionedMultiLocation,
             amount: u128,
         ) -> DispatchResultWithPostInfo {
             let output = T::CallOrigin::ensure_origin(origin)?;
@@ -289,19 +289,19 @@ pub mod pallet {
         pub fn register_asset(
             origin: OriginFor<T>,
             asset_id: AssetId,
-            multiasset: xcm::v3::AssetId,
+            multiasset: staging_xcm::v3::AssetId,
             asset_kind: bridge_types::types::AssetKind,
             minimal_xcm_amount: u128,
         ) -> DispatchResultWithPostInfo {
             let res = T::CallOrigin::ensure_origin(origin)?;
-            frame_support::log::info!(
+            log::info!(
                 "Call register_asset with params: {:?} by {:?}",
                 (asset_id, multiasset),
                 res
             );
             let multilocation = match multiasset {
-                xcm::v3::AssetId::Concrete(location) => location,
-                xcm::v3::AssetId::Abstract(_) => fail!(Error::<T>::WrongXCMVersion),
+                staging_xcm::v3::AssetId::Concrete(location) => location,
+                staging_xcm::v3::AssetId::Abstract(_) => fail!(Error::<T>::WrongXCMVersion),
             };
 
             Self::register_mapping(asset_id, multilocation)?;
@@ -395,8 +395,8 @@ pub mod pallet {
         #[pallet::weight(<T as Config>::WeightInfo::sudo_send_xcm())]
         pub fn sudo_send_xcm(
             origin: OriginFor<T>,
-            dest: Box<xcm::VersionedMultiLocation>,
-            message: Box<xcm::VersionedXcm<()>>,
+            dest: Box<staging_xcm::VersionedMultiLocation>,
+            message: Box<staging_xcm::VersionedXcm<()>>,
         ) -> DispatchResultWithPostInfo {
             ensure_root(origin.clone())?;
             T::XcmSender::send_xcm(origin, dest, message)?;
@@ -454,10 +454,10 @@ pub mod pallet {
             origin_output: CallOriginOutput<SubNetworkId, H256, ()>,
             asset_id: AssetId,
             sender: T::AccountId,
-            recipient: xcm::VersionedMultiLocation,
+            recipient: staging_xcm::VersionedMultiLocation,
             amount: u128,
         ) {
-            frame_support::log::info!(
+            log::info!(
                 "Call transfer with params: {:?} by {:?}",
                 (asset_id, sender.clone(), recipient.clone(), amount),
                 origin_output
@@ -492,14 +492,14 @@ pub mod pallet {
         pub fn xcm_transfer_asset(
             asset_id: AssetId,
             sender: T::AccountId,
-            recipient: xcm::VersionedMultiLocation,
+            recipient: staging_xcm::VersionedMultiLocation,
             amount: u128,
         ) -> sp_runtime::DispatchResult {
             let recipient = match recipient {
-                xcm::VersionedMultiLocation::V3(m) => m,
+                staging_xcm::VersionedMultiLocation::V3(m) => m,
                 _ => fail!(Error::<T>::WrongXCMVersion),
             };
-            if let Some(xcm::v3::Junction::AccountId32 { id: recipient, .. }) =
+            if let Some(staging_xcm::v3::Junction::AccountId32 { id: recipient, .. }) =
                 recipient.match_and_split(&T::SelfLocation::get())
             {
                 ensure!(asset_id == T::XorAssetId::get(), Error::<T>::InvalidAssetId);
@@ -512,7 +512,7 @@ pub mod pallet {
                 asset_id,
                 amount,
                 recipient,
-                xcm::v3::WeightLimit::Unlimited,
+                staging_xcm::v3::WeightLimit::Unlimited,
             ) {
                 Self::deposit_event(Event::<T>::TrasferringAssetError(e, asset_id));
                 return Err(e)
@@ -678,16 +678,16 @@ pub mod pallet {
 pub trait XcmSender<T: Config> {
     fn send_xcm(
         origin: frame_system::pallet_prelude::OriginFor<T>,
-        dest: Box<xcm::VersionedMultiLocation>,
-        message: Box<xcm::VersionedXcm<()>>,
+        dest: Box<staging_xcm::VersionedMultiLocation>,
+        message: Box<staging_xcm::VersionedXcm<()>>,
     ) -> frame_support::pallet_prelude::DispatchResult;
 }
 
 impl<T: Config> XcmSender<T> for () {
     fn send_xcm(
         _origin: frame_system::pallet_prelude::OriginFor<T>,
-        _dest: Box<xcm::VersionedMultiLocation>,
-        _message: Box<xcm::VersionedXcm<()>>,
+        _dest: Box<staging_xcm::VersionedMultiLocation>,
+        _message: Box<staging_xcm::VersionedXcm<()>>,
     ) -> frame_support::pallet_prelude::DispatchResult {
         Ok(())
     }
