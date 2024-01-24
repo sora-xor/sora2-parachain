@@ -13,8 +13,10 @@ env:
   RUSTFLAGS: "-Cinstrument-coverage"
 
 jobs:
-  build:
+  consistency:
     runs-on: ubuntu-latest
+    container:
+      image: sora2/substrate:env
 
     steps:
       - name: Checkout code
@@ -29,21 +31,21 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Setup Rust
-        uses: ATiltedTree/setup-rust@v1.0.5
-        with:
-          rust-version: nightly-2024-01-15
+      # - name: Setup Rust
+      #   uses: ATiltedTree/setup-rust@v1.0.5
+      #   with:
+      #     rust-version: nightly-2024-01-15
 
-      - name: Install llvm tools
-        run: rustup component add llvm-tools-preview
+      # - name: Install llvm tools
+      #   run: rustup component add llvm-tools-preview
 
-      - name: Install grcov
-        run: cargo install grcov 
+      # - name: Install grcov
+      #   run: cargo install grcov 
 
-      - name: Install packages
-        run: |
-          apt-get update
-          protobuf-compiler
+      # - name: Install packages
+      #   run: |
+      #     apt-get update
+      #     protobuf-compiler
 
       - name: Build and test
         run: cargo test -r
