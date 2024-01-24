@@ -40,17 +40,18 @@ use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
 use orml_xcm_support::{IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset};
 use pallet_xcm::XcmPassthrough;
 use parachain_common::primitives::AssetId;
-use polkadot_parachain::primitives::Sibling;
+use polkadot_parachain_primitives::primitives::Sibling;
 #[cfg(not(feature = "parachain-gen"))]
 use sp_core::Get;
 use staging_xcm::{latest::Weight as XcmWeight, prelude::*};
-use xcm_builder::{
+use staging_xcm_builder::{
     AccountId32Aliases, AllowKnownQueryResponses, AllowSubscriptionsFrom,
     AllowTopLevelPaidExecutionFrom, EnsureXcmOrigin, FixedWeightBounds, ParentIsPreset,
     RelayChainAsNative, SiblingParachainAsNative, SiblingParachainConvertsVia,
     SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
 };
-use xcm_executor::XcmExecutor;
+use staging_xcm_executor::XcmExecutor;
+use frame_system::EnsureRoot;
 
 #[cfg(feature = "rococo")]
 parameter_types! {
@@ -128,7 +129,7 @@ pub type XcmOriginToTransactDispatchOrigin = (
 
 parameter_types! {
     // One XCM operation is 1_000_000_000 weight - almost certainly a conservative estimate.
-    pub UnitWeightCost: XcmWeight  = XcmWeight::from_ref_time(1_000_000_000);
+    pub UnitWeightCost: XcmWeight  = XcmWeight::from_parts(1_000_000_000, 0);
     pub const MaxInstructions: u32 = 100;
     pub const MaxAssetsIntoHolding: u32 = 64;
 }
@@ -157,7 +158,7 @@ impl frame_support::traits::Contains<MultiLocation> for OnlyParent {
 }
 
 pub struct XcmConfig;
-impl xcm_executor::Config for XcmConfig {
+impl staging_xcm_executor::Config for XcmConfig {
     type RuntimeCall = RuntimeCall;
     type XcmSender = XcmRouter;
     // How to withdraw and deposit an asset.
@@ -182,6 +183,8 @@ impl xcm_executor::Config for XcmConfig {
     type UniversalAliases = ();
     type CallDispatcher = RuntimeCall;
     type SafeCallFilter = ();
+
+    type Aliasers = ();
 }
 
 /// Converts a local signed origin into an XCM multilocation.
@@ -228,6 +231,15 @@ impl pallet_xcm::Config for Runtime {
     type WeightInfo = PalletXCMWeightInfo;
     #[cfg(feature = "runtime-benchmarks")]
     type ReachableDest = ReachableDest;
+
+    #[doc = r" The origin that is allowed to call privileged operations on the XCM pallet"]
+    type AdminOrigin = EnsureRoot<AccountId>;
+
+    #[doc = r" The maximum number of consumers a single remote lock may have."]
+    type MaxRemoteLockConsumers = ();
+
+    #[doc = r" The ID type for local consumers of remote locks."]
+    type RemoteLockConsumerIdentifier = ();
 }
 
 impl cumulus_pallet_xcm::Config for Runtime {
@@ -246,7 +258,7 @@ parameter_types! {
 }
 
 parameter_types! {
-    pub const BaseXcmWeight: XcmWeight = XcmWeight::from_ref_time(100_000_000); // TODO: recheck this
+    pub const BaseXcmWeight: XcmWeight = XcmWeight::from_parts(100_000_000, 0); // TODO: recheck this
     pub const MaxAssetsForTransfer: usize = 2;
 }
 
@@ -344,6 +356,10 @@ impl pallet_xcm::WeightInfo for PalletXCMWeightInfo {
     }
 
     fn migrate_and_notify_old_targets() -> XcmWeight {
+        XcmWeight::zero()
+    }
+
+    fn force_suspension() -> Weight {
         XcmWeight::zero()
     }
 }

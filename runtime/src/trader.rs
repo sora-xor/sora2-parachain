@@ -30,7 +30,7 @@
 
 use crate::XCMApp;
 use staging_xcm::{latest::Weight as XcmWeight, prelude::*};
-use xcm_executor::{traits::WeightTrader, Assets};
+use staging_xcm_executor::{traits::WeightTrader, Assets};
 
 /// Does not take any fees but checks if there are enought assets to pass through the bridge
 pub struct ParachainTrader;
@@ -41,7 +41,7 @@ impl WeightTrader for ParachainTrader {
         Self
     }
 
-    fn buy_weight(&mut self, weight: XcmWeight, assets: Assets) -> Result<Assets, XcmError> {
+    fn buy_weight(&mut self, weight: XcmWeight, assets: Assets, _context: &XcmContext) -> Result<Assets, XcmError> {
         log::trace!(target: "xcm::weight", "buy_weight weight: {:?}, payment: {:?}", weight, assets);
         if assets.fungible.is_empty() {
             return Err(XcmError::AssetNotFound)

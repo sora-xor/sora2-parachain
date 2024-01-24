@@ -47,7 +47,7 @@ pub mod xcm_config;
 use bridge_types::{GenericNetworkId, SubNetworkId};
 use codec::{Decode, Encode};
 use frame_support::{
-    dispatch::{DispatchClass, DispatchInfo, Dispatchable, PostDispatchInfo},
+    dispatch::{DispatchClass, DispatchInfo, PostDispatchInfo},
     traits::{Contains, EitherOfDiverse},
 };
 use impls::{CollectiveWeightInfo, PreimageWeightInfo};
@@ -82,9 +82,10 @@ use frame_system::{
     limits::{BlockLength, BlockWeights},
     EnsureRoot,
 };
-pub use sp_beefy::crypto::AuthorityId as BeefyId;
+// pub use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
+pub use sp_consensus_beefy::ecdsa_crypto::AuthorityId as BeefyId;
 #[cfg(feature = "rococo")]
-use sp_beefy::mmr::MmrLeafVersion;
+use sp_consensus_beefy::mmr::MmrLeafVersion;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_mmr_primitives as mmr;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
@@ -99,8 +100,9 @@ use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
 
 // XCM Imports
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-use xcm::latest::prelude::*;
-use xcm_executor::XcmExecutor;
+use staging_xcm::latest::prelude::*;
+use staging_xcm_executor::XcmExecutor;
+use sp_runtime::traits::Dispatchable;
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = MultiSignature;
@@ -325,6 +327,7 @@ parameter_types! {
 }
 
 // Configure FRAME pallets to include in runtime.
+type Nonce = u32;
 
 impl frame_system::Config for Runtime {
     /// The identifier used to distinguish between accounts.
@@ -333,16 +336,10 @@ impl frame_system::Config for Runtime {
     type RuntimeCall = RuntimeCall;
     /// The lookup mechanism to get account ID from whatever is passed in dispatchers.
     type Lookup = AccountIdLookup<AccountId, ()>;
-    /// The index type for storing how many extrinsics an account has signed.
-    type Index = Index;
-    /// The index type for blocks.
-    type BlockNumber = BlockNumber;
     /// The type for hashing blocks and tries.
     type Hash = Hash;
     /// The hashing algorithm used.
     type Hashing = BlakeTwo256;
-    /// The header type.
-    type Header = generic::Header<BlockNumber, BlakeTwo256>;
     /// The ubiquitous event type.
     type RuntimeEvent = RuntimeEvent;
     /// The ubiquitous origin type.
@@ -374,6 +371,10 @@ impl frame_system::Config for Runtime {
     /// The action to take on a Runtime Upgrade
     type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
     type MaxConsumers = frame_support::traits::ConstU32<16>;
+    /// The index type for storing how many extrinsics an account has signed.
+    type Nonce = Nonce;
+    /// The block type.
+    type Block = Block;
 }
 
 parameter_types! {
@@ -415,6 +416,18 @@ impl pallet_balances::Config for Runtime {
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
     type MaxReserves = MaxReserves;
     type ReserveIdentifier = [u8; 8];
+
+    #[doc = r" The overarching hold reason."]
+    type RuntimeHoldReason = ();
+
+    #[doc = r" The ID type for freezes."]
+    type FreezeIdentifier = ();
+
+    #[doc = r" The maximum number of holds that can exist on an account at any time."]
+    type MaxHolds = ();
+
+    #[doc = r" The maximum number of individual freeze locks that can exist on an account at any time."]
+    type MaxFreezes = ();
 }
 
 parameter_types! {
@@ -456,7 +469,7 @@ impl parachain_info::Config for Runtime {}
 impl pallet_mmr::Config for Runtime {
     const INDEXING_PREFIX: &'static [u8] = b"mmr";
     type Hashing = Keccak256;
-    type Hash = <Keccak256 as sp_runtime::traits::Hash>::Output;
+    // type Hash = <Keccak256 as sp_runtime::traits::Hash>::Output;
     type OnNewRoot = pallet_beefy_mmr::DepositBeefyDigest<Runtime>;
     type WeightInfo = ();
     type LeafData = pallet_beefy_mmr::Pallet<Runtime>;
@@ -469,6 +482,30 @@ impl pallet_beefy::Config for Runtime {
     type OnNewValidatorSet = BeefyMmr;
     #[cfg(not(feature = "rococo"))]
     type OnNewValidatorSet = ();
+
+    #[doc = r" The maximum number of nominators for each validator."]
+    type MaxNominators = ();
+
+    #[doc = r" The maximum number of entries to keep in the set id to session index mapping."]
+    #[doc = r""]
+    #[doc = r" Since the `SetIdSession` map is only used for validating equivocations this"]
+    #[doc = r" value should relate to the bonding duration of whatever staking system is"]
+    #[doc = r" being used (if any). If equivocation handling is not enabled then this value"]
+    #[doc = r" can be zero."]
+    type MaxSetIdSessionEntries = ();
+
+    #[doc = r" Weights for this pallet."]
+    type WeightInfo = ();
+
+    #[doc = r" The proof of key ownership, used for validating equivocation reports"]
+    #[doc = r" The proof must include the session index and validator count of the"]
+    #[doc = r" session at which the equivocation occurred."]
+    type KeyOwnerProof = sp_core::Void;
+
+    #[doc = r" The equivocation handling subsystem."]
+    #[doc = r""]
+    #[doc = r" Defines methods to publish, check and process an equivocation offence."]
+    type EquivocationReportSystem = ();
 }
 
 #[cfg(feature = "rococo")]
@@ -501,6 +538,7 @@ impl pallet_beefy_mmr::Config for Runtime {
 impl pallet_sudo::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
+    type WeightInfo = ();
 }
 
 impl cumulus_pallet_aura_ext::Config for Runtime {}
@@ -562,6 +600,9 @@ impl pallet_aura::Config for Runtime {
     type AuthorityId = AuraId;
     type DisabledValidators = ();
     type MaxAuthorities = MaxAuthorities;
+
+    /// TODO!!!! IMPLEMENT
+    type AllowMultipleBlocksPerSlot = ();
 }
 
 parameter_types! {
@@ -582,7 +623,6 @@ impl pallet_collator_selection::Config for Runtime {
     type UpdateOrigin = CollatorSelectionUpdateOrigin;
     type PotId = PotId;
     type MaxCandidates = MaxCandidates;
-    type MinCandidates = MinCandidates;
     type MaxInvulnerables = MaxInvulnerables;
     // should be a multiple of session or things will get inconsistent
     type KickThreshold = Period;
@@ -590,6 +630,9 @@ impl pallet_collator_selection::Config for Runtime {
     type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
     type ValidatorRegistration = Session;
     type WeightInfo = ();
+
+    // IMPLEMNT!!!!!!
+    type MinEligibleCollators = ();
 }
 
 parameter_types! {
@@ -607,7 +650,9 @@ impl xcm_app::Config for Runtime {
     type XcmTransfer = XTokens;
     type AccountIdConverter = sp_runtime::traits::Identity;
     type BalanceConverter = sp_runtime::traits::Identity;
-    type XcmSender = XCMSenderWrapper;
+    /// afasfdsaafasfafagaga
+    // type XcmSender = XCMSenderWrapper;
+    type XcmSender = ();
     type Currency = Balances;
     type SelfLocation = xcm_config::SelfLocation;
     type XorAssetId = XorAssetId;
@@ -618,8 +663,8 @@ pub struct XCMSenderWrapper;
 impl xcm_app::XcmSender<Runtime> for XCMSenderWrapper {
     fn send_xcm(
         origin: frame_system::pallet_prelude::OriginFor<Runtime>,
-        dest: Box<xcm::VersionedMultiLocation>,
-        message: Box<xcm::VersionedXcm<()>>,
+        dest: Box<staging_xcm::VersionedMultiLocation>,
+        message: Box<staging_xcm::VersionedXcm<()>>,
     ) -> frame_support::pallet_prelude::DispatchResult {
         PolkadotXcm::send(origin, dest, message)
     }
@@ -638,8 +683,6 @@ impl beefy_light_client::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
 }
-
-impl pallet_randomness_collective_flip::Config for Runtime {}
 
 parameter_types! {
     pub const BridgeMaxMessagePayloadSize: u32 = 256;
@@ -836,6 +879,8 @@ parameter_types! {
     pub const DemocracyMaxProposals: u32 = 100;
     pub const DemocracyMaxDeposits: u32 = 100;
     pub const DemocracyMaxBlacklisted: u32 = 100;
+    // TODO! Change this parameter
+    pub MaxProposalWeight: Weight = Weight::from_parts(u64::MAX, u64::MAX);
 }
 
 pub type TechnicalCollective = pallet_collective::Instance1;
@@ -859,6 +904,8 @@ impl pallet_collective::Config<TechnicalCollective> for Runtime {
     type MaxMembers = CouncilCollectiveMaxMembers;
     type DefaultVote = pallet_collective::PrimeDefaultVote;
     type WeightInfo = CollectiveWeightInfo<Self>;
+    type SetMembersOrigin = EnsureRoot<AccountId>;
+    type MaxProposalWeight = MaxProposalWeight;
 }
 
 impl pallet_collective::Config<CouncilCollective> for Runtime {
@@ -870,6 +917,8 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
     type MaxMembers = CouncilCollectiveMaxMembers;
     type DefaultVote = pallet_collective::PrimeDefaultVote;
     type WeightInfo = CollectiveWeightInfo<Self>;
+    type SetMembersOrigin = EnsureRoot<AccountId>;
+    type MaxProposalWeight = MaxProposalWeight;
 }
 
 parameter_types! {
@@ -885,6 +934,7 @@ parameter_types! {
     pub const ElectionsMaxVoters: u32 = 10000;
     pub const ElectionsMaxCandidates: u32 = 1000;
     pub const ElectionsModuleId: frame_support::traits::LockIdentifier = *b"phrelect";
+    pub const MaxVotesPerVoter: u32 = 16;
 }
 
 impl pallet_elections_phragmen::Config for Runtime {
@@ -893,7 +943,8 @@ impl pallet_elections_phragmen::Config for Runtime {
     type Currency = Balances;
     type ChangeMembers = Council;
     type InitializeMembers = Council;
-    type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
+    // type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
+    type CurrencyToVote = sp_staking::currency_to_vote::U128CurrencyToVote;
     type CandidacyBond = ElectionsCandidacyBond;
     type VotingBondBase = ElectionsVotingBondBase;
     type VotingBondFactor = ElectionsVotingBondFactor;
@@ -904,6 +955,7 @@ impl pallet_elections_phragmen::Config for Runtime {
     type TermDuration = ElectionsTermDuration;
     type MaxVoters = ElectionsMaxVoters;
     type MaxCandidates = ElectionsMaxCandidates;
+    type MaxVotesPerVoter = MaxVotesPerVoter;
     type WeightInfo = ();
 }
 
@@ -951,6 +1003,7 @@ impl pallet_democracy::Config for Runtime {
     type Preimages = Preimage;
     type MaxDeposits = DemocracyMaxDeposits;
     type MaxBlacklisted = DemocracyMaxBlacklisted;
+    type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
 }
 
 pub struct Slash;
@@ -1024,51 +1077,51 @@ impl pallet_utility::Config for Runtime {
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
-    pub enum Runtime where
-        Block = Block,
-        NodeBlock = opaque::Block,
-        UncheckedExtrinsic = UncheckedExtrinsic,
+    pub enum Runtime 
+    // where
+        // Block = Block,
+        // NodeBlock = opaque::Block,
+        // UncheckedExtrinsic = UncheckedExtrinsic,
     {
         // System support stuff.
-        System: frame_system::{Pallet, Call, Config, Storage, Event<T>} = 0,
-        ParachainSystem: cumulus_pallet_parachain_system::{
-            Pallet, Call, Config, Storage, Inherent, Event<T>, ValidateUnsigned,
-        } = 1,
-        Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
-        ParachainInfo: parachain_info::{Pallet, Storage, Config} = 3,
+        System: frame_system = 0,
+        ParachainSystem: cumulus_pallet_parachain_system = 1,
+        Timestamp: pallet_timestamp = 2,
+        ParachainInfo: parachain_info = 3,
         // Leaf provider should be placed before any pallet which is using it.
-        LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
+        LeafProvider: leaf_provider = 107,
 
         // Monetary stuff.
-        Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
-        TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>} = 11,
+        Balances: pallet_balances = 10,
+        TransactionPayment: pallet_transaction_payment= 11,
 
         // Collator support. The order of these 4 are important and shall not change.
-        Authorship: pallet_authorship::{Pallet, Storage} = 20,
-        CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
-        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
-        Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
-        AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 24,
+        Authorship: pallet_authorship = 20,
+        CollatorSelection: pallet_collator_selection= 21,
+        Session: pallet_session = 22,
+        Aura: pallet_aura = 23,
+        AuraExt: cumulus_pallet_aura_ext = 24,
 
         // XCM helpers.
-        XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,
-        PolkadotXcm: pallet_xcm::{Pallet, Event<T>, Origin, Config} = 31,
-        CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 32,
-        DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
+        XcmpQueue: cumulus_pallet_xcmp_queue = 30,
+        // CRUCIAL TO LEAVE IT WITHOUT "Call"
+        PolkadotXcm: pallet_xcm::{Pallet, Event<T>, Origin, Config<T>} = 31,
+        CumulusXcm: cumulus_pallet_xcm = 32,
+        DmpQueue: cumulus_pallet_dmp_queue= 33,
 
         // ORML
         XTokens: orml_xtokens::{Pallet, Storage, Event<T>} = 41,
 
         #[cfg(any(feature = "rococo", feature = "polkadot"))]
-        Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
+        Sudo: pallet_sudo= 100,
 
-        XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
-        BeefyLightClient: beefy_light_client::{Pallet, Call, Storage, Event<T>, Config} = 103,
-        SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Storage, Event<T>, ValidateUnsigned} = 104,
-        SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 105,
-        SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
-        BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
-        MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call} = 109,
+        XCMApp: xcm_app= 101,
+        BeefyLightClient: beefy_light_client = 103,
+        SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound = 104,
+        SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound = 105,
+        SubstrateDispatch: dispatch = 106,
+        BridgeDataSigner: bridge_data_signer = 108,
+        MultisigVerifier: multisig_verifier= 109,
 
         // Beefy pallets should be placed after channels
         #[cfg(feature = "rococo")]
@@ -1077,16 +1130,75 @@ construct_runtime!(
         #[cfg(feature = "rococo")]
         BeefyMmr: pallet_beefy_mmr = 6,
 
-        TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 110,
-        Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 111,
-        Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 112,
-        Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 113,
-        Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 114,
-        ElectionsPhragmen: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>} = 115,
-        Utility: pallet_utility::{Pallet, Call, Event} = 116,
+        TechnicalCommittee: pallet_collective::<Instance1> = 110,
+        Council: pallet_collective::<Instance2> = 111,
+        Democracy: pallet_democracy= 112,
+        Preimage: pallet_preimage = 113,
+        Scheduler: pallet_scheduler = 114,
+        ElectionsPhragmen: pallet_elections_phragmen= 115,
+        Utility: pallet_utility= 116,
 
         #[cfg(any(feature = "rococo"))]
-        XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
+        XCMAppSudoWrapper: xcm_app_sudo_wrapper = 150,
+
+
+        // System: frame_system::{Pallet, Call, Config, Storage, Event<T>} = 0,
+        // ParachainSystem: cumulus_pallet_parachain_system::{
+        //     Pallet, Call, Config, Storage, Inherent, Event<T>, ValidateUnsigned,
+        // } = 1,
+        // Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
+        // ParachainInfo: parachain_info::{Pallet, Storage, Config} = 3,
+        // // Leaf provider should be placed before any pallet which is using it.
+        // LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
+
+        // // Monetary stuff.
+        // Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
+        // TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>} = 11,
+
+        // // Collator support. The order of these 4 are important and shall not change.
+        // Authorship: pallet_authorship::{Pallet, Storage} = 20,
+        // CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
+        // Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
+        // Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
+        // AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 24,
+
+        // // XCM helpers.
+        // XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,
+        // PolkadotXcm: pallet_xcm::{Pallet, Event<T>, Origin, Config} = 31,
+        // CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 32,
+        // DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
+
+        // // ORML
+        // XTokens: orml_xtokens::{Pallet, Storage, Event<T>} = 41,
+
+        // #[cfg(any(feature = "rococo", feature = "polkadot"))]
+        // Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
+
+        // XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
+        // BeefyLightClient: beefy_light_client::{Pallet, Call, Storage, Event<T>, Config} = 103,
+        // SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Storage, Event<T>, ValidateUnsigned} = 104,
+        // SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 105,
+        // SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
+        // BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
+        // MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call} = 109,
+
+        // // Beefy pallets should be placed after channels
+        // #[cfg(feature = "rococo")]
+        // Mmr: pallet_mmr = 4,
+        // Beefy: pallet_beefy = 5,
+        // #[cfg(feature = "rococo")]
+        // BeefyMmr: pallet_beefy_mmr = 6,
+
+        // TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 110,
+        // Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 111,
+        // Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 112,
+        // Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 113,
+        // Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 114,
+        // ElectionsPhragmen: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>} = 115,
+        // Utility: pallet_utility::{Pallet, Call, Event} = 116,
+
+        // #[cfg(any(feature = "rococo"))]
+        // XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
     }
 );
 
@@ -1137,6 +1249,14 @@ impl_runtime_apis! {
         fn metadata() -> OpaqueMetadata {
             OpaqueMetadata::new(Runtime::metadata().into())
         }
+
+        fn metadata_at_version(version: u32) -> Option<OpaqueMetadata> {
+			Runtime::metadata_at_version(version)
+		}
+
+		fn metadata_versions() -> sp_std::vec::Vec<u32> {
+			Runtime::metadata_versions()
+		}
     }
 
     impl sp_block_builder::BlockBuilder<Block> for Runtime {
@@ -1188,14 +1308,40 @@ impl_runtime_apis! {
         }
     }
 
-    impl sp_beefy::BeefyApi<Block> for Runtime {
-        fn validator_set() -> Option<sp_beefy::ValidatorSet<BeefyId>> {
+    impl sp_consensus_beefy::BeefyApi<Block, BeefyId> for Runtime {
+        fn validator_set() -> Option<sp_consensus_beefy::ValidatorSet<BeefyId>> {
             #[cfg(not(feature = "rococo"))]
             return None;
 
             #[cfg(feature = "rococo")]
             Beefy::validator_set()
         }
+
+        fn beefy_genesis() -> Option<BlockNumber> {
+            #[cfg(not(feature = "rococo"))]
+            return None;
+
+            #[cfg(feature = "rococo")]
+            Beefy::genesis_block()
+		}
+
+        fn submit_report_equivocation_unsigned_extrinsic(
+			equivocation_proof: beefy_primitives::EquivocationProof<
+				BlockNumber,
+				BeefyId,
+				BeefySignature,
+			>,
+			key_owner_proof: beefy_primitives::OpaqueKeyOwnershipProof,
+		) -> Option<()> {
+            None
+		}
+
+		fn generate_key_ownership_proof(
+			_set_id: beefy_primitives::ValidatorSetId,
+			authority_id: BeefyId,
+		) -> Option<beefy_primitives::OpaqueKeyOwnershipProof> {
+            None
+		}
     }
 
     impl mmr::MmrApi<Block, Hash, BlockNumber> for Runtime {

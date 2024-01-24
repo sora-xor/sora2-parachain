@@ -784,7 +784,6 @@ dependencies = [
 [[package]]
 name = "beefy-light-client"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?branch=polkadotsdk_1.1.0#2ae4b49ae3e5a68bef8533d80827b8272351c682"
 dependencies = [
  "anyhow",
  "binary-merkle-tree",
@@ -808,7 +807,6 @@ dependencies = [
 [[package]]
 name = "beefy-light-client-rpc"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?branch=polkadotsdk_1.1.0#2ae4b49ae3e5a68bef8533d80827b8272351c682"
 dependencies = [
  "beefy-light-client-runtime-api",
  "jsonrpsee",
@@ -824,7 +822,6 @@ dependencies = [
 [[package]]
 name = "beefy-light-client-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?branch=polkadotsdk_1.1.0#2ae4b49ae3e5a68bef8533d80827b8272351c682"
 dependencies = [
  "bridge-types",
  "parity-scale-codec",
@@ -1047,7 +1044,6 @@ dependencies = [
 [[package]]
 name = "bridge-common"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?branch=polkadotsdk_1.1.0#2ae4b49ae3e5a68bef8533d80827b8272351c682"
 dependencies = [
  "bitvec",
  "bridge-types",
@@ -1066,7 +1062,6 @@ dependencies = [
 [[package]]
 name = "bridge-data-signer"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor//sora2-common.git?branch=polkadotsdk_1.1.0#2ae4b49ae3e5a68bef8533d80827b8272351c682"
 dependencies = [
  "bridge-common",
  "bridge-types",
@@ -1085,7 +1080,6 @@ dependencies = [
 [[package]]
 name = "bridge-types"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?branch=polkadotsdk_1.1.0#2ae4b49ae3e5a68bef8533d80827b8272351c682"
 dependencies = [
  "derivative",
  "ethabi",
@@ -2597,7 +2591,6 @@ dependencies = [
 [[package]]
 name = "dispatch"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor//sora2-common.git?branch=polkadotsdk_1.1.0#2ae4b49ae3e5a68bef8533d80827b8272351c682"
 dependencies = [
  "bridge-types",
  "frame-benchmarking",
@@ -4624,7 +4617,6 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 [[package]]
 name = "leaf-provider"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor//sora2-common.git?branch=polkadotsdk_1.1.0#2ae4b49ae3e5a68bef8533d80827b8272351c682"
 dependencies = [
  "bridge-types",
  "ethabi",
@@ -4644,7 +4636,6 @@ dependencies = [
 [[package]]
 name = "leaf-provider-rpc"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?branch=polkadotsdk_1.1.0#2ae4b49ae3e5a68bef8533d80827b8272351c682"
 dependencies = [
  "jsonrpsee",
  "leaf-provider-runtime-api",
@@ -4661,7 +4652,6 @@ dependencies = [
 [[package]]
 name = "leaf-provider-runtime-api"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?branch=polkadotsdk_1.1.0#2ae4b49ae3e5a68bef8533d80827b8272351c682"
 dependencies = [
  "bridge-types",
  "parity-scale-codec",
@@ -5612,7 +5602,6 @@ checksum = "e5ce46fe64a9d73be07dcbe690a38ce1b293be448fd8ce1e6c1b8062c9f72c6a"
 [[package]]
 name = "multisig-verifier"
 version = "0.1.0"
-source = "git+https://github.com/sora-xor//sora2-common.git?branch=polkadotsdk_1.1.0#2ae4b49ae3e5a68bef8533d80827b8272351c682"
 dependencies = [
  "bridge-common",
  "bridge-types",
@@ -11438,6 +11427,7 @@ dependencies = [
  "parachain-common",
  "parachain-info",
  "parity-scale-codec",
+ "polkadot-parachain-primitives",
  "polkadot-runtime-common",
  "polkadot-runtime-parachains",
  "scale-info",
@@ -11454,11 +11444,14 @@ dependencies = [
  "sp-offchain",
  "sp-runtime",
  "sp-session",
+ "sp-staking",
  "sp-std",
  "sp-transaction-pool",
  "sp-version",
  "sp-weights",
  "staging-xcm",
+ "staging-xcm-builder",
+ "staging-xcm-executor",
  "substrate-bridge-channel",
  "substrate-wasm-builder",
  "xcm-app",
@@ -12512,7 +12505,6 @@ dependencies = [
 [[package]]
 name = "substrate-bridge-channel"
 version = "0.1.1"
-source = "git+https://github.com/sora-xor//sora2-common.git?branch=polkadotsdk_1.1.0#2ae4b49ae3e5a68bef8533d80827b8272351c682"
 dependencies = [
  "bridge-types",
  "ethabi",
