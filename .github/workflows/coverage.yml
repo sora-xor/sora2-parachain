@@ -1,5 +1,16 @@
 name: Coverage
-on: [push]
+on:
+  pull_request:
+  push:
+    branches:
+      - duty/codecov
+      - develop
+env:
+  CARGO_INCREMENTAL: 0
+  SKIP_WASM_BUILD: 1
+  LLVM_PROFILE_FILE: "sora2-%p-%m.profraw"
+  RUST_BACKTRACE: short
+  RUSTFLAGS: "-Cinstrument-coverage"
 
 jobs:
   build:
@@ -9,16 +20,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Rust
-        uses: actions/setup-rust@v1
+
+      - name: Setup Rust
+        uses: ATiltedTree/setup-rust@v1.0.5
         with:
-          rust-version: 'nightly'
+          rust-version: nightly
+          components: grcov
 
       - name: Build and test
         run: cargo test -r
 
-      - name: Install grcov
-        run: cargo install grcov
+      # - name: Install grcov
+      #   run: cargo install grcov
 
       - name: Generate Cobertura report
         run: |
