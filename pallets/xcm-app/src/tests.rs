@@ -31,7 +31,7 @@
 use crate::{mock::*, Error};
 use bridge_types::{types::AssetKind, H256};
 use frame_support::{assert_err, assert_noop, assert_ok, traits::Currency};
-use xcm::{
+use staging_xcm::{
     opaque::latest::{
         Junction::{GeneralKey, Parachain},
         Junctions::X2,
@@ -289,11 +289,11 @@ fn it_fails_receive_xor() {
             XCMApp::xcm_transfer_asset(
                 asset_id,
                 alice(),
-                xcm::VersionedMultiLocation::V3(
-                    xcm::v3::MultiLocation::parent()
-                        .pushed_with_interior(xcm::v3::Junction::Parachain(2011))
+                staging_xcm::VersionedMultiLocation::V3(
+                    staging_xcm::v3::MultiLocation::parent()
+                        .pushed_with_interior(staging_xcm::v3::Junction::Parachain(2011))
                         .unwrap()
-                        .pushed_with_interior(xcm::v3::Junction::AccountId32 {
+                        .pushed_with_interior(staging_xcm::v3::Junction::AccountId32 {
                             network: None,
                             id: bob().into()
                         })
@@ -308,12 +308,12 @@ fn it_fails_receive_xor() {
             XCMApp::xcm_transfer_asset(
                 asset_id,
                 alice(),
-                xcm::VersionedMultiLocation::V2(
-                    xcm::v2::MultiLocation::parent()
-                        .pushed_with_interior(xcm::v2::Junction::Parachain(2011))
+                staging_xcm::VersionedMultiLocation::V2(
+                    staging_xcm::v2::MultiLocation::parent()
+                        .pushed_with_interior(staging_xcm::v2::Junction::Parachain(2011))
                         .unwrap()
-                        .pushed_with_interior(xcm::v2::Junction::AccountId32 {
-                            network: xcm::v2::NetworkId::Any,
+                        .pushed_with_interior(staging_xcm::v2::Junction::AccountId32 {
+                            network: staging_xcm::v2::NetworkId::Any,
                             id: bob().into()
                         })
                         .unwrap()
@@ -335,11 +335,11 @@ fn it_works_receive_xor() {
         assert_ok!(XCMApp::xcm_transfer_asset(
             asset_id,
             alice(),
-            xcm::VersionedMultiLocation::V3(
-                xcm::v3::MultiLocation::parent()
-                    .pushed_with_interior(xcm::v3::Junction::Parachain(2011))
+            staging_xcm::VersionedMultiLocation::V3(
+                staging_xcm::v3::MultiLocation::parent()
+                    .pushed_with_interior(staging_xcm::v3::Junction::Parachain(2011))
                     .unwrap()
-                    .pushed_with_interior(xcm::v3::Junction::AccountId32 {
+                    .pushed_with_interior(staging_xcm::v3::Junction::AccountId32 {
                         network: None,
                         id: bob().into()
                     })
