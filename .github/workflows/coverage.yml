@@ -32,7 +32,7 @@ jobs:
       - name: Setup Rust
         uses: ATiltedTree/setup-rust@v1.0.5
         with:
-          rust-version: nightly
+          rust-version: stable
 
       - name: Install llvm tools
         run: rustup component add llvm-tools-preview
