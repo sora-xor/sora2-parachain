@@ -83,7 +83,7 @@ use frame_system::{
     EnsureRoot,
 };
 // pub use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
-pub use sp_consensus_beefy::ecdsa_crypto::AuthorityId as BeefyId;
+pub use sp_consensus_beefy::ecdsa_crypto::{AuthorityId as BeefyId, Signature as BeefySignature};
 #[cfg(feature = "rococo")]
 use sp_consensus_beefy::mmr::MmrLeafVersion;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -1326,20 +1326,20 @@ impl_runtime_apis! {
 		}
 
         fn submit_report_equivocation_unsigned_extrinsic(
-			equivocation_proof: beefy_primitives::EquivocationProof<
+			_equivocation_proof: sp_consensus_beefy::EquivocationProof<
 				BlockNumber,
 				BeefyId,
 				BeefySignature,
 			>,
-			key_owner_proof: beefy_primitives::OpaqueKeyOwnershipProof,
+			_key_owner_proof: sp_consensus_beefy::OpaqueKeyOwnershipProof,
 		) -> Option<()> {
             None
 		}
 
 		fn generate_key_ownership_proof(
-			_set_id: beefy_primitives::ValidatorSetId,
-			authority_id: BeefyId,
-		) -> Option<beefy_primitives::OpaqueKeyOwnershipProof> {
+			_set_id: sp_consensus_beefy::ValidatorSetId,
+			_authority_id: BeefyId,
+		) -> Option<sp_consensus_beefy::OpaqueKeyOwnershipProof> {
             None
 		}
     }
