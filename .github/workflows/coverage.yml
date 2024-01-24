@@ -1,9 +1,5 @@
-name: Codecov and Cobertura Report
-
-on:
-  push:
-    branches:
-      - main
+name: Coverage
+on: [push]
 
 jobs:
   build:
