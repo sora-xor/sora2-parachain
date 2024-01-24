@@ -12,9 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set .env
-        run: cp env.template .env
-
       - name: Run tests
         uses: actions/setup-node@v3
         with:
