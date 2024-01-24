@@ -25,13 +25,12 @@ jobs:
         uses: ATiltedTree/setup-rust@v1.0.5
         with:
           rust-version: nightly
-          components: grcov
 
       - name: Build and test
         run: cargo test -r
 
-      # - name: Install grcov
-      #   run: cargo install grcov
+      - name: Install grcov
+        run: cargo install grcov
 
       - name: Generate Cobertura report
         run: |
