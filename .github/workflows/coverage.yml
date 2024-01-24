@@ -32,13 +32,13 @@ jobs:
       - name: Setup Rust
         uses: ATiltedTree/setup-rust@v1.0.5
         with:
-          rust-version: stable
+          rust-version: nightly-2024-01-15
 
       - name: Install llvm tools
         run: rustup component add llvm-tools-preview
 
       - name: Install grcov
-        run: cargo install grcov
+        run: cargo install grcov 
 
       - name: Install packages
         run: |
