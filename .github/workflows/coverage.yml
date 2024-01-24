@@ -22,7 +22,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Cache cargo registry
+      - name: Test
+        run: cargo test --features kusama,polkadot,rococo,runtime-benchmarks
+      
+      - name: Storing cache
         uses: actions/cache@v2
         with:
           path: |
@@ -30,25 +33,6 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-
-      # - name: Setup Rust
-      #   uses: ATiltedTree/setup-rust@v1.0.5
-      #   with:
-      #     rust-version: nightly-2024-01-15
-
-      # - name: Install llvm tools
-      #   run: rustup component add llvm-tools-preview
-
-      # - name: Install grcov
-      #   run: cargo install grcov 
-
-      # - name: Install packages
-      #   run: |
-      #     apt-get update
-      #     protobuf-compiler
-
-      - name: Test
-        run: cargo test -r
 
       - name: Generate Cobertura report
         run: |
