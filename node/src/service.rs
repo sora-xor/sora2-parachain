@@ -27,12 +27,11 @@ use polkadot_service::CollatorPair;
 use sc_client_api::BlockBackend;
 use sc_consensus::ImportQueue;
 use sc_executor::NativeElseWasmExecutor;
-use sc_network::NetworkService;
-use sc_network_common::service::NetworkBlock;
+use sc_network::{NetworkService, NetworkBlock};
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sp_api::ConstructRuntimeApi;
-use sp_keystore::SyncCryptoStorePtr;
+use sp_keystore::KeystorePtr as SyncCryptoStorePtr;
 use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
 
@@ -197,7 +196,7 @@ async fn build_relay_chain_interface(
     hwbench: Option<sc_sysinfo::HwBench>,
 ) -> RelayChainResult<(Arc<(dyn RelayChainInterface + 'static)>, Option<CollatorPair>)> {
     if !collator_options.relay_chain_rpc_urls.is_empty() {
-        return cumulus_relay_chain_minimal_node::build_minimal_relay_chain_node(
+        return cumulus_relay_chain_minimal_node::build_minimal_relay_chain_node_with_rpc(
             polkadot_config,
             task_manager,
             collator_options.relay_chain_rpc_urls,
@@ -301,6 +300,7 @@ where
             genesis_hash,
             parachain_config.chain_spec.fork_id(),
             client.clone(),
+            config.prometheus_registry().cloned(),
         );
 
     if enable_beefy {
@@ -338,15 +338,16 @@ where
             block_announce_validator_builder: Some(Box::new(|_| {
                 Box::new(block_announce_validator)
             })),
-            warp_sync: None,
+            warp_sync_params: None,
+            net_config: todo!(),
         })?;
 
     let (beefy_block_import, beefy_voter_links, beefy_rpc_links) =
-        beefy_gadget::beefy_block_import_and_links(client.clone(), backend.clone(), client.clone());
+        beefy_gadget::beefy_block_import_and_links(client.clone(), backend.clone(), client.clone(), config.prometheus_registry().cloned());
 
     if enable_beefy {
         let justifications_protocol_name = beefy_on_demand_justifications_handler.protocol_name();
-        let payload_provider = sp_beefy::mmr::MmrRootProvider::new(client.clone());
+        let payload_provider = sp_consensus_beefy::mmr::MmrRootProvider::new(client.clone());
 
         let beefy_params = beefy_gadget::BeefyParams {
             client: client.clone(),
@@ -359,6 +360,7 @@ where
                 gossip_protocol_name,
                 justifications_protocol_name,
                 _phantom: core::marker::PhantomData::<Block>,
+                sync: todo!(),
             },
             links: beefy_voter_links,
             min_block_delta: 8,
@@ -409,6 +411,7 @@ where
         system_rpc_tx,
         telemetry: telemetry.as_mut(),
         tx_handler_controller,
+        sync_service: todo!(),
     })?;
 
     if let Some(hwbench) = hwbench {
@@ -464,6 +467,8 @@ where
             import_queue,
             collator_key: collator_key.expect("Command line arguments do not allow this. qed"),
             relay_chain_slot_duration,
+            sync_service: todo!(),
+            recovery_handle: todo!()
         };
 
         start_collator(params).await?;
@@ -476,6 +481,8 @@ where
             relay_chain_interface,
             relay_chain_slot_duration,
             import_queue,
+            sync_service: todo!(),
+            recovery_handle: todo!()
         };
 
         start_full_node(params)?;

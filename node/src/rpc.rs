@@ -61,7 +61,7 @@ where
     C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
     C::Api: mmr_rpc::MmrRuntimeApi<Block, <Block as sp_runtime::traits::Block>::Hash, BlockNumber>,
     C::Api: leaf_provider_rpc::LeafProviderRuntimeAPI<Block>,
-    C::Api: sp_beefy::BeefyApi<Block>,
+    C::Api: sp_consensus_beefy::BeefyApi<Block>,
     C::Api: BlockBuilder<Block>,
     P: TransactionPool + Sync + Send + 'static,
 {
@@ -79,7 +79,7 @@ where
     module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 
     // Beefy and MMR:
-    module.merge(Mmr::new(client.clone()).into_rpc())?;
+    module.merge(Mmr::new(client.clone(), todo!()).into_rpc())?;
     module.merge(
         Beefy::<Block>::new(
             beefy.beefy_finality_proof_stream,
