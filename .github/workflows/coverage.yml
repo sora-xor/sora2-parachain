@@ -9,7 +9,7 @@ on:
     # tags:
     #   - '*'
     branches:
-      - feature/dops-2942
+      - duty/codecov
 jobs:
   coverage:
     runs-on: ubuntu-latest
