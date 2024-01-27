@@ -48,6 +48,7 @@ pub enum RelayChain {
     Kusama,
     Rococo,
     Polkadot,
+    Alpha,
 }
 
 pub fn dummy_beefy_id_from_account_id(a: AccountId) -> BeefyId {
@@ -66,6 +67,7 @@ impl RelayChain {
             RelayChain::Kusama => "SORA Kusama",
             RelayChain::Rococo => "SORA Rococo",
             RelayChain::Polkadot => "SORA Polkadot",
+            RelayChain::Alpha => "SORA Alpha",
         }
     }
 
@@ -74,6 +76,7 @@ impl RelayChain {
             RelayChain::Kusama => "sora_kusama",
             RelayChain::Rococo => "sora_rococo",
             RelayChain::Polkadot => "sora_polkadot",
+            RelayChain::Alpha => "sora_alpha",
         }
     }
 
@@ -86,6 +89,9 @@ impl RelayChain {
                 hex!("de5ef29355f16efa342542cd7567bebd371b3e80dd33aee99cc50cb484688058")
             },
             RelayChain::Rococo => {
+                hex!("54fd1e1728cd833d21da6f3e36c50884062e35edfc24aec7a70c18a60451255a")
+            },
+            RelayChain::Alpha => {
                 hex!("54fd1e1728cd833d21da6f3e36c50884062e35edfc24aec7a70c18a60451255a")
             },
         };
@@ -113,6 +119,10 @@ impl RelayChain {
                 (hex!("f043af25b769db28c9f9ca876e8d55b4a5a7d634b1b30b2e5e796666f65cb24a"), None),
             ],
             RelayChain::Rococo => vec![
+                (hex!("caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"), None),
+                (hex!("3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"), None),
+            ],
+            RelayChain::Alpha => vec![
                 (hex!("caeedb2ddad0aca6d587dd24422ab8f6281a5b2495eb5d30265294cb29238567"), None),
                 (hex!("3617852ccd789ce50f10d7843542964c71e8e08ef2977c1af3435eaabaca1521"), None),
             ],
@@ -153,6 +163,7 @@ impl RelayChain {
             RelayChain::Kusama => "kusama",
             RelayChain::Polkadot => "polkadot",
             RelayChain::Rococo => "rococo",
+            RelayChain::Alpha => "westend_moonbase_relay_testnet",
         }
     }
 
@@ -161,6 +172,7 @@ impl RelayChain {
             RelayChain::Kusama => SubNetworkId::Kusama,
             RelayChain::Polkadot => SubNetworkId::Polkadot,
             RelayChain::Rococo => SubNetworkId::Rococo,
+            RelayChain::Alpha => SubNetworkId::Rococo,
         }
     }
 }
@@ -210,6 +222,10 @@ pub fn polkadot_chain_spec() -> Result<ChainSpec, String> {
 
 pub fn rococo_chain_spec() -> Result<ChainSpec, String> {
     ChainSpec::from_json_bytes(&include_bytes!("../res/rococo.json")[..])
+}
+
+pub fn alpha_chain_spec() -> Result<ChainSpec, String> {
+    ChainSpec::from_json_bytes(&include_bytes!("../res/alphanet.json")[..])
 }
 
 pub fn coded_config(relay_chain: RelayChain, para_id: u32) -> ChainSpec {
@@ -453,7 +469,7 @@ pub fn docker_local_testnet_config() -> ChainSpec {
     )
 }
 
-/// Config for bridge private testnet
+/// Config for bridge private devnet
 pub fn bridge_dev_config() -> ChainSpec {
     // Give your base currency a unit name and decimal places
     let mut properties = sc_chain_spec::Properties::new();
@@ -528,6 +544,81 @@ pub fn bridge_dev_config() -> ChainSpec {
     )
 }
 
+/// Config for bridge private testnet
+pub fn bridge_test_config() -> ChainSpec {
+    // base currency unit name and decimal places
+    let mut properties = sc_chain_spec::Properties::new();
+    properties.insert("tokenSymbol".into(), "XOR".into());
+    properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("ss58Format".into(), sora2_parachain_runtime::SS58Prefix::get().into());
+
+    ChainSpec::from_genesis(
+        // Name
+        "Sora Testnet",
+        // ID
+        "sora_testnet",
+        ChainType::Local,
+        move || {
+            testnet_genesis(
+                hex!("f6d0e31012ebeef4b9cc4cddd0593a8579d226dc17ce725139225e81683f0143").into(),
+                // initial collators.
+                vec![
+                    authority_keys_from_public_keys(
+                        // scheme: sr25519, seed: <seed>//parachain-collator-1
+                        hex!("9232d7e4f6b7e1a881346c92f63d65e0a0ce6def5170e9766ed9d1001ed27e5d"),
+                        // scheme: sr25519, seed: <seed>//parachain-collator-1
+                        hex!("9232d7e4f6b7e1a881346c92f63d65e0a0ce6def5170e9766ed9d1001ed27e5d"),
+                        // scheme: ecdsa, seed: <seed>//parachain-collator-1
+                        hex!("035cb006bff18dcad55c58409b1cdc31be223b1340596c53f3704859fa0057469d"),
+                    ),
+                    authority_keys_from_public_keys(
+                        // scheme: sr25519, seed: <seed>//parachain-collator-2
+                        hex!("54036a0a47f28c64885fd8f0300c8ff436c3007e6b5ef70d4c3f1d3ee8856f5c"),
+                        // scheme: sr25519, seed: <seed>//parachain-collator-2
+                        hex!("54036a0a47f28c64885fd8f0300c8ff436c3007e6b5ef70d4c3f1d3ee8856f5c"),
+                        // scheme: ecdsa, seed: <seed>//parachain-collator-2
+                        hex!("03c9a2529b1b857aa620a6b908de3aded3503d4549dd36ecfa79f800ae46ca0c9a"),
+                    ),
+                ],
+                vec![
+                    hex!("f6d0e31012ebeef4b9cc4cddd0593a8579d226dc17ce725139225e81683f0143").into(),
+                    hex!("9232d7e4f6b7e1a881346c92f63d65e0a0ce6def5170e9766ed9d1001ed27e5d").into(),
+                    hex!("54036a0a47f28c64885fd8f0300c8ff436c3007e6b5ef70d4c3f1d3ee8856f5c").into(),
+                    hex!("7a2eaa9ba604e1c6575c0cada3e50155f98cd625566ea7239577c9565236662a").into(),
+                    hex!("ac95d7df7e9f61b82654a0a9c93a74cca9182062a89aff6f0545f09ab9c1a152").into(),
+                    hex!("4c6018b95a633613714b65201f9f41fb8901be88dc5fb0053fc3c10c02ddad33").into(),
+                    hex!("306c3e7cb2075ca8cd7d3a5ec71e6f51e3fa6e8e550dce003a1c39167e0f317b").into(),
+                    hex!("328be9c672c4fff8ae9065ebdf116a47e1121933616a1d1749ff9bb3356fd542").into(),
+                ],
+                2011.into(),
+                SubNetworkId::Rococo,
+                vec![
+                    hex!("f6d0e31012ebeef4b9cc4cddd0593a8579d226dc17ce725139225e81683f0143").into(),
+                    hex!("9232d7e4f6b7e1a881346c92f63d65e0a0ce6def5170e9766ed9d1001ed27e5d").into(),
+                    hex!("54036a0a47f28c64885fd8f0300c8ff436c3007e6b5ef70d4c3f1d3ee8856f5c").into(),
+                    hex!("7a2eaa9ba604e1c6575c0cada3e50155f98cd625566ea7239577c9565236662a").into(),
+                ],
+                vec![],
+            )
+        },
+        // Bootnodes
+        Vec::new(),
+        // Telemetry
+        None,
+        // Protocol ID
+        Some("sora-test"),
+        // Fork ID
+        None,
+        // Properties
+        Some(properties),
+        // Extensions
+        Extensions {
+            relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
+            para_id: 2011,
+        },
+    )
+}
+
 fn testnet_genesis(
     root_key: AccountId,
     invulnerables: Vec<(AccountId, (AuraId, BeefyId))>,
@@ -576,6 +667,7 @@ fn testnet_genesis(
         polkadot_xcm: sora2_parachain_runtime::PolkadotXcmConfig {
             safe_xcm_version: Some(SAFE_XCM_VERSION),
         },
+        #[cfg(any(feature = "rococo", feature = "polkadot"))]
         sudo: sora2_parachain_runtime::SudoConfig { key: Some(root_key) },
         technical_committee: TechnicalCommitteeConfig {
             members: technical_committee_accounts,

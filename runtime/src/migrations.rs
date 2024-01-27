@@ -28,48 +28,43 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#[cfg(feature = "kusama")]
 use crate::*;
-use frame_support::{
-    traits::{Currency, ExistenceRequirement, LockableCurrency, OnRuntimeUpgrade, WithdrawReasons},
-    weights::Weight,
-};
-use sp_std::collections::btree_set::BTreeSet;
+#[cfg(feature = "kusama")]
+use frame_support::{traits::OnRuntimeUpgrade, weights::Weight};
 
-pub type Migrations = (RemoveMintedAccountsBalance,);
+#[cfg(feature = "kusama")]
+pub type Migrations = (RemoveSudoKey,);
 
-pub struct RemoveMintedAccountsBalance;
+#[cfg(feature = "rococo")]
+pub type Migrations = ();
 
-impl OnRuntimeUpgrade for RemoveMintedAccountsBalance {
+#[cfg(feature = "polkadot")]
+pub type Migrations =
+    (pallet_balances::migration::MigrateManyToTrackInactive<crate::Runtime, EmptyAccountList>,);
+
+#[cfg(feature = "polkadot")]
+pub struct EmptyAccountList;
+
+#[cfg(feature = "polkadot")]
+impl sp_core::Get<crate::Vec<crate::AccountId>> for EmptyAccountList {
+    fn get() -> crate::Vec<crate::AccountId> {
+        Default::default()
+    }
+}
+
+#[cfg(feature = "kusama")]
+pub struct RemoveSudoKey;
+
+#[cfg(feature = "kusama")]
+impl OnRuntimeUpgrade for RemoveSudoKey {
     fn on_runtime_upgrade() -> Weight {
-        let mut accounts_to_skip =
-            pallet_collator_selection::Invulnerables::<Runtime>::get().to_vec();
-        if let Some(sudo_key) = Sudo::key() {
-            // Fees was updated, so we need to update sudo account balance
-            // to be able to resolve possible issues after runtime upgrade.
-            let _ = Balances::deposit_creating(&sudo_key, UNIT * 1000);
-            accounts_to_skip.push(sudo_key);
-        }
-        let accounts_to_skip = BTreeSet::from_iter(accounts_to_skip.into_iter());
-        for (account, info) in frame_system::Account::<Runtime>::iter() {
-            if accounts_to_skip.contains(&account) {
-                continue
-            }
-            let locks = Balances::locks(&account);
-            for lock in locks {
-                Balances::remove_lock(lock.id, &account);
-            }
-            if let Err(err) = Balances::withdraw(
-                &account,
-                info.data.free - EXISTENTIAL_DEPOSIT,
-                WithdrawReasons::all(),
-                ExistenceRequirement::KeepAlive,
-            ) {
-                frame_support::log::error!(
-                    "Failed to withdraw funds from account {:?}: {:?}",
-                    account,
-                    err
-                );
-            }
+        if let Some(key) =
+            frame_support::storage::migration::take_storage_value::<AccountId>(b"Sudo", b"Key", &[])
+        {
+            frame_support::log::error!("Sudo key removed: {:?}", key);
+        } else {
+            frame_support::log::error!("Sudo key not found in storage");
         }
         RuntimeBlockWeights::get().max_block
     }

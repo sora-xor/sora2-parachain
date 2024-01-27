@@ -221,10 +221,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("sora_ksm"),
     impl_name: create_runtime_str!("sora_ksm"),
     authoring_version: 1,
-    spec_version: 8,
+    spec_version: 10,
     impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
-    transaction_version: 8,
+    transaction_version: 10,
     state_version: 1,
 };
 
@@ -305,6 +305,11 @@ parameter_types! {
 }
 
 #[cfg(feature = "rococo")]
+parameter_types! {
+    pub const SS58Prefix: u16 = 420;
+}
+
+#[cfg(feature = "alphanet")]
 parameter_types! {
     pub const SS58Prefix: u16 = 420;
 }
@@ -492,6 +497,7 @@ impl pallet_beefy_mmr::Config for Runtime {
     type BeefyDataProvider = LeafProvider;
 }
 
+#[cfg(any(feature = "rococo", feature = "polkadot"))]
 impl pallet_sudo::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
@@ -726,6 +732,11 @@ impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
 #[cfg(feature = "rococo")]
 parameter_types! {
     pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Rococo);
+}
+
+#[cfg(feature = "alphanet")]
+parameter_types! {
+    pub const ThisNetworkId: GenericNetworkId = GenericNetworkId::Sub(SubNetworkId::Alphanet);
 }
 
 #[cfg(feature = "polkadot")]
@@ -1004,6 +1015,13 @@ impl pallet_preimage::Config for Runtime {
     type ByteDeposit = PreimageByteDeposit;
 }
 
+impl pallet_utility::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeCall = RuntimeCall;
+    type WeightInfo = ();
+    type PalletsOrigin = OriginCaller;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -1041,6 +1059,7 @@ construct_runtime!(
         // ORML
         XTokens: orml_xtokens::{Pallet, Storage, Event<T>} = 41,
 
+        #[cfg(any(feature = "rococo", feature = "polkadot"))]
         Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
         XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
@@ -1064,8 +1083,9 @@ construct_runtime!(
         Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 113,
         Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 114,
         ElectionsPhragmen: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>} = 115,
+        Utility: pallet_utility::{Pallet, Call, Event} = 116,
 
-        #[cfg(feature = "rococo")]
+        #[cfg(any(feature = "rococo"))]
         XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
     }
 );
