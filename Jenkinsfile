@@ -8,6 +8,9 @@ def pipeline = new org.rust.AppPipeline(steps: this,
       cargoClippyCmds: ['housekeeping/scripts/clippy.sh'],
       codeCoverage: false,
       pushTags: ['develop': 'dev'],
-      buildArtifacts: 'sora2-parachain-runtime_rococo.compact.compressed.wasm, sora2-parachain-runtime_kusama.compact.compressed.wasm, sora2-parachain-runtime_polkadot.compact.compressed.wasm'
+      buildArtifacts: 'sora2-parachain-runtime_rococo.compact.compressed.wasm, sora2-parachain-runtime_kusama.compact.compressed.wasm, sora2-parachain-runtime_polkadot.compact.compressed.wasm',
+      sonarProjectKey: 'sora:sora2-parachain',
+      sonarProjectName: 'sora2-parachain',
+      dojoProductType: 'sora'
 )
 pipeline.runPipeline()

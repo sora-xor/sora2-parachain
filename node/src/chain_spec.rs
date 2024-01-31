@@ -546,7 +546,7 @@ pub fn bridge_dev_config() -> ChainSpec {
 
 /// Config for bridge private testnet
 pub fn bridge_test_config() -> ChainSpec {
-     // base currency unit name and decimal places
+    // base currency unit name and decimal places
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "XOR".into());
     properties.insert("tokenDecimals".into(), 18.into());
@@ -667,7 +667,7 @@ fn testnet_genesis(
         polkadot_xcm: sora2_parachain_runtime::PolkadotXcmConfig {
             safe_xcm_version: Some(SAFE_XCM_VERSION),
         },
-        #[cfg(any(feature = "rococo", feature = "alphanet"))]
+        #[cfg(any(feature = "rococo", feature = "polkadot", feature = "alphanet"))]
         sudo: sora2_parachain_runtime::SudoConfig { key: Some(root_key) },
         technical_committee: TechnicalCommitteeConfig {
             members: technical_committee_accounts,

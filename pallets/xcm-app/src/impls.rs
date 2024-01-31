@@ -91,7 +91,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
             target: "xcm::XCMApp",
             "transfer",
         );
-        fail!(Error::<T>::MethodNotAvailible)
+        Ok(())
     }
 
     /// THIS
