@@ -83,7 +83,7 @@ use frame_system::{
     EnsureRoot,
 };
 pub use sp_beefy::crypto::AuthorityId as BeefyId;
-#[cfg(feature = "rococo")]
+#[cfg(any(feature = "rococo", feature = "alphanet"))]
 use sp_beefy::mmr::MmrLeafVersion;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_mmr_primitives as mmr;
@@ -452,7 +452,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 impl parachain_info::Config for Runtime {}
 
 /// Configure Merkle Mountain Range pallet.
-#[cfg(feature = "rococo")]
+#[cfg(any(feature = "rococo", feature = "alphanet"))]
 impl pallet_mmr::Config for Runtime {
     const INDEXING_PREFIX: &'static [u8] = b"mmr";
     type Hashing = Keccak256;
@@ -465,13 +465,13 @@ impl pallet_mmr::Config for Runtime {
 impl pallet_beefy::Config for Runtime {
     type BeefyId = BeefyId;
     type MaxAuthorities = MaxAuthorities;
-    #[cfg(feature = "rococo")]
+    #[cfg(any(feature = "rococo", feature = "alphanet"))]
     type OnNewValidatorSet = BeefyMmr;
-    #[cfg(not(feature = "rococo"))]
+    #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
     type OnNewValidatorSet = ();
 }
 
-#[cfg(feature = "rococo")]
+#[cfg(any(feature = "rococo", feature = "alphanet"))]
 parameter_types! {
     /// Version of the produced MMR leaf.
     ///
@@ -489,7 +489,7 @@ parameter_types! {
     pub LeafVersion: MmrLeafVersion = MmrLeafVersion::new(0, 0);
 }
 
-#[cfg(feature = "rococo")]
+#[cfg(any(feature = "rococo", feature = "alphanet"))]
 impl pallet_beefy_mmr::Config for Runtime {
     type LeafVersion = LeafVersion;
     type BeefyAuthorityToMerkleLeaf = pallet_beefy_mmr::BeefyEcdsaToEthereum;
@@ -497,7 +497,7 @@ impl pallet_beefy_mmr::Config for Runtime {
     type BeefyDataProvider = LeafProvider;
 }
 
-#[cfg(any(feature = "rococo", feature = "polkadot"))]
+#[cfg(any(feature = "rococo", feature = "polkadot", feature = "alphanet"))]
 impl pallet_sudo::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
@@ -625,7 +625,7 @@ impl xcm_app::XcmSender<Runtime> for XCMSenderWrapper {
     }
 }
 
-#[cfg(feature = "rococo")]
+#[cfg(any(feature = "rococo", feature = "alphanet"))]
 impl xcm_app_sudo_wrapper::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
 }
@@ -1059,7 +1059,7 @@ construct_runtime!(
         // ORML
         XTokens: orml_xtokens::{Pallet, Storage, Event<T>} = 41,
 
-        #[cfg(any(feature = "rococo", feature = "polkadot"))]
+        #[cfg(any(feature = "rococo", feature = "polkadot", feature = "alphanet"))]
         Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
         XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
@@ -1071,10 +1071,10 @@ construct_runtime!(
         MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call} = 109,
 
         // Beefy pallets should be placed after channels
-        #[cfg(feature = "rococo")]
+        #[cfg(any(feature = "rococo", feature = "alphanet"))]
         Mmr: pallet_mmr = 4,
         Beefy: pallet_beefy = 5,
-        #[cfg(feature = "rococo")]
+        #[cfg(any(feature = "rococo", feature = "alphanet"))]
         BeefyMmr: pallet_beefy_mmr = 6,
 
         TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 110,
@@ -1085,7 +1085,7 @@ construct_runtime!(
         ElectionsPhragmen: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>} = 115,
         Utility: pallet_utility::{Pallet, Call, Event} = 116,
 
-        #[cfg(any(feature = "rococo"))]
+        #[cfg(any(feature = "rococo", feature = "alphanet"))]
         XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
     }
 );
@@ -1190,28 +1190,28 @@ impl_runtime_apis! {
 
     impl sp_beefy::BeefyApi<Block> for Runtime {
         fn validator_set() -> Option<sp_beefy::ValidatorSet<BeefyId>> {
-            #[cfg(not(feature = "rococo"))]
+            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
             return None;
 
-            #[cfg(feature = "rococo")]
+            #[cfg(any(feature = "rococo", feature = "alphanet"))]
             Beefy::validator_set()
         }
     }
 
     impl mmr::MmrApi<Block, Hash, BlockNumber> for Runtime {
         fn mmr_root() -> Result<Hash, mmr::Error> {
-            #[cfg(not(feature = "rococo"))]
+            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(feature = "rococo")]
+            #[cfg(any(feature = "rococo", feature = "alphanet"))]
             Ok(Mmr::mmr_root())
         }
 
         fn mmr_leaf_count() -> Result<mmr::LeafIndex, mmr::Error> {
-            #[cfg(not(feature = "rococo"))]
+            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(feature = "rococo")]
+            #[cfg(any(feature = "rococo", feature = "alphanet"))]
             Ok(Mmr::mmr_leaves())
         }
 
@@ -1219,10 +1219,10 @@ impl_runtime_apis! {
             _block_numbers: Vec<BlockNumber>,
             _best_known_block_number: Option<BlockNumber>,
         ) -> Result<(Vec<mmr::EncodableOpaqueLeaf>, mmr::Proof<Hash>), mmr::Error> {
-            #[cfg(not(feature = "rococo"))]
+            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(feature = "rococo")]
+            #[cfg(any(feature = "rococo", feature = "alphanet"))]
             Mmr::generate_proof(_block_numbers, _best_known_block_number).map(
                 |(leaves, proof)| {
                     (
@@ -1239,10 +1239,10 @@ impl_runtime_apis! {
         fn verify_proof(_leaves: Vec<mmr::EncodableOpaqueLeaf>, _proof: mmr::Proof<Hash>)
             -> Result<(), mmr::Error>
         {
-            #[cfg(not(feature = "rococo"))]
+            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(feature = "rococo")]
+            #[cfg(any(feature = "rococo", feature = "alphanet"))]
             {
                 pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as mmr::LeafDataProvider>::LeafData;
                 let leaves = _leaves.into_iter().map(|leaf|
@@ -1258,10 +1258,10 @@ impl_runtime_apis! {
             _leaves: Vec<mmr::EncodableOpaqueLeaf>,
             _proof: mmr::Proof<Hash>
         ) -> Result<(), mmr::Error> {
-            #[cfg(not(feature = "rococo"))]
+            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(feature = "rococo")]
+            #[cfg(any(feature = "rococo", feature = "alphanet"))]
             {
                 let nodes = _leaves.into_iter().map(|leaf|mmr::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
                 pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(_root, nodes, _proof)
