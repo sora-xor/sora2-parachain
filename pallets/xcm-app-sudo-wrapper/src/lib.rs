@@ -53,7 +53,7 @@ pub mod pallet {
 
     #[pallet::error]
     pub enum Error<T> {
-        WrongXCMVersion
+        WrongXCMVersion,
     }
 
     #[pallet::hooks]

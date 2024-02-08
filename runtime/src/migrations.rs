@@ -36,7 +36,7 @@ use frame_support::{traits::OnRuntimeUpgrade, weights::Weight};
 #[cfg(feature = "kusama")]
 pub type Migrations = (RemoveSudoKey,);
 
-#[cfg(feature = "rococo")]
+#[cfg(any(feature = "rococo", feature = "alphanet"))]
 pub type Migrations = ();
 
 #[cfg(feature = "polkadot")]
