@@ -212,7 +212,7 @@ pub mod opaque {
 impl_opaque_keys! {
     pub struct SessionKeys {
         pub aura: Aura,
-        pub beefy: Beefy,
+        // pub beefy: Beefy,
     }
 }
 
@@ -221,10 +221,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("sora_ksm"),
     impl_name: create_runtime_str!("sora_ksm"),
     authoring_version: 1,
-    spec_version: 10,
+    spec_version: 11,
     impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
-    transaction_version: 10,
+    transaction_version: 11,
     state_version: 1,
 };
 

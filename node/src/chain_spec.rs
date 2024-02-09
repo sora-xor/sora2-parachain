@@ -209,7 +209,7 @@ where
 pub fn template_session_keys(
     (aura, beefy): (AuraId, BeefyId),
 ) -> sora2_parachain_runtime::SessionKeys {
-    sora2_parachain_runtime::SessionKeys { aura, beefy }
+    sora2_parachain_runtime::SessionKeys { aura, }
 }
 
 pub fn kusama_chain_spec() -> Result<ChainSpec, String> {
