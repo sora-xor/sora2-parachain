@@ -1065,7 +1065,7 @@ construct_runtime!(
         XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
         BeefyLightClient: beefy_light_client::{Pallet, Call, Storage, Event<T>, Config} = 103,
         SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Storage, Event<T>, ValidateUnsigned} = 104,
-        SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 105,
+        SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Call, Config<T>, Storage, Event<T>} = 105,
         SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
         BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
         MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call} = 109,
