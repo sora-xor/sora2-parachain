@@ -43,7 +43,7 @@ test() {
     printf "⚡️ There is no tag here, only tests run. \n"  
     for network in ${networks[@]}
     do 
-      printf "🏃 Running tests for $network... \n"
+      printf "🏃 Running with $network feature... \n"
       $testcmd "$network" "$benchfeature"
       wasm_in="./target/release/wbuild/sora2-parachain-runtime/"
       wasm_out=./sora2-parachain-runtime_$network.compact.compressed.wasm     
