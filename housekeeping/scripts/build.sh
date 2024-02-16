@@ -29,18 +29,21 @@ build() {
     fi
 }
 
-# test func with feature
+# test func with tag
 releasetest() {
     feature=$1
     printf "🕙 Testing with feature $feature will start now... \n"
     $testcmd "$feature"
 }
 
-# test func without feature
+# test func without tag
 test() {
+    export RUSTFLAGS="-Cinstrument-coverage"
+    export SKIP_WASM_BUILD=1
+    export LLVM_PROFILE_FILE="sora2-%p-%m.profraw"
+    printf "⚡️ There is no tag here, only tests run. \n"  
     for network in ${networks[@]}
     do 
-        printf "⚡️ There is no tag here, only tests run. \n"
         printf "🏃 Running tests for $network... \n"
         $testcmd "$network" "$benchfeature"
         wasm_in="./target/release/wbuild/sora2-parachain-runtime/"
