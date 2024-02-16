@@ -43,12 +43,18 @@ test() {
     printf "⚡️ There is no tag here, only tests run. \n"  
     for network in ${networks[@]}
     do 
-        printf "🏃 Running tests for $network... \n"
-        $testcmd "$network" "$benchfeature"
-        wasm_in="./target/release/wbuild/sora2-parachain-runtime/"
-        wasm_out=./sora2-parachain-runtime_$network.compact.compressed.wasm     
-        wasm_file=$(ls "$wasm_in" | grep ".compact.compressed.wasm")
-        mv "$wasm_in$wasm_file" "$wasm_out"
+      printf "🏃 Running tests for $network... \n"
+      $testcmd "$network" "$benchfeature"
+      wasm_in="./target/release/wbuild/sora2-parachain-runtime/"
+      wasm_out=./sora2-parachain-runtime_$network.compact.compressed.wasm     
+      wasm_file=$(ls "$wasm_in" | grep ".compact.compressed.wasm")
+      mv "$wasm_in$wasm_file" "$wasm_out"
+      if [ -f "$wasm_out" ]; then
+         printf "✅ "$wasm_out" found!\n"
+      else
+         printf "❌"$wasm_out" can't found!\n"
+         exit 1
+      fi
     done
 }
 
