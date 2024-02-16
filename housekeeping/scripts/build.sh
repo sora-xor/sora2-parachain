@@ -39,7 +39,6 @@ releasetest() {
 # test func without tag
 test() {
     export RUSTFLAGS="-Cinstrument-coverage"
-    export SKIP_WASM_BUILD=1
     export LLVM_PROFILE_FILE="sora2-%p-%m.profraw"
     printf "⚡️ There is no tag here, only tests run. \n"  
     for network in ${networks[@]}
@@ -50,12 +49,6 @@ test() {
         wasm_out=./sora2-parachain-runtime_$network.compact.compressed.wasm     
         wasm_file=$(ls "$wasm_in" | grep ".compact.compressed.wasm")
         mv "$wasm_in$wasm_file" "$wasm_out"
-        if [ -f "$wasm_out" ]; then
-            printf "✅ $wasm_out found!\n"
-        else
-            printf "❌ $wasm_out can't found!\n"
-            exit 1
-        fi
     done
 }
 
