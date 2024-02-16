@@ -1,7 +1,7 @@
 @Library('jenkins-library') _
 
 def pipeline = new org.rust.AppPipeline(steps: this,
-      envImageName: 'docker.soramitsu.co.jp/sora2/parachain-env:latest',
+      envImageName: 'docker.soramitsu.co.jp/sora2/env:env',
       appImageName: 'docker.soramitsu.co.jp/sora2/parachain',
       cargoClippyTag: ':parachain',
       buildTestCmds: ['housekeeping/scripts/build.sh'],
