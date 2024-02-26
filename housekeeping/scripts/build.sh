@@ -79,6 +79,7 @@ build() {
         printf "❌ $wasm_out can't found!\n"
         exit 1
     fi
+  fi
 }
 
 if [ -f "$binaryfile" ]; then
