@@ -14,7 +14,7 @@ test() {
   if [[ $buildTag != null ]] && [[ ${TAG_NAME} != null || ${TAG_NAME} != '' ]]; then
     if [[ ${TAG_NAME} =~ 'benchmarking'* ]]; then
       buildfeature="runtime-benchmarks,kusama"
-    elif [[ -n $buildTag ]] [[ ${TAG_NAME} = 'stage-'* ]] || [[ ${TAG_NAME} = 'test-'* ]]; then
+    elif [[ -n $buildTag ]] || [[ ${TAG_NAME} = 'stage-'* ]] || [[ ${TAG_NAME} = 'test-'* ]]; then
       buildfeature="rococo"
     elif [[ ${TAG_NAME} = 'kusama-'* ]]; then
       buildfeature="kusama"
