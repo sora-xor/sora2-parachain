@@ -60,7 +60,7 @@ build() {
     if [[ ${TAG_NAME} =~ 'benchmarking'* ]]; then
       buildcmd="cargo build --release --locked --bin parachain-collator --features"
       buildfeature="runtime-benchmarks,kusama"
-    elif [[ -n $buildTag ]] [[ ${TAG_NAME} = 'stage-'* ]] || [[ ${TAG_NAME} = 'test-'* ]]; then
+    elif [[ -n $buildTag ]] || [[ ${TAG_NAME} = 'stage-'* ]] || [[ ${TAG_NAME} = 'test-'* ]]; then
       buildfeature="rococo"
     elif [[ ${TAG_NAME} = 'kusama-'* ]]; then
       buildfeature="kusama"
