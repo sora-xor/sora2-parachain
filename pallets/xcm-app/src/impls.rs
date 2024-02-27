@@ -159,10 +159,11 @@ impl<T: Config> sp_runtime::traits::Convert<AssetId, Option<MultiLocation>> for 
 
 impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<AssetId>> for Pallet<T> {
     fn convert(mut multilocation: MultiLocation) -> Option<AssetId> {
-        // check if multilocations parent os 0, then convert it to absolute multilocation
+        // check if multilocations parent is 0, it means that an asset originates from Sora
+        // then convert it to absolute multilocation to check it
         if multilocation.parents == 0 {
             let mut self_location = T::SelfLocation::get();
-            if let Err(_) = self_location.append_with(multilocation.interior) {
+            if self_location.append_with(multilocation.interior).is_err() {
                 return None
             }
             multilocation = self_location;
