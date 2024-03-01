@@ -1,12 +1,13 @@
 @Library('jenkins-library') _
 
 def pipeline = new org.rust.AppPipeline(steps: this,
-      envImageName: 'docker.soramitsu.co.jp/sora2/parachain-env:latest',
+      envImageName: 'docker.soramitsu.co.jp/sora2/env:env',
       appImageName: 'docker.soramitsu.co.jp/sora2/parachain',
+      clippyLinter: false,
       cargoClippyTag: ':parachain',
-      buildTestCmds: ['housekeeping/scripts/build.sh'],
+      buildTestCmds: 'housekeeping/scripts/build.sh',
       cargoClippyCmds: ['housekeeping/scripts/clippy.sh'],
-      codeCoverage: false,
+      codeCoverageCommand: './housekeeping/scripts/coverage.sh',
       pushTags: ['develop': 'dev'],
       buildArtifacts: 'sora2-parachain-runtime_rococo.compact.compressed.wasm, sora2-parachain-runtime_kusama.compact.compressed.wasm, sora2-parachain-runtime_polkadot.compact.compressed.wasm',
       sonarProjectKey: 'sora:sora2-parachain',
