@@ -48,12 +48,26 @@ impl WeightTrader for ParachainTrader {
         }
 
         for (asset_id, val) in &assets.fungible {
-            let ml = match asset_id {
-                Concrete(m) => m,
+            let asset_multilocation = match asset_id {
+                Concrete(m) => {
+                    // check if multilocations parent is 0, it means that an asset originates from Sora
+                    // then convert it to absolute multilocation to check it
+                    if m.parents == 0 {
+                        let mut self_location = crate::xcm_config::SelfLocation::get();
+                        if self_location.append_with(m.interior).is_err() {
+                            return Err(XcmError::AssetNotFound)
+                        }
+                        self_location
+                    } else {
+                        m.clone()
+                    }
+                },
                 _ => return Err(XcmError::AssetNotFound),
             };
-            let Some(minimum_amount) = XCMApp::asset_minimum_amount(ml) else {
-                return Err(XcmError::TooExpensive);
+
+            let Some(minimum_amount) = XCMApp::asset_minimum_amount(asset_multilocation) else {
+                log::trace!(target: "xcm::weight", "asset not found: {:?}", asset_multilocation);
+                return Err(XcmError::AssetNotFound);
             };
             if *val < minimum_amount {
                 return Err(XcmError::TooExpensive)
