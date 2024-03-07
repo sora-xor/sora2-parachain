@@ -31,10 +31,11 @@
 use crate::{mock::*, Error};
 use bridge_types::{types::AssetKind, H256};
 use frame_support::{assert_err, assert_noop, assert_ok, traits::Currency};
+use sp_runtime::traits::Convert;
 use xcm::{
     opaque::latest::{
         Junction::{GeneralKey, Parachain},
-        Junctions::X2,
+        Junctions::{X1, X2},
     },
     v3::MultiLocation,
 };
@@ -349,5 +350,78 @@ fn it_works_receive_xor() {
         ),);
         assert_eq!(Balances::total_balance(&alice()), 0);
         assert_eq!(Balances::total_balance(&bob()), 1000000);
+    });
+}
+
+#[test]
+fn it_works_convert_self_asset() {
+    new_test_ext().execute_with(|| {
+        let asset_id = [1; 32].into();
+        let multilocation = MultiLocation {
+            parents: 1,
+            interior: X2(
+                Parachain(SELF_PARA_ID),
+                GeneralKey { length: 6, data: test_general_key() },
+            ),
+        };
+
+        // Create:
+        XCMApp::register_mapping(asset_id, multilocation)
+            .expect("it_works_convert_xor: failed to register asset");
+
+        let self_multilocation = MultiLocation {
+            parents: 0,
+            interior: X1(GeneralKey { length: 6, data: test_general_key() }),
+        };
+
+        let result_asset_id = XCMApp::convert(self_multilocation);
+        assert_eq!(Some(asset_id), result_asset_id);
+    });
+}
+
+#[test]
+fn it_failed_convert_not_self_asset() {
+    new_test_ext().execute_with(|| {
+        let asset_id = [1; 32].into();
+        let multilocation = MultiLocation {
+            parents: 1,
+            interior: X2(
+                Parachain(SELF_PARA_ID + 1),
+                GeneralKey { length: 6, data: test_general_key() },
+            ),
+        };
+
+        // Create:
+        XCMApp::register_mapping(asset_id, multilocation)
+            .expect("it_works_convert_xor: failed to register asset");
+
+        let self_multilocation = MultiLocation {
+            parents: 0,
+            interior: X1(GeneralKey { length: 6, data: test_general_key() }),
+        };
+
+        let result_asset_id = XCMApp::convert(self_multilocation);
+        assert_eq!(None, result_asset_id);
+    });
+}
+
+#[test]
+fn it_works_convert_foreign_asset() {
+    new_test_ext().execute_with(|| {
+        let asset_id = [1; 32].into();
+        let multilocation = MultiLocation {
+            parents: 1,
+            interior: X2(
+                Parachain(SELF_PARA_ID + 500),
+                GeneralKey { length: 6, data: test_general_key() },
+            ),
+        };
+
+        // Create:
+        XCMApp::register_mapping(asset_id, multilocation)
+            .expect("it_works_convert_xor: failed to register asset");
+
+        let result_asset_id = XCMApp::convert(multilocation);
+        assert_eq!(Some(asset_id), result_asset_id);
     });
 }

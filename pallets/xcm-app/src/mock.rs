@@ -108,8 +108,10 @@ impl pallet_balances::Config for Test {
     type ReserveIdentifier = ();
 }
 
+pub const SELF_PARA_ID: u32 = 2011;
+
 parameter_types! {
-    pub SelfLocation: MultiLocation = MultiLocation::parent().pushed_with_interior(Junction::Parachain(2011)).unwrap();
+    pub SelfLocation: MultiLocation = MultiLocation::parent().pushed_with_interior(Junction::Parachain(SELF_PARA_ID)).unwrap();
     pub XorAssetId: AssetId = AssetId::repeat_byte(2);
 }
 
