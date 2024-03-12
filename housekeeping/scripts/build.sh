@@ -20,6 +20,8 @@ test() {
       buildfeature="kusama"
     elif [[ ${TAG_NAME} = 'polkadot-'* ]]; then
       buildfeature="polkadot"
+   elif [[ ${TAG_NAME} = 'alphanet-'* ]] || [[ ${TAG_NAME} = 'stage-alphanet-'* ]] ; then
+         buildfeature="alphanet"
     fi
     printf " Testing for feature $buildfeature will start now... \n"
     $testcmd "$buildfeature"
