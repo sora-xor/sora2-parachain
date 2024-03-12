@@ -1,9 +1,9 @@
-FROM debian:buster-slim
+FROM debian:bookworm-20230904
 ENV POLKADOT_API_PATH=/usr/local/lib/node_modules/@polkadot
 # Install dependencies
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
-        npm curl make cmake && \
+    npm curl make cmake libc6 libstdc++6 && \
 	apt-get autoremove -y && \
 	apt-get clean && \
 	find /var/lib/apt/lists/ -type f -not -name lock -delete
