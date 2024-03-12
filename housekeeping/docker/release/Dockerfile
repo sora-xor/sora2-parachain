@@ -11,7 +11,7 @@ RUN npm install -g @polkadot/api-cli@0.33.1
 
 RUN useradd substrate -u 10000
 
-COPY ./housekeeping/parachain-collator /usr/local/bin/parachain-collator
+COPY ./target/release/parachain-collator /usr/local/bin/parachain-collator
 COPY --chown=10000:10000 ./housekeeping/docker/release/parachain_registration.sh /opt/sora2/parachain_registration.sh
 RUN chmod +x /opt/sora2/parachain_registration.sh  && \
     mkdir /chain && \
