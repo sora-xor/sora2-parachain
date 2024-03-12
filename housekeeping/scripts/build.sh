@@ -20,6 +20,8 @@ test() {
       buildfeature="kusama"
     elif [[ ${TAG_NAME} = 'polkadot-'* ]]; then
       buildfeature="polkadot"
+   elif [[ ${TAG_NAME} = 'alphanet-'* ]] || [[ ${TAG_NAME} = 'stage-alphanet-'* ]] ; then
+         buildfeature="alphanet"
     fi
     printf " Testing for feature $buildfeature will start now... \n"
     $testcmd "$buildfeature"
@@ -67,8 +69,8 @@ build() {
     elif [[ ${TAG_NAME} = 'polkadot-'* ]]; then
       buildfeature="polkadot"
     fi
-    printf "🕙 Building with feature $feature will start now... \n"
-    $buidcmd "$feature"
+    printf "🕙 Building with feature $buildfeature will start now... \n"
+    $buidcmd "$buildfeature"
     wasm_in="./target/release/wbuild/sora2-parachain-runtime/"
     wasm_out=./sora2-parachain-runtime_$feature.compact.compressed.wasm
     wasm_file=$(ls "$wasm_in" | grep ".compact.compressed.wasm")
