@@ -52,7 +52,9 @@ pub mod pallet {
     pub enum Event<T: Config> {}
 
     #[pallet::error]
-    pub enum Error<T> {}
+    pub enum Error<T> {
+        WrongXCMVersion,
+    }
 
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
@@ -83,6 +85,40 @@ pub mod pallet {
         ) -> DispatchResultWithPostInfo {
             ensure_root(origin)?;
             xcm_app::Pallet::<T>::xcm_transfer_asset(asset_id, sender, *recipient, amount)?;
+            Ok(().into())
+        }
+
+        #[pallet::call_index(2)]
+        #[pallet::weight(0)]
+        pub fn test_register_asset(
+            origin: OriginFor<T>,
+            asset_id: AssetId,
+            multiasset: xcm::v3::AssetId,
+            minimal_xcm_amount: u128,
+        ) -> DispatchResultWithPostInfo {
+            ensure_root(origin)?;
+            let multilocation = match multiasset {
+                xcm::v3::AssetId::Concrete(location) => location,
+                xcm::v3::AssetId::Abstract(_) => frame_support::fail!(Error::<T>::WrongXCMVersion),
+            };
+
+            xcm_app::Pallet::<T>::register_mapping(asset_id, multilocation)?;
+            xcm_app::AssetMinimumAmount::<T>::set(multilocation, Some(minimal_xcm_amount));
+
+            Ok(().into())
+        }
+
+        #[pallet::call_index(3)]
+        #[pallet::weight(0)]
+        pub fn test_delete_asset(
+            origin: OriginFor<T>,
+            asset_id: AssetId,
+        ) -> DispatchResultWithPostInfo {
+            ensure_root(origin)?;
+            xcm_app::Pallet::<T>::delete_mapping(asset_id)?;
+            if let Some(ml) = xcm_app::AssetIdToMultilocation::<T>::get(asset_id) {
+                xcm_app::AssetMinimumAmount::<T>::remove(ml);
+            }
             Ok(().into())
         }
     }

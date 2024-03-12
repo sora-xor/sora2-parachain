@@ -230,4 +230,4 @@ kusama = []
 
 polkadot = []
 
-alphanet = []
+alphanet = ["pallet-sudo"]

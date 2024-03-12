@@ -29,7 +29,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use crate::*;
-use frame_support::fail;
+use frame_support::{fail, traits::Get};
 use sp_runtime::traits::Convert;
 
 // IMPLS
@@ -91,7 +91,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
             target: "xcm::XCMApp",
             "transfer",
         );
-        fail!(Error::<T>::MethodNotAvailible)
+        Ok(())
     }
 
     /// THIS
@@ -158,7 +158,17 @@ impl<T: Config> sp_runtime::traits::Convert<AssetId, Option<MultiLocation>> for 
 }
 
 impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<AssetId>> for Pallet<T> {
-    fn convert(multilocation: MultiLocation) -> Option<AssetId> {
+    fn convert(mut multilocation: MultiLocation) -> Option<AssetId> {
+        // check if multilocations parent is 0, it means that an asset originates from Sora
+        // then convert it to absolute multilocation to check it
+        if multilocation.parents == 0 {
+            let mut self_location = T::SelfLocation::get();
+            if self_location.append_with(multilocation.interior).is_err() {
+                return None
+            }
+            multilocation = self_location;
+        }
+
         let maybe_asset_id = Pallet::<T>::get_asset_id_from_multilocation(multilocation);
         if maybe_asset_id.is_none() {
             Self::deposit_event(Event::<T>::MultilocationMappingError(multilocation));
