@@ -8,8 +8,8 @@ RUN apt-get update && \
     npm curl make cmake libc6 libstdc++6 && \
     apt-get autoremove -y && \
     apt-get clean && \
-    find /var/lib/apt/lists/ -type f -not -name lock -delete &&\
-    npm install -g @polkadot/api-cli@0.33.1 &&\
+    find /var/lib/apt/lists/ -type f -not -name lock -delete && \
+    npm install -g @polkadot/api-cli@0.33.1 && \
     npm cache clean --force
 
 RUN useradd substrate -u 10000
