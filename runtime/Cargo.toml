@@ -1,6 +1,6 @@
 [package]
 name = "sora2-parachain-runtime"
-version = "2.2.0"
+version = "2.3.0"
 authors = ["Anonymous"]
 description = "sora2 parachain runtime"
 license = "Unlicense"

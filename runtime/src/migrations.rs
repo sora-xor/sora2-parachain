@@ -28,35 +28,21 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#[cfg(feature = "kusama")]
+#[cfg(feature = "polkadot")]
 use crate::*;
-#[cfg(feature = "kusama")]
+#[cfg(feature = "polkadot")]
 use frame_support::{traits::OnRuntimeUpgrade, weights::Weight};
 
-#[cfg(feature = "kusama")]
-pub type Migrations = (RemoveSudoKey,);
-
-#[cfg(any(feature = "rococo", feature = "alphanet"))]
+#[cfg(any(feature = "rococo", feature = "alphanet", feature = "kusama"))]
 pub type Migrations = ();
 
 #[cfg(feature = "polkadot")]
-pub type Migrations =
-    (pallet_balances::migration::MigrateManyToTrackInactive<crate::Runtime, EmptyAccountList>,);
+pub type Migrations = (RemoveSudoKey,);
 
 #[cfg(feature = "polkadot")]
-pub struct EmptyAccountList;
-
-#[cfg(feature = "polkadot")]
-impl sp_core::Get<crate::Vec<crate::AccountId>> for EmptyAccountList {
-    fn get() -> crate::Vec<crate::AccountId> {
-        Default::default()
-    }
-}
-
-#[cfg(feature = "kusama")]
 pub struct RemoveSudoKey;
 
-#[cfg(feature = "kusama")]
+#[cfg(feature = "polkadot")]
 impl OnRuntimeUpgrade for RemoveSudoKey {
     fn on_runtime_upgrade() -> Weight {
         if let Some(key) =
