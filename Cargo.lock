@@ -10855,7 +10855,7 @@ dependencies = [
 
 [[package]]
 name = "sora2-parachain-node"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "beefy-gadget",
  "beefy-gadget-rpc",
@@ -10934,7 +10934,7 @@ dependencies = [
 
 [[package]]
 name = "sora2-parachain-runtime"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "beefy-light-client",
  "beefy-light-client-runtime-api",
