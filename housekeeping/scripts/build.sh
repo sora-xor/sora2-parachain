@@ -13,15 +13,15 @@ errorfile="benchmarking_errors.txt"
 test() {
   if [[ $buildTag != null ]] && [[ ${TAG_NAME} != null || ${TAG_NAME} != '' ]]; then
     if [[ ${TAG_NAME} =~ 'benchmarking'* ]]; then
-      buildfeature="runtime-benchmarks,kusama"
-    elif [[ -n $buildTag ]] || [[ ${TAG_NAME} = 'stage-'* ]] || [[ ${TAG_NAME} = 'test-'* ]]; then
-      buildfeature="rococo"
+        buildfeature="runtime-benchmarks,kusama"
     elif [[ ${TAG_NAME} = 'kusama-'* ]]; then
-      buildfeature="kusama"
+        buildfeature="kusama"
     elif [[ ${TAG_NAME} = 'polkadot-'* ]]; then
-      buildfeature="polkadot"
-   elif [[ ${TAG_NAME} = 'alphanet-'* ]] || [[ ${TAG_NAME} = 'stage-alphanet-'* ]] ; then
-         buildfeature="alphanet"
+        buildfeature="polkadot"
+    elif [[ ${TAG_NAME} = 'alphanet-'* ]] || [[ ${TAG_NAME} = 'stage-alphanet-'* ]] ; then
+        buildfeature="alphanet"
+    elif [[ -n $buildTag ]] || [[ ${TAG_NAME} = 'stage-'* ]] || [[ ${TAG_NAME} = 'test-'* ]]; then
+        buildfeature="rococo"
     fi
     printf " Testing for feature $buildfeature will start now... \n"
     $testcmd "$buildfeature"
