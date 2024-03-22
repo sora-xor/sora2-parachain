@@ -679,10 +679,10 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
                     error: sp_runtime::DispatchError::Other("Unavailable"),
                 }),
             bridge_types::substrate::BridgeCall::SubstrateApp(_msg) =>
-            Err(sp_runtime::DispatchErrorWithPostInfo {
-                post_info: Default::default(),
-                error: sp_runtime::DispatchError::Other("Unavailable"),
-            }),
+                Err(sp_runtime::DispatchErrorWithPostInfo {
+                    post_info: Default::default(),
+                    error: sp_runtime::DispatchError::Other("Unavailable"),
+                }),
             bridge_types::substrate::BridgeCall::XCMApp(msg) => {
                 let call: xcm_app::Call<crate::Runtime> = msg.into();
                 let call: crate::RuntimeCall = call.into();
