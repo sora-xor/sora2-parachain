@@ -619,6 +619,7 @@ pub fn bridge_test_config() -> ChainSpec {
     )
 }
 
+#[allow(unused_variables)]
 fn testnet_genesis(
     root_key: AccountId,
     invulnerables: Vec<(AccountId, (AuraId, BeefyId))>,
