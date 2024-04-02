@@ -245,6 +245,11 @@ parameter_types! {
     pub const RelayNetwork: NetworkId = NetworkId::Rococo;
 }
 
+#[cfg(feature = "alphanet")]
+parameter_types! {
+    pub const RelayNetwork: NetworkId = NetworkId::Westend;
+}
+
 #[cfg(feature = "polkadot")]
 parameter_types! {
     pub const RelayNetwork: NetworkId = NetworkId::Polkadot;

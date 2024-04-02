@@ -20,6 +20,9 @@ test-polkadot:
 test-rococo:
 	cargo test --release --features rococo
 
+test-alpha:
+	cargo test --release --features alphanet
+
 test-all:
 	cargo test --release -p sora2-parachain-runtime --features rococo
 	cargo test --release -p sora2-parachain-runtime --features kusama

@@ -36,11 +36,10 @@ use orml_traits::XcmTransfer;
 use parachain_common::primitives::AssetId;
 use sp_core::H256;
 use sp_runtime::{
-    testing::Header, traits::{BlakeTwo256, Identity, IdentityLookup}, BuildStorage
+    traits::{BlakeTwo256, Identity, IdentityLookup}, BuildStorage
 };
 use staging_xcm::latest::prelude::*;
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
 type AccountId = sp_runtime::AccountId32;
@@ -107,8 +106,10 @@ impl pallet_balances::Config for Test {
     type MaxFreezes = ();
 }
 
+pub const SELF_PARA_ID: u32 = 2011;
+
 parameter_types! {
-    pub SelfLocation: MultiLocation = MultiLocation::parent().pushed_with_interior(Junction::Parachain(2011)).unwrap();
+    pub SelfLocation: MultiLocation = MultiLocation::parent().pushed_with_interior(Junction::Parachain(SELF_PARA_ID)).unwrap();
     pub XorAssetId: AssetId = AssetId::repeat_byte(2);
 }
 

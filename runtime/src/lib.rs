@@ -82,9 +82,8 @@ use frame_system::{
     limits::{BlockLength, BlockWeights},
     EnsureRoot,
 };
-// pub use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
 pub use sp_consensus_beefy::ecdsa_crypto::{AuthorityId as BeefyId, Signature as BeefySignature};
-#[cfg(feature = "rococo")]
+#[cfg(any(feature = "rococo", feature = "alphanet"))]
 use sp_consensus_beefy::mmr::MmrLeafVersion;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_mmr_primitives as mmr;
@@ -223,10 +222,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("sora_ksm"),
     impl_name: create_runtime_str!("sora_ksm"),
     authoring_version: 1,
-    spec_version: 10,
+    spec_version: 14,
     impl_version: 0,
     apis: RUNTIME_API_VERSIONS,
-    transaction_version: 10,
+    transaction_version: 14,
     state_version: 1,
 };
 
@@ -465,7 +464,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 impl parachain_info::Config for Runtime {}
 
 /// Configure Merkle Mountain Range pallet.
-#[cfg(feature = "rococo")]
+#[cfg(any(feature = "rococo", feature = "alphanet"))]
 impl pallet_mmr::Config for Runtime {
     const INDEXING_PREFIX: &'static [u8] = b"mmr";
     type Hashing = Keccak256;
@@ -478,9 +477,9 @@ impl pallet_mmr::Config for Runtime {
 impl pallet_beefy::Config for Runtime {
     type BeefyId = BeefyId;
     type MaxAuthorities = MaxAuthorities;
-    #[cfg(feature = "rococo")]
+    #[cfg(any(feature = "rococo", feature = "alphanet"))]
     type OnNewValidatorSet = BeefyMmr;
-    #[cfg(not(feature = "rococo"))]
+    #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
     type OnNewValidatorSet = ();
 
     #[doc = r" The maximum number of nominators for each validator."]
@@ -508,7 +507,7 @@ impl pallet_beefy::Config for Runtime {
     type EquivocationReportSystem = ();
 }
 
-#[cfg(feature = "rococo")]
+#[cfg(any(feature = "rococo", feature = "alphanet"))]
 parameter_types! {
     /// Version of the produced MMR leaf.
     ///
@@ -526,7 +525,7 @@ parameter_types! {
     pub LeafVersion: MmrLeafVersion = MmrLeafVersion::new(0, 0);
 }
 
-#[cfg(feature = "rococo")]
+#[cfg(any(feature = "rococo", feature = "alphanet"))]
 impl pallet_beefy_mmr::Config for Runtime {
     type LeafVersion = LeafVersion;
     type BeefyAuthorityToMerkleLeaf = pallet_beefy_mmr::BeefyEcdsaToEthereum;
@@ -534,7 +533,7 @@ impl pallet_beefy_mmr::Config for Runtime {
     type BeefyDataProvider = LeafProvider;
 }
 
-#[cfg(any(feature = "rococo", feature = "polkadot"))]
+#[cfg(any(feature = "rococo", feature = "alphanet"))]
 impl pallet_sudo::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
@@ -650,7 +649,6 @@ impl xcm_app::Config for Runtime {
     type XcmTransfer = XTokens;
     type AccountIdConverter = sp_runtime::traits::Identity;
     type BalanceConverter = sp_runtime::traits::Identity;
-    /// afasfdsaafasfafagaga
     // type XcmSender = XCMSenderWrapper;
     type XcmSender = ();
     type Currency = Balances;
@@ -670,7 +668,7 @@ impl xcm_app::XcmSender<Runtime> for XCMSenderWrapper {
     }
 }
 
-#[cfg(feature = "rococo")]
+#[cfg(any(feature = "rococo", feature = "alphanet"))]
 impl xcm_app_sudo_wrapper::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
 }
@@ -721,6 +719,11 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
                     post_info: Default::default(),
                     error: sp_runtime::DispatchError::Other("Unavailable"),
                 }),
+            bridge_types::substrate::BridgeCall::SubstrateApp(_msg) =>
+                Err(sp_runtime::DispatchErrorWithPostInfo {
+                    post_info: Default::default(),
+                    error: sp_runtime::DispatchError::Other("Unavailable"),
+                }),
             bridge_types::substrate::BridgeCall::XCMApp(msg) => {
                 let call: xcm_app::Call<crate::Runtime> = msg.into();
                 let call: crate::RuntimeCall = call.into();
@@ -744,6 +747,7 @@ impl frame_support::dispatch::GetDispatchInfo for DispatchableSubstrateBridgeCal
     fn get_dispatch_info(&self) -> DispatchInfo {
         match &self.0 {
             bridge_types::substrate::BridgeCall::ParachainApp(_) => Default::default(),
+            bridge_types::substrate::BridgeCall::SubstrateApp(_) => Default::default(),
             bridge_types::substrate::BridgeCall::XCMApp(msg) => {
                 let call: xcm_app::Call<crate::Runtime> = msg.clone().into();
                 call.get_dispatch_info()
@@ -765,6 +769,7 @@ impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
     fn contains(call: &DispatchableSubstrateBridgeCall) -> bool {
         match &call.0 {
             bridge_types::substrate::BridgeCall::ParachainApp(_) => false,
+            bridge_types::substrate::BridgeCall::SubstrateApp(_) => false,
             bridge_types::substrate::BridgeCall::XCMApp(_) => true,
             bridge_types::substrate::BridgeCall::DataSigner(_) => true,
             bridge_types::substrate::BridgeCall::MultisigVerifier(_) => true,
@@ -1112,22 +1117,22 @@ construct_runtime!(
         // ORML
         XTokens: orml_xtokens::{Pallet, Storage, Event<T>} = 41,
 
-        #[cfg(any(feature = "rococo", feature = "polkadot"))]
-        Sudo: pallet_sudo= 100,
+        #[cfg(any(feature = "rococo", feature = "alphanet"))]
+        Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
-        XCMApp: xcm_app= 101,
+        XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
         BeefyLightClient: beefy_light_client = 103,
-        SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound = 104,
+        SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Storage, Event<T>, ValidateUnsigned} = 104,
         SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound = 105,
         SubstrateDispatch: dispatch = 106,
         BridgeDataSigner: bridge_data_signer = 108,
-        MultisigVerifier: multisig_verifier= 109,
+        MultisigVerifier: multisig_verifier = 109,
 
         // Beefy pallets should be placed after channels
-        #[cfg(feature = "rococo")]
+        #[cfg(any(feature = "rococo", feature = "alphanet"))]
         Mmr: pallet_mmr = 4,
         Beefy: pallet_beefy = 5,
-        #[cfg(feature = "rococo")]
+        #[cfg(any(feature = "rococo", feature = "alphanet"))]
         BeefyMmr: pallet_beefy_mmr = 6,
 
         TechnicalCommittee: pallet_collective::<Instance1> = 110,
@@ -1138,67 +1143,8 @@ construct_runtime!(
         ElectionsPhragmen: pallet_elections_phragmen= 115,
         Utility: pallet_utility= 116,
 
-        #[cfg(any(feature = "rococo"))]
+        #[cfg(any(feature = "rococo", feature = "alphanet"))]
         XCMAppSudoWrapper: xcm_app_sudo_wrapper = 150,
-
-
-        // System: frame_system::{Pallet, Call, Config, Storage, Event<T>} = 0,
-        // ParachainSystem: cumulus_pallet_parachain_system::{
-        //     Pallet, Call, Config, Storage, Inherent, Event<T>, ValidateUnsigned,
-        // } = 1,
-        // Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
-        // ParachainInfo: parachain_info::{Pallet, Storage, Config} = 3,
-        // // Leaf provider should be placed before any pallet which is using it.
-        // LeafProvider: leaf_provider::{Pallet, Storage, Event<T>} = 107,
-
-        // // Monetary stuff.
-        // Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
-        // TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>} = 11,
-
-        // // Collator support. The order of these 4 are important and shall not change.
-        // Authorship: pallet_authorship::{Pallet, Storage} = 20,
-        // CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
-        // Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
-        // Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
-        // AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 24,
-
-        // // XCM helpers.
-        // XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,
-        // PolkadotXcm: pallet_xcm::{Pallet, Event<T>, Origin, Config} = 31,
-        // CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 32,
-        // DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
-
-        // // ORML
-        // XTokens: orml_xtokens::{Pallet, Storage, Event<T>} = 41,
-
-        // #[cfg(any(feature = "rococo", feature = "polkadot"))]
-        // Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
-
-        // XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
-        // BeefyLightClient: beefy_light_client::{Pallet, Call, Storage, Event<T>, Config} = 103,
-        // SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Storage, Event<T>, ValidateUnsigned} = 104,
-        // SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound::{Pallet, Config<T>, Storage, Event<T>} = 105,
-        // SubstrateDispatch: dispatch::{Pallet, Storage, Event<T>, Origin<T>} = 106,
-        // BridgeDataSigner: bridge_data_signer::{Pallet, Storage, Event<T>, Call, ValidateUnsigned} = 108,
-        // MultisigVerifier: multisig_verifier::{Pallet, Storage, Event<T>, Call} = 109,
-
-        // // Beefy pallets should be placed after channels
-        // #[cfg(feature = "rococo")]
-        // Mmr: pallet_mmr = 4,
-        // Beefy: pallet_beefy = 5,
-        // #[cfg(feature = "rococo")]
-        // BeefyMmr: pallet_beefy_mmr = 6,
-
-        // TechnicalCommittee: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 110,
-        // Council: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 111,
-        // Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 112,
-        // Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 113,
-        // Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 114,
-        // ElectionsPhragmen: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>} = 115,
-        // Utility: pallet_utility::{Pallet, Call, Event} = 116,
-
-        // #[cfg(any(feature = "rococo"))]
-        // XCMAppSudoWrapper: xcm_app_sudo_wrapper::{Pallet, Call, Storage, Event<T>} = 150,
     }
 );
 
@@ -1308,12 +1254,12 @@ impl_runtime_apis! {
         }
     }
 
-    impl sp_consensus_beefy::BeefyApi<Block, BeefyId> for Runtime {
+impl sp_consensus_beefy::BeefyApi<Block, BeefyId> for Runtime {
         fn validator_set() -> Option<sp_consensus_beefy::ValidatorSet<BeefyId>> {
-            #[cfg(not(feature = "rococo"))]
+            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
             return None;
 
-            #[cfg(feature = "rococo")]
+            #[cfg(any(feature = "rococo", feature = "alphanet"))]
             Beefy::validator_set()
         }
 
@@ -1346,18 +1292,18 @@ impl_runtime_apis! {
 
     impl mmr::MmrApi<Block, Hash, BlockNumber> for Runtime {
         fn mmr_root() -> Result<Hash, mmr::Error> {
-            #[cfg(not(feature = "rococo"))]
+            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(feature = "rococo")]
+            #[cfg(any(feature = "rococo", feature = "alphanet"))]
             Ok(Mmr::mmr_root())
         }
 
         fn mmr_leaf_count() -> Result<mmr::LeafIndex, mmr::Error> {
-            #[cfg(not(feature = "rococo"))]
+            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(feature = "rococo")]
+            #[cfg(any(feature = "rococo", feature = "alphanet"))]
             Ok(Mmr::mmr_leaves())
         }
 
@@ -1365,10 +1311,10 @@ impl_runtime_apis! {
             _block_numbers: Vec<BlockNumber>,
             _best_known_block_number: Option<BlockNumber>,
         ) -> Result<(Vec<mmr::EncodableOpaqueLeaf>, mmr::Proof<Hash>), mmr::Error> {
-            #[cfg(not(feature = "rococo"))]
+            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(feature = "rococo")]
+            #[cfg(any(feature = "rococo", feature = "alphanet"))]
             Mmr::generate_proof(_block_numbers, _best_known_block_number).map(
                 |(leaves, proof)| {
                     (
@@ -1385,10 +1331,10 @@ impl_runtime_apis! {
         fn verify_proof(_leaves: Vec<mmr::EncodableOpaqueLeaf>, _proof: mmr::Proof<Hash>)
             -> Result<(), mmr::Error>
         {
-            #[cfg(not(feature = "rococo"))]
+            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(feature = "rococo")]
+            #[cfg(any(feature = "rococo", feature = "alphanet"))]
             {
                 pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as mmr::LeafDataProvider>::LeafData;
                 let leaves = _leaves.into_iter().map(|leaf|
@@ -1404,10 +1350,10 @@ impl_runtime_apis! {
             _leaves: Vec<mmr::EncodableOpaqueLeaf>,
             _proof: mmr::Proof<Hash>
         ) -> Result<(), mmr::Error> {
-            #[cfg(not(feature = "rococo"))]
+            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(feature = "rococo")]
+            #[cfg(any(feature = "rococo", feature = "alphanet"))]
             {
                 let nodes = _leaves.into_iter().map(|leaf|mmr::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
                 pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(_root, nodes, _proof)

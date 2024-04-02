@@ -619,6 +619,7 @@ pub fn bridge_test_config() -> ChainSpec {
     )
 }
 
+#[allow(unused_variables)]
 fn testnet_genesis(
     root_key: AccountId,
     invulnerables: Vec<(AccountId, (AuraId, BeefyId))>,
@@ -667,7 +668,7 @@ fn testnet_genesis(
         polkadot_xcm: sora2_parachain_runtime::PolkadotXcmConfig {
             safe_xcm_version: Some(SAFE_XCM_VERSION),
         },
-        #[cfg(any(feature = "rococo", feature = "polkadot"))]
+        #[cfg(any(feature = "rococo", feature = "alphanet"))]
         sudo: sora2_parachain_runtime::SudoConfig { key: Some(root_key) },
         technical_committee: TechnicalCommitteeConfig {
             members: technical_committee_accounts,
