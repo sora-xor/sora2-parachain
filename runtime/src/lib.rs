@@ -213,7 +213,7 @@ pub mod opaque {
 impl_opaque_keys! {
     pub struct SessionKeys {
         pub aura: Aura,
-        pub beefy: Beefy,
+        // pub beefy: Beefy,
     }
 }
 
@@ -326,7 +326,7 @@ parameter_types! {
 }
 
 // Configure FRAME pallets to include in runtime.
-type Nonce = u32;
+pub type Nonce = u32;
 
 impl frame_system::Config for Runtime {
     /// The identifier used to distinguish between accounts.
@@ -464,48 +464,48 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 impl parachain_info::Config for Runtime {}
 
 /// Configure Merkle Mountain Range pallet.
-#[cfg(any(feature = "rococo", feature = "alphanet"))]
-impl pallet_mmr::Config for Runtime {
-    const INDEXING_PREFIX: &'static [u8] = b"mmr";
-    type Hashing = Keccak256;
-    // type Hash = <Keccak256 as sp_runtime::traits::Hash>::Output;
-    type OnNewRoot = pallet_beefy_mmr::DepositBeefyDigest<Runtime>;
-    type WeightInfo = ();
-    type LeafData = pallet_beefy_mmr::Pallet<Runtime>;
-}
+// #[cfg(any(feature = "rococo", feature = "alphanet"))]
+// impl pallet_mmr::Config for Runtime {
+//     const INDEXING_PREFIX: &'static [u8] = b"mmr";
+//     type Hashing = Keccak256;
+//     // type Hash = <Keccak256 as sp_runtime::traits::Hash>::Output;
+//     type OnNewRoot = pallet_beefy_mmr::DepositBeefyDigest<Runtime>;
+//     type WeightInfo = ();
+//     type LeafData = pallet_beefy_mmr::Pallet<Runtime>;
+// }
 
-impl pallet_beefy::Config for Runtime {
-    type BeefyId = BeefyId;
-    type MaxAuthorities = MaxAuthorities;
-    #[cfg(any(feature = "rococo", feature = "alphanet"))]
-    type OnNewValidatorSet = BeefyMmr;
-    #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-    type OnNewValidatorSet = ();
+// impl pallet_beefy::Config for Runtime {
+//     type BeefyId = BeefyId;
+//     type MaxAuthorities = MaxAuthorities;
+//     #[cfg(any(feature = "rococo", feature = "alphanet"))]
+//     type OnNewValidatorSet = BeefyMmr;
+//     #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
+//     type OnNewValidatorSet = ();
 
-    #[doc = r" The maximum number of nominators for each validator."]
-    type MaxNominators = ();
+//     #[doc = r" The maximum number of nominators for each validator."]
+//     type MaxNominators = ();
 
-    #[doc = r" The maximum number of entries to keep in the set id to session index mapping."]
-    #[doc = r""]
-    #[doc = r" Since the `SetIdSession` map is only used for validating equivocations this"]
-    #[doc = r" value should relate to the bonding duration of whatever staking system is"]
-    #[doc = r" being used (if any). If equivocation handling is not enabled then this value"]
-    #[doc = r" can be zero."]
-    type MaxSetIdSessionEntries = ();
+//     #[doc = r" The maximum number of entries to keep in the set id to session index mapping."]
+//     #[doc = r""]
+//     #[doc = r" Since the `SetIdSession` map is only used for validating equivocations this"]
+//     #[doc = r" value should relate to the bonding duration of whatever staking system is"]
+//     #[doc = r" being used (if any). If equivocation handling is not enabled then this value"]
+//     #[doc = r" can be zero."]
+//     type MaxSetIdSessionEntries = ();
 
-    #[doc = r" Weights for this pallet."]
-    type WeightInfo = ();
+//     #[doc = r" Weights for this pallet."]
+//     type WeightInfo = ();
 
-    #[doc = r" The proof of key ownership, used for validating equivocation reports"]
-    #[doc = r" The proof must include the session index and validator count of the"]
-    #[doc = r" session at which the equivocation occurred."]
-    type KeyOwnerProof = sp_core::Void;
+//     #[doc = r" The proof of key ownership, used for validating equivocation reports"]
+//     #[doc = r" The proof must include the session index and validator count of the"]
+//     #[doc = r" session at which the equivocation occurred."]
+//     type KeyOwnerProof = sp_core::Void;
 
-    #[doc = r" The equivocation handling subsystem."]
-    #[doc = r""]
-    #[doc = r" Defines methods to publish, check and process an equivocation offence."]
-    type EquivocationReportSystem = ();
-}
+//     #[doc = r" The equivocation handling subsystem."]
+//     #[doc = r""]
+//     #[doc = r" Defines methods to publish, check and process an equivocation offence."]
+//     type EquivocationReportSystem = ();
+// }
 
 #[cfg(any(feature = "rococo", feature = "alphanet"))]
 parameter_types! {
@@ -525,13 +525,13 @@ parameter_types! {
     pub LeafVersion: MmrLeafVersion = MmrLeafVersion::new(0, 0);
 }
 
-#[cfg(any(feature = "rococo", feature = "alphanet"))]
-impl pallet_beefy_mmr::Config for Runtime {
-    type LeafVersion = LeafVersion;
-    type BeefyAuthorityToMerkleLeaf = pallet_beefy_mmr::BeefyEcdsaToEthereum;
-    type LeafExtra = bridge_types::types::LeafExtraData<H256, H256>;
-    type BeefyDataProvider = LeafProvider;
-}
+// #[cfg(any(feature = "rococo", feature = "alphanet"))]
+// impl pallet_beefy_mmr::Config for Runtime {
+//     type LeafVersion = LeafVersion;
+//     type BeefyAuthorityToMerkleLeaf = pallet_beefy_mmr::BeefyEcdsaToEthereum;
+//     type LeafExtra = bridge_types::types::LeafExtraData<H256, H256>;
+//     type BeefyDataProvider = LeafProvider;
+// }
 
 #[cfg(any(feature = "rococo", feature = "alphanet"))]
 impl pallet_sudo::Config for Runtime {
@@ -677,10 +677,10 @@ parameter_types! {
     pub const SidechainRandomnessNetwork: SubNetworkId = SubNetworkId::Mainnet;
 }
 
-impl beefy_light_client::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
-}
+// impl beefy_light_client::Config for Runtime {
+//     type RuntimeEvent = RuntimeEvent;
+//     type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
+// }
 
 parameter_types! {
     pub const BridgeMaxMessagePayloadSize: u32 = 256;
@@ -822,7 +822,7 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
     type MessageStatusNotifier = ();
     type MaxMessagePayloadSize = BridgeMaxMessagePayloadSize;
     type MaxMessagesPerCommit = BridgeMaxMessagesPerCommit;
-    type AuxiliaryDigestHandler = LeafProvider;
+    type AuxiliaryDigestHandler = DigestProvider;
     type WeightInfo = ();
     type TimepointProvider = TimepointProvider;
     type ThisNetworkId = ThisNetworkId;
@@ -830,11 +830,8 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
     type Balance = ();
 }
 
-impl leaf_provider::Config for Runtime {
+impl digest_provider::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type Hashing = Keccak256;
-    type Hash = <Keccak256 as sp_runtime::traits::Hash>::Output;
-    type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
 }
 
 parameter_types! {
@@ -1093,8 +1090,8 @@ construct_runtime!(
         ParachainSystem: cumulus_pallet_parachain_system = 1,
         Timestamp: pallet_timestamp = 2,
         ParachainInfo: parachain_info = 3,
-        // Leaf provider should be placed before any pallet which is using it.
-        LeafProvider: leaf_provider = 107,
+        // // Leaf provider should be placed before any pallet which is using it.
+        DigestProvider: digest_provider = 107,
 
         // Monetary stuff.
         Balances: pallet_balances = 10,
@@ -1121,7 +1118,7 @@ construct_runtime!(
         Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
         XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
-        BeefyLightClient: beefy_light_client = 103,
+        // BeefyLightClient: beefy_light_client = 103,
         SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Storage, Event<T>, ValidateUnsigned} = 104,
         SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound = 105,
         SubstrateDispatch: dispatch = 106,
@@ -1129,11 +1126,11 @@ construct_runtime!(
         MultisigVerifier: multisig_verifier = 109,
 
         // Beefy pallets should be placed after channels
-        #[cfg(any(feature = "rococo", feature = "alphanet"))]
-        Mmr: pallet_mmr = 4,
-        Beefy: pallet_beefy = 5,
-        #[cfg(any(feature = "rococo", feature = "alphanet"))]
-        BeefyMmr: pallet_beefy_mmr = 6,
+        // #[cfg(any(feature = "rococo", feature = "alphanet"))]
+        // Mmr: pallet_mmr = 4,
+        // Beefy: pallet_beefy = 5,
+        // #[cfg(any(feature = "rococo", feature = "alphanet"))]
+        // BeefyMmr: pallet_beefy_mmr = 6,
 
         TechnicalCommittee: pallet_collective::<Instance1> = 110,
         Council: pallet_collective::<Instance2> = 111,
@@ -1254,125 +1251,125 @@ impl_runtime_apis! {
         }
     }
 
-impl sp_consensus_beefy::BeefyApi<Block, BeefyId> for Runtime {
-        fn validator_set() -> Option<sp_consensus_beefy::ValidatorSet<BeefyId>> {
-            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-            return None;
+// impl sp_consensus_beefy::BeefyApi<Block, BeefyId> for Runtime {
+//         fn validator_set() -> Option<sp_consensus_beefy::ValidatorSet<BeefyId>> {
+//             #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
+//             return None;
 
-            #[cfg(any(feature = "rococo", feature = "alphanet"))]
-            Beefy::validator_set()
-        }
+//             #[cfg(any(feature = "rococo", feature = "alphanet"))]
+//             Beefy::validator_set()
+//         }
 
-        fn beefy_genesis() -> Option<BlockNumber> {
-            #[cfg(not(feature = "rococo"))]
-            return None;
+//         fn beefy_genesis() -> Option<BlockNumber> {
+//             #[cfg(not(feature = "rococo"))]
+//             return None;
 
-            #[cfg(feature = "rococo")]
-            Beefy::genesis_block()
-		}
+//             #[cfg(feature = "rococo")]
+//             Beefy::genesis_block()
+// 		}
 
-        fn submit_report_equivocation_unsigned_extrinsic(
-			_equivocation_proof: sp_consensus_beefy::EquivocationProof<
-				BlockNumber,
-				BeefyId,
-				BeefySignature,
-			>,
-			_key_owner_proof: sp_consensus_beefy::OpaqueKeyOwnershipProof,
-		) -> Option<()> {
-            None
-		}
+//         fn submit_report_equivocation_unsigned_extrinsic(
+// 			_equivocation_proof: sp_consensus_beefy::EquivocationProof<
+// 				BlockNumber,
+// 				BeefyId,
+// 				BeefySignature,
+// 			>,
+// 			_key_owner_proof: sp_consensus_beefy::OpaqueKeyOwnershipProof,
+// 		) -> Option<()> {
+//             None
+// 		}
 
-		fn generate_key_ownership_proof(
-			_set_id: sp_consensus_beefy::ValidatorSetId,
-			_authority_id: BeefyId,
-		) -> Option<sp_consensus_beefy::OpaqueKeyOwnershipProof> {
-            None
-		}
-    }
+// 		fn generate_key_ownership_proof(
+// 			_set_id: sp_consensus_beefy::ValidatorSetId,
+// 			_authority_id: BeefyId,
+// 		) -> Option<sp_consensus_beefy::OpaqueKeyOwnershipProof> {
+//             None
+// 		}
+//     }
 
-    impl mmr::MmrApi<Block, Hash, BlockNumber> for Runtime {
-        fn mmr_root() -> Result<Hash, mmr::Error> {
-            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-            return Err(mmr::Error::PalletNotIncluded);
+//     impl mmr::MmrApi<Block, Hash, BlockNumber> for Runtime {
+//         fn mmr_root() -> Result<Hash, mmr::Error> {
+//             #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
+//             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(any(feature = "rococo", feature = "alphanet"))]
-            Ok(Mmr::mmr_root())
-        }
+//             #[cfg(any(feature = "rococo", feature = "alphanet"))]
+//             Ok(Mmr::mmr_root())
+//         }
 
-        fn mmr_leaf_count() -> Result<mmr::LeafIndex, mmr::Error> {
-            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-            return Err(mmr::Error::PalletNotIncluded);
+//         fn mmr_leaf_count() -> Result<mmr::LeafIndex, mmr::Error> {
+//             #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
+//             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(any(feature = "rococo", feature = "alphanet"))]
-            Ok(Mmr::mmr_leaves())
-        }
+//             #[cfg(any(feature = "rococo", feature = "alphanet"))]
+//             Ok(Mmr::mmr_leaves())
+//         }
 
-        fn generate_proof(
-            _block_numbers: Vec<BlockNumber>,
-            _best_known_block_number: Option<BlockNumber>,
-        ) -> Result<(Vec<mmr::EncodableOpaqueLeaf>, mmr::Proof<Hash>), mmr::Error> {
-            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-            return Err(mmr::Error::PalletNotIncluded);
+//         fn generate_proof(
+//             _block_numbers: Vec<BlockNumber>,
+//             _best_known_block_number: Option<BlockNumber>,
+//         ) -> Result<(Vec<mmr::EncodableOpaqueLeaf>, mmr::Proof<Hash>), mmr::Error> {
+//             #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
+//             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(any(feature = "rococo", feature = "alphanet"))]
-            Mmr::generate_proof(_block_numbers, _best_known_block_number).map(
-                |(leaves, proof)| {
-                    (
-                        leaves
-                            .into_iter()
-                            .map(|leaf| mmr::EncodableOpaqueLeaf::from_leaf(&leaf))
-                            .collect(),
-                        proof,
-                    )
-                },
-            )
-        }
+//             #[cfg(any(feature = "rococo", feature = "alphanet"))]
+//             Mmr::generate_proof(_block_numbers, _best_known_block_number).map(
+//                 |(leaves, proof)| {
+//                     (
+//                         leaves
+//                             .into_iter()
+//                             .map(|leaf| mmr::EncodableOpaqueLeaf::from_leaf(&leaf))
+//                             .collect(),
+//                         proof,
+//                     )
+//                 },
+//             )
+//         }
 
-        fn verify_proof(_leaves: Vec<mmr::EncodableOpaqueLeaf>, _proof: mmr::Proof<Hash>)
-            -> Result<(), mmr::Error>
-        {
-            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-            return Err(mmr::Error::PalletNotIncluded);
+//         fn verify_proof(_leaves: Vec<mmr::EncodableOpaqueLeaf>, _proof: mmr::Proof<Hash>)
+//             -> Result<(), mmr::Error>
+//         {
+//             #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
+//             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(any(feature = "rococo", feature = "alphanet"))]
-            {
-                pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as mmr::LeafDataProvider>::LeafData;
-                let leaves = _leaves.into_iter().map(|leaf|
-                    leaf.into_opaque_leaf()
-                    .try_decode()
-                    .ok_or(mmr::Error::Verify)).collect::<Result<Vec<MmrLeaf>, mmr::Error>>()?;
-                Mmr::verify_leaves(leaves, _proof)
-            }
-        }
+//             #[cfg(any(feature = "rococo", feature = "alphanet"))]
+//             {
+//                 pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as mmr::LeafDataProvider>::LeafData;
+//                 let leaves = _leaves.into_iter().map(|leaf|
+//                     leaf.into_opaque_leaf()
+//                     .try_decode()
+//                     .ok_or(mmr::Error::Verify)).collect::<Result<Vec<MmrLeaf>, mmr::Error>>()?;
+//                 Mmr::verify_leaves(leaves, _proof)
+//             }
+//         }
 
-        fn verify_proof_stateless(
-            _root: Hash,
-            _leaves: Vec<mmr::EncodableOpaqueLeaf>,
-            _proof: mmr::Proof<Hash>
-        ) -> Result<(), mmr::Error> {
-            #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-            return Err(mmr::Error::PalletNotIncluded);
+//         fn verify_proof_stateless(
+//             _root: Hash,
+//             _leaves: Vec<mmr::EncodableOpaqueLeaf>,
+//             _proof: mmr::Proof<Hash>
+//         ) -> Result<(), mmr::Error> {
+//             #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
+//             return Err(mmr::Error::PalletNotIncluded);
 
-            #[cfg(any(feature = "rococo", feature = "alphanet"))]
-            {
-                let nodes = _leaves.into_iter().map(|leaf|mmr::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
-                pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(_root, nodes, _proof)
-            }
-        }
-    }
+//             #[cfg(any(feature = "rococo", feature = "alphanet"))]
+//             {
+//                 let nodes = _leaves.into_iter().map(|leaf|mmr::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
+//                 pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(_root, nodes, _proof)
+//             }
+//         }
+//     }
 
-    impl beefy_light_client_runtime_api::BeefyLightClientAPI<Block, beefy_light_client::BitField> for Runtime {
-        fn get_random_bitfield(network_id: SubNetworkId, prior: beefy_light_client::BitField, num_of_validators: u32) -> beefy_light_client::BitField {
-            let len = prior.len();
-            BeefyLightClient::create_random_bit_field(network_id, prior, num_of_validators).unwrap_or(beefy_light_client::BitField::with_capacity(len))
-        }
-    }
+    // impl beefy_light_client_runtime_api::BeefyLightClientAPI<Block, beefy_light_client::BitField> for Runtime {
+    //     fn get_random_bitfield(network_id: SubNetworkId, prior: beefy_light_client::BitField, num_of_validators: u32) -> beefy_light_client::BitField {
+    //         let len = prior.len();
+    //         BeefyLightClient::create_random_bit_field(network_id, prior, num_of_validators).unwrap_or(beefy_light_client::BitField::with_capacity(len))
+    //     }
+    // }
 
-    impl leaf_provider_runtime_api::LeafProviderAPI<Block> for Runtime {
-        fn latest_digest() -> Option<bridge_types::types::AuxiliaryDigest> {
-                LeafProvider::latest_digest().map(|logs| bridge_types::types::AuxiliaryDigest{ logs })
-        }
-    }
+    // impl leaf_provider_runtime_api::LeafProviderAPI<Block> for Runtime {
+    //     fn latest_digest() -> Option<bridge_types::types::AuxiliaryDigest> {
+    //             LeafProvider::latest_digest().map(|logs| bridge_types::types::AuxiliaryDigest{ logs })
+    //     }
+    // }
 
     impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Index> for Runtime {
         fn account_nonce(account: AccountId) -> Index {
