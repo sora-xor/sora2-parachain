@@ -785,11 +785,9 @@ dependencies = [
 name = "beefy-light-client"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "binary-merkle-tree",
  "bridge-common",
  "bridge-types",
- "ckb-merkle-mountain-range",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
@@ -11407,8 +11405,6 @@ dependencies = [
 name = "sora2-parachain-runtime"
 version = "2.3.0"
 dependencies = [
- "beefy-light-client",
- "beefy-light-client-runtime-api",
  "bridge-data-signer",
  "bridge-types",
  "cumulus-pallet-aura-ext",
@@ -11441,13 +11437,10 @@ dependencies = [
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
- "pallet-beefy",
- "pallet-beefy-mmr",
  "pallet-collator-selection",
  "pallet-collective",
  "pallet-democracy",
  "pallet-elections-phragmen",
- "pallet-mmr",
  "pallet-preimage",
  "pallet-scheduler",
  "pallet-session",
@@ -11469,11 +11462,9 @@ dependencies = [
  "sp-api",
  "sp-block-builder",
  "sp-consensus-aura",
- "sp-consensus-beefy",
  "sp-core",
  "sp-inherents",
  "sp-io",
- "sp-mmr-primitives",
  "sp-offchain",
  "sp-runtime",
  "sp-session",

@@ -82,11 +82,7 @@ use frame_system::{
     limits::{BlockLength, BlockWeights},
     EnsureRoot,
 };
-pub use sp_consensus_beefy::ecdsa_crypto::{AuthorityId as BeefyId, Signature as BeefySignature};
-#[cfg(any(feature = "rococo", feature = "alphanet"))]
-use sp_consensus_beefy::mmr::MmrLeafVersion;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_mmr_primitives as mmr;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 
@@ -507,23 +503,23 @@ impl parachain_info::Config for Runtime {}
 //     type EquivocationReportSystem = ();
 // }
 
-#[cfg(any(feature = "rococo", feature = "alphanet"))]
-parameter_types! {
-    /// Version of the produced MMR leaf.
-    ///
-    /// The version consists of two parts;
-    /// - `major` (3 bits)
-    /// - `minor` (5 bits)
-    ///
-    /// `major` should be updated only if decoding the previous MMR Leaf format from the payload
-    /// is not possible (i.e. backward incompatible change).
-    /// `minor` should be updated if fields are added to the previous MMR Leaf, which given SCALE
-    /// encoding does not prevent old leafs from being decoded.
-    ///
-    /// Hence we expect `major` to be changed really rarely (think never).
-    /// See [`MmrLeafVersion`] type documentation for more details.
-    pub LeafVersion: MmrLeafVersion = MmrLeafVersion::new(0, 0);
-}
+// #[cfg(any(feature = "rococo", feature = "alphanet"))]
+// parameter_types! {
+//     /// Version of the produced MMR leaf.
+//     ///
+//     /// The version consists of two parts;
+//     /// - `major` (3 bits)
+//     /// - `minor` (5 bits)
+//     ///
+//     /// `major` should be updated only if decoding the previous MMR Leaf format from the payload
+//     /// is not possible (i.e. backward incompatible change).
+//     /// `minor` should be updated if fields are added to the previous MMR Leaf, which given SCALE
+//     /// encoding does not prevent old leafs from being decoded.
+//     ///
+//     /// Hence we expect `major` to be changed really rarely (think never).
+//     /// See [`MmrLeafVersion`] type documentation for more details.
+//     pub LeafVersion: MmrLeafVersion = MmrLeafVersion::new(0, 0);
+// }
 
 // #[cfg(any(feature = "rococo", feature = "alphanet"))]
 // impl pallet_beefy_mmr::Config for Runtime {
