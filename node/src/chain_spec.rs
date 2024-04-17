@@ -215,7 +215,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		// Extensions
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 1000,
+			para_id: 2011,
 		},
 	)
 }
@@ -279,7 +279,7 @@ fn testnet_genesis(
         // democracy: DemocracyConfig::default(),
 	
 		elections_phragmen: Default::default(),
-        // beefy_light_client: BeefyLightClientConfig { network_id: bridge_network_id },
+        // beefy_light_client: BeefyLightClixxentConfig { network_id: bridge_network_id },
         substrate_bridge_outbound_channel: Default::default(),
         system: sora2_parachain_runtime::SystemConfig {
             code: sora2_parachain_runtime::WASM_BINARY
