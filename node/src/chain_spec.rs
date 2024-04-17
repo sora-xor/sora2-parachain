@@ -9,14 +9,13 @@
 // use sp_core::{sr25519, Pair, Public};
 // use sp_runtime::traits::{IdentifyAccount, Verify};
 
-use bridge_types::SubNetworkId;
 use cumulus_primitives_core::ParaId;
 use hex_literal::hex;
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sora2_parachain_runtime::{
-    AccountId, AuraId, BeefyId, CouncilConfig, DemocracyConfig, Signature,
+    AccountId, AuraId, CouncilConfig, DemocracyConfig, Signature,
     TechnicalCommitteeConfig, EXISTENTIAL_DEPOSIT,
 };
 use sp_core::{sr25519, ByteArray, Pair, Public};
@@ -119,7 +118,6 @@ pub fn development_config() -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
 				2011.into(),
-				SubNetworkId::Rococo,
 				vec![
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
                     get_account_id_from_seed::<sr25519::Public>("Bob"),
@@ -187,7 +185,6 @@ pub fn local_testnet_config() -> ChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
                 ],
                 2011.into(),
-                SubNetworkId::Rococo,
                 vec![
                     AccountId::from(hex!(
                         "e02b00cb5bbf5c0338075237cdbfb7d11dbaf19aafce71744610b6a87b5e0f22"
@@ -228,7 +225,6 @@ fn testnet_genesis(
 	invulnerables: Vec<(AccountId, AuraId)>,
 	endowed_accounts: Vec<AccountId>,
 	id: ParaId,
-	bridge_network_id: SubNetworkId,
 	technical_committee_accounts: Vec<AccountId>,
     council_accounts: Vec<AccountId>,
 ) -> sora2_parachain_runtime::RuntimeGenesisConfig {

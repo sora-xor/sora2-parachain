@@ -2569,25 +2569,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "digest-provider"
-version = "0.1.1"
-dependencies = [
- "bridge-types",
- "ethabi",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-consensus-beefy",
- "sp-core",
- "sp-io",
- "sp-mmr-primitives",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "directories"
 version = "4.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -11439,7 +11420,6 @@ dependencies = [
  "cumulus-primitives-core",
  "cumulus-primitives-timestamp",
  "cumulus-primitives-utility",
- "digest-provider",
  "dispatch",
  "frame-benchmarking",
  "frame-executive",

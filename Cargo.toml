@@ -5,7 +5,6 @@ panic = "unwind"
 beefy-light-client = { path = "../sora2-common/pallets/beefy-light-client" }
 beefy-light-client-rpc = { path = "../sora2-common/pallets/beefy-light-client/rpc" }
 beefy-light-client-runtime-api = { path = "../sora2-common/pallets/beefy-light-client/runtime-api" }
-digest-provider = { path = "../sora2-common/pallets/digest-provider" }
 leaf-provider = { path = "../sora2-common/pallets/leaf-provider" }
 leaf-provider-rpc = { path = "../sora2-common/pallets/leaf-provider/rpc" }
 leaf-provider-runtime-api = { path = "../sora2-common/pallets/leaf-provider/runtime-api" }

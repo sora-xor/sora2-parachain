@@ -822,7 +822,7 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
     type MessageStatusNotifier = ();
     type MaxMessagePayloadSize = BridgeMaxMessagePayloadSize;
     type MaxMessagesPerCommit = BridgeMaxMessagesPerCommit;
-    type AuxiliaryDigestHandler = DigestProvider;
+    type AuxiliaryDigestHandler = LeafProvider;
     type WeightInfo = ();
     type TimepointProvider = TimepointProvider;
     type ThisNetworkId = ThisNetworkId;
@@ -830,8 +830,21 @@ impl substrate_bridge_channel::outbound::Config for Runtime {
     type Balance = ();
 }
 
-impl digest_provider::Config for Runtime {
+impl leaf_provider::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
+    type Hashing = Keccak256;
+    type Hash = <Keccak256 as sp_runtime::traits::Hash>::Output;
+    type Randomness = RandomnessStub;
+}
+
+/// Stub for Randomness trait for Leaf Provider
+/// Since we don't have BEEFY on the parachain anymore, we don't need randomness
+pub struct RandomnessStub;
+
+impl frame_support::traits::Randomness<H256, u32> for RandomnessStub {
+    fn random(_: &[u8]) -> (H256, u32) {
+        (H256::zero(), 0)
+    }
 }
 
 parameter_types! {
@@ -1091,7 +1104,7 @@ construct_runtime!(
         Timestamp: pallet_timestamp = 2,
         ParachainInfo: parachain_info = 3,
         // // Leaf provider should be placed before any pallet which is using it.
-        DigestProvider: digest_provider = 107,
+        LeafProvider: leaf_provider = 107,
 
         // Monetary stuff.
         Balances: pallet_balances = 10,
@@ -1365,11 +1378,11 @@ impl_runtime_apis! {
     //     }
     // }
 
-    // impl leaf_provider_runtime_api::LeafProviderAPI<Block> for Runtime {
-    //     fn latest_digest() -> Option<bridge_types::types::AuxiliaryDigest> {
-    //             LeafProvider::latest_digest().map(|logs| bridge_types::types::AuxiliaryDigest{ logs })
-    //     }
-    // }
+    impl leaf_provider_runtime_api::LeafProviderAPI<Block> for Runtime {
+        fn latest_digest() -> Option<bridge_types::types::AuxiliaryDigest> {
+                LeafProvider::latest_digest().map(|logs| bridge_types::types::AuxiliaryDigest{ logs })
+        }
+    }
 
     impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Index> for Runtime {
         fn account_nonce(account: AccountId) -> Index {
