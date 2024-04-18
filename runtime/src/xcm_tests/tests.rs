@@ -141,7 +141,7 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
                     asset_id: relay_native_asset_id(),
                     sender: None,
                     recipient: BOB,
-                    /// the comission shall be taken on the relaychain
+                    // the comission shall be taken on the relaychain
                     amount: 96000000000,
                 }
             ))));
@@ -230,7 +230,7 @@ fn send_relay_chain_asset_to_sibling() {
             .into(),
             assetid,
             ALICE,
-            xcm::VersionedMultiLocation::V3(location.clone()),
+            staging_xcm::VersionedMultiLocation::V3(location.clone()),
             10000000,
         ));
         let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransferred(
@@ -271,7 +271,7 @@ fn send_sibling_chain_asset_to_sibling() {
             .into(),
             assetid,
             ALICE,
-            xcm::VersionedMultiLocation::V3(location.clone()),
+            staging_xcm::VersionedMultiLocation::V3(location.clone()),
             10000000,
         ));
         let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransferred(
@@ -307,7 +307,7 @@ fn send_relay_chain_asset_to_relay_chain() {
             .into(),
             assetid,
             ALICE,
-            xcm::VersionedMultiLocation::V3(location.clone()),
+            staging_xcm::VersionedMultiLocation::V3(location.clone()),
             1_000_000_000_000_000,
         ));
         let test_event = crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetTransferred(
@@ -332,16 +332,16 @@ fn send_relay_chain_asset_to_sora_from_relay() {
         let _ = RelayBalances::deposit_creating(&ALICE, 1_000_000_000_000_000_000);
         assert_ok!(relay::XcmPallet::reserve_transfer_assets(
             Some(ALICE).into(),
-            Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
+            Box::new(staging_xcm::VersionedMultiLocation::V3(MultiLocation::new(
                 0,
                 X1(Junction::Parachain(2))
             ))),
-            Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
+            Box::new(staging_xcm::VersionedMultiLocation::V3(MultiLocation::new(
                 0,
                 X1(Junction::AccountId32 { network: None, id: ALICE.into() })
             ))),
-            Box::new(xcm::VersionedMultiAssets::V3(
-                vec![xcm::v3::MultiAsset {
+            Box::new(staging_xcm::VersionedMultiAssets::V3(
+                vec![staging_xcm::v3::MultiAsset {
                     id: Concrete(MultiLocation::new(0, Here)),
                     fun: Fungible(1_000_000_000_000_000),
                 }]
@@ -405,7 +405,7 @@ fn send_to_sora_no_mapping_error() {
 
         assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
             r.event,
-            crate::RuntimeEvent::PolkadotXcm(pallet_xcm::Event::AssetsTrapped(_, _, _))
+            crate::RuntimeEvent::PolkadotXcm(pallet_xcm::Event::AssetsTrapped{hash:_, origin:_, assets: _})
         )));
     });
 }
@@ -434,7 +434,7 @@ fn send_from_sora_no_mapping_error() {
             .into(),
             assetid,
             ALICE,
-            xcm::VersionedMultiLocation::V3(location.clone()),
+            staging_xcm::VersionedMultiLocation::V3(location.clone()),
             10000000,
         ));
 
@@ -460,16 +460,16 @@ fn send_relay_chain_asset_to_sora_from_relay_not_enough_tokens() {
         let _ = RelayBalances::deposit_creating(&ALICE, 1_000_000_000_000_000_000);
         assert_ok!(relay::XcmPallet::reserve_transfer_assets(
             Some(ALICE).into(),
-            Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
+            Box::new(staging_xcm::VersionedMultiLocation::V3(MultiLocation::new(
                 0,
                 X1(Junction::Parachain(2))
             ))),
-            Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
+            Box::new(staging_xcm::VersionedMultiLocation::V3(MultiLocation::new(
                 0,
                 X1(Junction::AccountId32 { network: None, id: ALICE.into() })
             ))),
-            Box::new(xcm::VersionedMultiAssets::V3(
-                vec![xcm::v3::MultiAsset {
+            Box::new(staging_xcm::VersionedMultiAssets::V3(
+                vec![staging_xcm::v3::MultiAsset {
                     id: Concrete(MultiLocation::new(0, Here)),
                     fun: Fungible(RELAY_ASSET_MIN_AMOUNT - 1),
                 }]
@@ -501,16 +501,16 @@ fn send_relay_chain_asset_to_sora_from_relay_exact_enough_tokens() {
         let _ = RelayBalances::deposit_creating(&ALICE, 1_000_000_000_000_000_000);
         assert_ok!(relay::XcmPallet::reserve_transfer_assets(
             Some(ALICE).into(),
-            Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
+            Box::new(staging_xcm::VersionedMultiLocation::V3(MultiLocation::new(
                 0,
                 X1(Junction::Parachain(2))
             ))),
-            Box::new(xcm::VersionedMultiLocation::V3(MultiLocation::new(
+            Box::new(staging_xcm::VersionedMultiLocation::V3(MultiLocation::new(
                 0,
                 X1(Junction::AccountId32 { network: None, id: ALICE.into() })
             ))),
-            Box::new(xcm::VersionedMultiAssets::V3(
-                vec![xcm::v3::MultiAsset {
+            Box::new(staging_xcm::VersionedMultiAssets::V3(
+                vec![staging_xcm::v3::MultiAsset {
                     id: Concrete(MultiLocation::new(0, Here)),
                     fun: Fungible(RELAY_ASSET_MIN_AMOUNT),
                 }]
@@ -543,7 +543,7 @@ fn send_sibling_chain_asset_to_sibling_asset_trapped() {
     prepare_sora_parachain();
 
     SoraParachain::execute_with(|| {
-        let location = xcm::v2::MultiLocation::parent();
+        let location = staging_xcm::v2::MultiLocation::parent();
         let assetid = para_x_asset_id();
 
         // fill queue
@@ -566,7 +566,7 @@ fn send_sibling_chain_asset_to_sibling_asset_trapped() {
             .into(),
             assetid,
             ALICE,
-            xcm::VersionedMultiLocation::V2(location.clone()),
+            staging_xcm::VersionedMultiLocation::V2(location.clone()),
             10000000,
         ));
         assert!(!frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(

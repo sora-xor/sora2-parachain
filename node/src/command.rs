@@ -82,15 +82,6 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
     })
 }
 
-// fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
-// 	Ok(match id {
-// 		"dev" => Box::new(chain_spec::development_config()),
-// 		"template-rococo" => Box::new(chain_spec::local_testnet_config()),
-// 		"" | "local" => Box::new(chain_spec::local_testnet_config()),
-// 		path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
-// 	})
-// }
-
 impl SubstrateCli for Cli {
     fn impl_name() -> String {
         format!("SORA {} Parachain Node", NETWORK_NAME)
@@ -243,45 +234,6 @@ pub fn run() -> Result<()> {
 				cmd.run(&*spec)
 			})
 		},
-		// Some(Subcommand::Benchmark(cmd)) => {
-		// 	let runner = cli.create_runner(cmd)?;
-		// 	// Switch on the concrete benchmark sub-command-
-		// 	match cmd {
-		// 		BenchmarkCmd::Pallet(cmd) =>
-		// 			if cfg!(feature = "runtime-benchmarks") {
-		// 				runner.sync_run(|config| cmd.run::<Block, ()>(config))
-		// 			} else {
-		// 				Err("Benchmarking wasn't enabled when building the node. \
-		// 			You can enable it with `--features runtime-benchmarks`."
-		// 					.into())
-		// 			},
-		// 		BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-		// 			let partials = new_partial(&config)?;
-		// 			cmd.run(partials.client)
-		// 		}),
-		// 		#[cfg(not(feature = "runtime-benchmarks"))]
-		// 		BenchmarkCmd::Storage(_) =>
-		// 			return Err(sc_cli::Error::Input(
-		// 				"Compile with --features=runtime-benchmarks \
-		// 				to enable storage benchmarks."
-		// 					.into(),
-		// 			)
-		// 			.into()),
-		// 		#[cfg(feature = "runtime-benchmarks")]
-		// 		BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-		// 			let partials = new_partial(&config)?;
-		// 			let db = partials.backend.expose_db();
-		// 			let storage = partials.backend.expose_storage();
-		// 			cmd.run(config, partials.client.clone(), db, storage)
-		// 		}),
-		// 		BenchmarkCmd::Machine(cmd) =>
-		// 			runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
-		// 		// NOTE: this allows the Client to leniently implement
-		// 		// new benchmark commands without requiring a companion MR.
-		// 		#[allow(unreachable_patterns)]
-		// 		_ => Err("Benchmarking sub-command unsupported".into()),
-		// 	}
-		// },
 		#[cfg(feature = "runtime-benchmarks")]
         Some(Subcommand::Benchmark(cmd)) => {
             use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};

@@ -11384,6 +11384,7 @@ dependencies = [
  "pallet-collective",
  "pallet-democracy",
  "pallet-elections-phragmen",
+ "pallet-message-queue",
  "pallet-preimage",
  "pallet-scheduler",
  "pallet-session",
@@ -14504,15 +14505,3 @@ dependencies = [
  "cc",
  "pkg-config",
 ]
-
-[[patch.unused]]
-name = "beefy-light-client"
-version = "0.1.0"
-
-[[patch.unused]]
-name = "beefy-light-client-rpc"
-version = "0.1.0"
-
-[[patch.unused]]
-name = "beefy-light-client-runtime-api"
-version = "0.1.0"

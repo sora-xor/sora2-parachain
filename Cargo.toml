@@ -2,9 +2,6 @@
 panic = "unwind"
 
 [patch."https://github.com/sora-xor/sora2-common.git"]
-beefy-light-client = { path = "../sora2-common/pallets/beefy-light-client" }
-beefy-light-client-rpc = { path = "../sora2-common/pallets/beefy-light-client/rpc" }
-beefy-light-client-runtime-api = { path = "../sora2-common/pallets/beefy-light-client/runtime-api" }
 leaf-provider = { path = "../sora2-common/pallets/leaf-provider" }
 leaf-provider-rpc = { path = "../sora2-common/pallets/leaf-provider/rpc" }
 leaf-provider-runtime-api = { path = "../sora2-common/pallets/leaf-provider/runtime-api" }
@@ -16,9 +13,6 @@ multisig-verifier = { path = "../sora2-common/pallets/multisig-verifier" }
 substrate-bridge-channel = { path = "../sora2-common/pallets/substrate-channel" }
 
 # bridge-channel-rpc = { path = "../sora2-common/pallets/substrate-channel/rpc" }
-# beefy-light-client = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.22" }
-# beefy-light-client-rpc = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.22" }
-# beefy-light-client-runtime-api = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.22" }
 # leaf-provider = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.22" }
 # leaf-provider-rpc = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.22" }
 # leaf-provider-runtime-api = { git = "https://github.com/sora-xor//sora2-common.git", tag = "1.0.22" }
