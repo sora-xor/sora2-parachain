@@ -36,6 +36,7 @@ use frame_support::{
     match_types, parameter_types,
     traits::{Everything, Nothing},
 };
+use frame_system::EnsureRoot;
 use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
 use orml_xcm_support::{IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset};
 use pallet_xcm::XcmPassthrough;
@@ -51,7 +52,6 @@ use staging_xcm_builder::{
     SignedAccountId32AsNative, SignedToAccountId32, SovereignSignedViaLocation, TakeWeightCredit,
 };
 use staging_xcm_executor::XcmExecutor;
-use frame_system::EnsureRoot;
 
 #[cfg(feature = "rococo")]
 parameter_types! {

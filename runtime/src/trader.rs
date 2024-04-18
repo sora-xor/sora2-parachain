@@ -41,10 +41,15 @@ impl WeightTrader for ParachainTrader {
         Self
     }
 
-    fn buy_weight(&mut self, weight: XcmWeight, assets: Assets, _context: &XcmContext) -> Result<Assets, XcmError> {
+    fn buy_weight(
+        &mut self,
+        weight: XcmWeight,
+        assets: Assets,
+        _context: &XcmContext,
+    ) -> Result<Assets, XcmError> {
         log::trace!(target: "xcm::weight", "buy_weight weight: {:?}, payment: {:?}", weight, assets);
         if assets.fungible.is_empty() {
-            return Err(XcmError::AssetNotFound)
+            return Err(XcmError::AssetNotFound);
         }
 
         for (asset_id, val) in &assets.fungible {
@@ -55,7 +60,7 @@ impl WeightTrader for ParachainTrader {
                     if m.parents == 0 {
                         let mut self_location = crate::xcm_config::SelfLocation::get();
                         if self_location.append_with(m.interior).is_err() {
-                            return Err(XcmError::AssetNotFound)
+                            return Err(XcmError::AssetNotFound);
                         }
                         self_location
                     } else {
@@ -70,7 +75,7 @@ impl WeightTrader for ParachainTrader {
                 return Err(XcmError::AssetNotFound);
             };
             if *val < minimum_amount {
-                return Err(XcmError::TooExpensive)
+                return Err(XcmError::TooExpensive);
             }
         }
 

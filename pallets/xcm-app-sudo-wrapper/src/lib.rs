@@ -98,7 +98,9 @@ pub mod pallet {
             ensure_root(origin)?;
             let multilocation = match multiasset {
                 staging_xcm::v3::AssetId::Concrete(location) => location,
-                staging_xcm::v3::AssetId::Abstract(_) => frame_support::fail!(Error::<T>::WrongXCMVersion),
+                staging_xcm::v3::AssetId::Abstract(_) => {
+                    frame_support::fail!(Error::<T>::WrongXCMVersion)
+                },
             };
 
             xcm_app::Pallet::<T>::register_mapping(asset_id, multilocation)?;

@@ -95,9 +95,9 @@ use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
 
 // XCM Imports
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
+use sp_runtime::traits::Dispatchable;
 use staging_xcm::latest::prelude::*;
 use staging_xcm_executor::XcmExecutor;
-use sp_runtime::traits::Dispatchable;
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = MultiSignature;
@@ -709,16 +709,18 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
         origin: Self::RuntimeOrigin,
     ) -> sp_runtime::DispatchResultWithInfo<Self::PostInfo> {
         match self.0 {
-            bridge_types::substrate::BridgeCall::ParachainApp(_msg) =>
+            bridge_types::substrate::BridgeCall::ParachainApp(_msg) => {
                 Err(sp_runtime::DispatchErrorWithPostInfo {
                     post_info: Default::default(),
                     error: sp_runtime::DispatchError::Other("Unavailable"),
-                }),
-            bridge_types::substrate::BridgeCall::SubstrateApp(_msg) =>
+                })
+            },
+            bridge_types::substrate::BridgeCall::SubstrateApp(_msg) => {
                 Err(sp_runtime::DispatchErrorWithPostInfo {
                     post_info: Default::default(),
                     error: sp_runtime::DispatchError::Other("Unavailable"),
-                }),
+                })
+            },
             bridge_types::substrate::BridgeCall::XCMApp(msg) => {
                 let call: xcm_app::Call<crate::Runtime> = msg.into();
                 let call: crate::RuntimeCall = call.into();
@@ -1044,7 +1046,7 @@ use scale_info::prelude::cmp::Ordering;
 impl frame_support::traits::PrivilegeCmp<OriginCaller> for OriginPrivilegeCmp {
     fn cmp_privilege(left: &OriginCaller, right: &OriginCaller) -> Option<Ordering> {
         if left == right {
-            return Some(Ordering::Equal)
+            return Some(Ordering::Equal);
         }
 
         match (left, right) {
@@ -1087,7 +1089,7 @@ impl pallet_utility::Config for Runtime {
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
-    pub enum Runtime 
+    pub enum Runtime
     // where
         // Block = Block,
         // NodeBlock = opaque::Block,
@@ -1202,12 +1204,12 @@ impl_runtime_apis! {
         }
 
         fn metadata_at_version(version: u32) -> Option<OpaqueMetadata> {
-			Runtime::metadata_at_version(version)
-		}
+            Runtime::metadata_at_version(version)
+        }
 
-		fn metadata_versions() -> sp_std::vec::Vec<u32> {
-			Runtime::metadata_versions()
-		}
+        fn metadata_versions() -> sp_std::vec::Vec<u32> {
+            Runtime::metadata_versions()
+        }
     }
 
     impl sp_block_builder::BlockBuilder<Block> for Runtime {

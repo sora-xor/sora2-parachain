@@ -62,8 +62,9 @@ where
 {
     fn from(value: XCMAppCall) -> Self {
         match value {
-            XCMAppCall::Transfer { sender, recipient, amount, asset_id } =>
-                Call::transfer { sender: sender.into(), recipient, amount, asset_id },
+            XCMAppCall::Transfer { sender, recipient, amount, asset_id } => {
+                Call::transfer { sender: sender.into(), recipient, amount, asset_id }
+            },
             XCMAppCall::RegisterAsset {
                 asset_id,
                 sidechain_asset,
@@ -75,8 +76,9 @@ where
                 asset_kind,
                 minimal_xcm_amount,
             },
-            XCMAppCall::SetAssetMinAmount { asset_id, minimal_xcm_amount } =>
-                Call::set_asset_minimum_amount { asset_id, minimal_xcm_amount },
+            XCMAppCall::SetAssetMinAmount { asset_id, minimal_xcm_amount } => {
+                Call::set_asset_minimum_amount { asset_id, minimal_xcm_amount }
+            },
         }
     }
 }
@@ -327,13 +329,9 @@ pub mod pallet {
             nonce: u128,
         ) -> DispatchResultWithPostInfo {
             ensure_root(origin)?;
-            let Some(TrappedMessage {
-                asset_id,
-                recipient,
-                amount,
-                message_id,
-                is_refund,
-            }) = Self::bridge_asset_trap(nonce) else {
+            let Some(TrappedMessage { asset_id, recipient, amount, message_id, is_refund }) =
+                Self::bridge_asset_trap(nonce)
+            else {
                 fail!(Error::<T>::TrappedMessageNotFound)
             };
             let raw_origin = Some(recipient.clone()).into();
@@ -515,7 +513,7 @@ pub mod pallet {
                 staging_xcm::v3::WeightLimit::Unlimited,
             ) {
                 Self::deposit_event(Event::<T>::TrasferringAssetError(e, asset_id));
-                return Err(e)
+                return Err(e);
             }
 
             Self::deposit_event(Event::<T>::AssetTransferred(sender, recipient, asset_id, amount));
@@ -580,8 +578,8 @@ pub mod pallet {
             multilocation: MultiLocation,
         ) -> DispatchResultWithPostInfo {
             ensure!(
-                AssetIdToMultilocation::<T>::get(asset_id).is_none() &&
-                    MultilocationToAssetId::<T>::get(multilocation).is_none(),
+                AssetIdToMultilocation::<T>::get(asset_id).is_none()
+                    && MultilocationToAssetId::<T>::get(multilocation).is_none(),
                 Error::<T>::MappingAlreadyExists
             );
             AssetIdToMultilocation::<T>::insert(asset_id, multilocation);

@@ -48,9 +48,9 @@ impl OnRuntimeUpgrade for RemoveSudoKey {
         if let Some(key) =
             frame_support::storage::migration::take_storage_value::<AccountId>(b"Sudo", b"Key", &[])
         {
-            frame_support::log::error!("Sudo key removed: {:?}", key);
+            log::error!("Sudo key removed: {:?}", key);
         } else {
-            frame_support::log::error!("Sudo key not found in storage");
+            log::error!("Sudo key not found in storage");
         }
         RuntimeBlockWeights::get().max_block
     }

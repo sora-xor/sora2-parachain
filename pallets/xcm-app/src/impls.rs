@@ -164,7 +164,7 @@ impl<T: Config> sp_runtime::traits::Convert<MultiLocation, Option<AssetId>> for 
         if multilocation.parents == 0 {
             let mut self_location = T::SelfLocation::get();
             if self_location.append_with(multilocation.interior).is_err() {
-                return None
+                return None;
             }
             multilocation = self_location;
         }

@@ -214,12 +214,13 @@ impl Convert<MultiLocation, Option<CurrencyId>> for CurrencyIdConvert {
     fn convert(l: MultiLocation) -> Option<CurrencyId> {
         let x = para_x_general_key();
         if l == MultiLocation::parent() {
-            return Some(CurrencyId::R)
+            return Some(CurrencyId::R);
         }
         match l {
             MultiLocation { parents, interior } if parents == 1 => match interior {
-                X2(Parachain(1), GeneralKey { length: 32, data: k }) if k == x =>
-                    Some(CurrencyId::X),
+                X2(Parachain(1), GeneralKey { length: 32, data: k }) if k == x => {
+                    Some(CurrencyId::X)
+                },
                 _ => None,
             },
             MultiLocation { parents, interior } if parents == 0 => match interior {

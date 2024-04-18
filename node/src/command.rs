@@ -1,101 +1,166 @@
+// This file is part of the SORA network and Polkaswap app.
+
+// Copyright (c) 2020, 2021, Polka Biome Ltd. All rights reserved.
+// SPDX-License-Identifier: BSD-4-Clause
+
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+
+// Redistributions of source code must retain the above copyright notice, this list
+// of conditions and the following disclaimer.
+// Redistributions in binary form must reproduce the above copyright notice, this
+// list of conditions and the following disclaimer in the documentation and/or other
+// materials provided with the distribution.
+//
+// All advertising materials mentioning features or use of this software must display
+// the following acknowledgement: This product includes software developed by Polka Biome
+// Ltd., SORA, and Polkaswap.
+//
+// Neither the name of the Polka Biome Ltd. nor the names of its contributors may be used
+// to endorse or promote products derived from this software without specific prior written permission.
+
+// THIS SOFTWARE IS PROVIDED BY Polka Biome Ltd. AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES,
+// INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Polka Biome Ltd. BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+// OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+// USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 use std::net::SocketAddr;
 
 use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use log::info;
-use sora2_parachain_runtime::Block;
 use sc_cli::{
-	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
-	NetworkParams, Result, SharedParams, SubstrateCli,
+    ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
+    NetworkParams, Result, SharedParams, SubstrateCli,
 };
 use sc_service::config::{BasePath, PrometheusConfig};
+use sora2_parachain_runtime::Block;
 use sp_runtime::traits::AccountIdConversion;
 
 use crate::{
-	chain_spec,
-	cli::{Cli, RelayChainCli, Subcommand},
-	service::new_partial,
+    chain_spec::{self, RelayChain},
+    cli::{Cli, RelayChainCli, Subcommand},
+    service::new_partial,
 };
 
-fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
-	Ok(match id {
-		"dev" => Box::new(chain_spec::development_config()),
-		"template-rococo" => Box::new(chain_spec::local_testnet_config()),
-		"" | "local" => Box::new(chain_spec::local_testnet_config()),
-		path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
-	})
+#[cfg(feature = "kusama")]
+const NETWORK_NAME: &str = "Kusama";
+#[cfg(feature = "polkadot")]
+const NETWORK_NAME: &str = "Polkadot";
+#[cfg(feature = "rococo")]
+const NETWORK_NAME: &str = "Rococo";
+#[cfg(feature = "alphanet")]
+const NETWORK_NAME: &str = "Alphanet";
+
+fn set_default_ss58_version() {
+    sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::custom(
+        sora2_parachain_runtime::SS58Prefix::get(),
+    ));
 }
 
+fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
+    Ok(match id {
+        "dev" => Box::new(chain_spec::development_config()),
+        "bridge-dev" => Box::new(chain_spec::bridge_dev_config()),
+        "bridge-test" => Box::new(chain_spec::bridge_test_config()),
+        "kusama" => Box::new(chain_spec::kusama_chain_spec()?),
+        "kusama-coded" => Box::new(chain_spec::coded_config(RelayChain::Kusama, 2011)),
+        "polkadot" => Box::new(chain_spec::polkadot_chain_spec()?),
+        "polkadot-coded" => Box::new(chain_spec::coded_config(RelayChain::Polkadot, 2025)),
+        "rococo" => Box::new(chain_spec::rococo_chain_spec()?),
+        "rococo-coded" => Box::new(chain_spec::coded_config(RelayChain::Rococo, 2011)),
+        "template-rococo" => Box::new(chain_spec::local_testnet_config()),
+        "alpha" => Box::new(chain_spec::alpha_chain_spec()?),
+        "alpha-coded" => Box::new(chain_spec::coded_config(RelayChain::Alpha, 2011)),
+        "" | "local" => Box::new(chain_spec::local_testnet_config()),
+        "docker-local" => Box::new(chain_spec::docker_local_testnet_config()),
+        path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
+    })
+}
+
+// fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
+// 	Ok(match id {
+// 		"dev" => Box::new(chain_spec::development_config()),
+// 		"template-rococo" => Box::new(chain_spec::local_testnet_config()),
+// 		"" | "local" => Box::new(chain_spec::local_testnet_config()),
+// 		path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
+// 	})
+// }
+
 impl SubstrateCli for Cli {
-	fn impl_name() -> String {
-		"Parachain Collator Template".into()
-	}
+    fn impl_name() -> String {
+        format!("SORA {} Parachain Node", NETWORK_NAME)
+    }
 
-	fn impl_version() -> String {
-		env!("SUBSTRATE_CLI_IMPL_VERSION").into()
-	}
+    fn impl_version() -> String {
+        env!("SUBSTRATE_CLI_IMPL_VERSION").into()
+    }
 
-	fn description() -> String {
-		format!(
-			"Parachain Collator Template\n\nThe command-line arguments provided first will be \
+    fn description() -> String {
+        format!(
+            "SORA {} Parachain Node\n\nThe command-line arguments provided first will be \
 		passed to the parachain node, while the arguments provided after -- will be passed \
 		to the relay chain node.\n\n\
-		{} <parachain-args> -- <relay-chain-args>",
-			Self::executable_name()
-		)
-	}
+		parachain-collator <parachain-args> -- <relay-chain-args>",
+            NETWORK_NAME
+        )
+    }
 
-	fn author() -> String {
-		env!("CARGO_PKG_AUTHORS").into()
-	}
+    fn author() -> String {
+        env!("CARGO_PKG_AUTHORS").into()
+    }
 
-	fn support_url() -> String {
-		"https://github.com/paritytech/cumulus/issues/new".into()
-	}
+    fn support_url() -> String {
+        "https://github.com/paritytech/cumulus/issues/new".into()
+    }
 
-	fn copyright_start_year() -> i32 {
-		2020
-	}
+    fn copyright_start_year() -> i32 {
+        2020
+    }
 
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		load_spec(id)
-	}
+    fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
+        load_spec(id)
+    }
 }
 
 impl SubstrateCli for RelayChainCli {
-	fn impl_name() -> String {
-		"Parachain Collator Template".into()
-	}
+    fn impl_name() -> String {
+		"SORA Parachain Collator".into()
+    }
 
-	fn impl_version() -> String {
-		env!("SUBSTRATE_CLI_IMPL_VERSION").into()
-	}
+    fn impl_version() -> String {
+        env!("SUBSTRATE_CLI_IMPL_VERSION").into()
+    }
 
-	fn description() -> String {
-		format!(
-			"Parachain Collator Template\n\nThe command-line arguments provided first will be \
+    fn description() -> String {
+        format!(
+            "SORA Parachain Collator \n\nThe command-line arguments provided first will be \
 		passed to the parachain node, while the arguments provided after -- will be passed \
 		to the relay chain node.\n\n\
 		{} <parachain-args> -- <relay-chain-args>",
-			Self::executable_name()
-		)
-	}
+            Self::executable_name()
+        )
+    }
 
-	fn author() -> String {
-		env!("CARGO_PKG_AUTHORS").into()
-	}
+    fn author() -> String {
+        env!("CARGO_PKG_AUTHORS").into()
+    }
 
-	fn support_url() -> String {
-		"https://github.com/paritytech/cumulus/issues/new".into()
-	}
+    fn support_url() -> String {
+        "https://github.com/paritytech/cumulus/issues/new".into()
+    }
 
-	fn copyright_start_year() -> i32 {
-		2020
-	}
+    fn copyright_start_year() -> i32 {
+        2020
+    }
 
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
-	}
+    fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
+        polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
+    }
 }
 
 macro_rules! construct_async_run {
@@ -111,9 +176,9 @@ macro_rules! construct_async_run {
 
 /// Parse command line arguments into service configuration.
 pub fn run() -> Result<()> {
-	let cli = Cli::from_args();
+    let cli = Cli::from_args();
 
-	match &cli.subcommand {
+    match &cli.subcommand {
 		Some(Subcommand::BuildSpec(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
@@ -139,6 +204,7 @@ pub fn run() -> Result<()> {
 			})
 		},
 		Some(Subcommand::Revert(cmd)) => {
+			set_default_ss58_version();
 			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, components.backend, None))
 			})
@@ -177,45 +243,78 @@ pub fn run() -> Result<()> {
 				cmd.run(&*spec)
 			})
 		},
-		Some(Subcommand::Benchmark(cmd)) => {
-			let runner = cli.create_runner(cmd)?;
-			// Switch on the concrete benchmark sub-command-
-			match cmd {
-				BenchmarkCmd::Pallet(cmd) =>
-					if cfg!(feature = "runtime-benchmarks") {
-						runner.sync_run(|config| cmd.run::<Block, ()>(config))
-					} else {
-						Err("Benchmarking wasn't enabled when building the node. \
-					You can enable it with `--features runtime-benchmarks`."
-							.into())
-					},
-				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-					let partials = new_partial(&config)?;
-					cmd.run(partials.client)
-				}),
-				#[cfg(not(feature = "runtime-benchmarks"))]
-				BenchmarkCmd::Storage(_) =>
-					return Err(sc_cli::Error::Input(
-						"Compile with --features=runtime-benchmarks \
-						to enable storage benchmarks."
-							.into(),
-					)
-					.into()),
-				#[cfg(feature = "runtime-benchmarks")]
-				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-					let partials = new_partial(&config)?;
-					let db = partials.backend.expose_db();
-					let storage = partials.backend.expose_storage();
-					cmd.run(config, partials.client.clone(), db, storage)
-				}),
-				BenchmarkCmd::Machine(cmd) =>
-					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
-				// NOTE: this allows the Client to leniently implement
-				// new benchmark commands without requiring a companion MR.
-				#[allow(unreachable_patterns)]
-				_ => Err("Benchmarking sub-command unsupported".into()),
-			}
-		},
+		// Some(Subcommand::Benchmark(cmd)) => {
+		// 	let runner = cli.create_runner(cmd)?;
+		// 	// Switch on the concrete benchmark sub-command-
+		// 	match cmd {
+		// 		BenchmarkCmd::Pallet(cmd) =>
+		// 			if cfg!(feature = "runtime-benchmarks") {
+		// 				runner.sync_run(|config| cmd.run::<Block, ()>(config))
+		// 			} else {
+		// 				Err("Benchmarking wasn't enabled when building the node. \
+		// 			You can enable it with `--features runtime-benchmarks`."
+		// 					.into())
+		// 			},
+		// 		BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
+		// 			let partials = new_partial(&config)?;
+		// 			cmd.run(partials.client)
+		// 		}),
+		// 		#[cfg(not(feature = "runtime-benchmarks"))]
+		// 		BenchmarkCmd::Storage(_) =>
+		// 			return Err(sc_cli::Error::Input(
+		// 				"Compile with --features=runtime-benchmarks \
+		// 				to enable storage benchmarks."
+		// 					.into(),
+		// 			)
+		// 			.into()),
+		// 		#[cfg(feature = "runtime-benchmarks")]
+		// 		BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
+		// 			let partials = new_partial(&config)?;
+		// 			let db = partials.backend.expose_db();
+		// 			let storage = partials.backend.expose_storage();
+		// 			cmd.run(config, partials.client.clone(), db, storage)
+		// 		}),
+		// 		BenchmarkCmd::Machine(cmd) =>
+		// 			runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
+		// 		// NOTE: this allows the Client to leniently implement
+		// 		// new benchmark commands without requiring a companion MR.
+		// 		#[allow(unreachable_patterns)]
+		// 		_ => Err("Benchmarking sub-command unsupported".into()),
+		// 	}
+		// },
+		#[cfg(feature = "runtime-benchmarks")]
+        Some(Subcommand::Benchmark(cmd)) => {
+            use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
+            let runner = cli.create_runner(cmd)?;
+            // Switch on the concrete benchmark sub-command-
+            match cmd {
+                BenchmarkCmd::Pallet(cmd) =>
+                    runner.sync_run(|config| cmd.run::<Block, ParachainNativeExecutor>(config)),
+                BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
+                    let partials = new_partial::<RuntimeApi, ParachainNativeExecutor, _>(
+                        &config,
+                        crate::service::parachain_build_import_queue,
+                    )?;
+                    cmd.run(partials.client)
+                }),
+                BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
+                    let partials = new_partial::<RuntimeApi, ParachainNativeExecutor, _>(
+                        &config,
+                        crate::service::parachain_build_import_queue,
+                    )?;
+                    let db = partials.backend.expose_db();
+                    let storage = partials.backend.expose_storage();
+
+                    cmd.run(config, partials.client.clone(), db, storage)
+                }),
+                BenchmarkCmd::Machine(cmd) =>
+                    runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone())),
+                // NOTE: this allows the Client to leniently implement
+                // new benchmark commands without requiring a companion MR.
+                #[allow(unreachable_patterns)]
+                _ => Err("Benchmarking sub-command unsupported".into()),
+            }
+        },
 		Some(Subcommand::TryRuntime) => Err("The `try-runtime` subcommand has been migrated to a standalone CLI (https://github.com/paritytech/try-runtime-cli). It is no longer being maintained here and will be removed entirely some time after January 2024. Please remove this subcommand from your runtime and use the standalone CLI.".into()),
 		None => {
 			let runner = cli.create_runner(&cli.run.normalize())?;
@@ -269,126 +368,126 @@ pub fn run() -> Result<()> {
 }
 
 impl DefaultConfigurationValues for RelayChainCli {
-	fn p2p_listen_port() -> u16 {
-		30334
-	}
+    fn p2p_listen_port() -> u16 {
+        30334
+    }
 
-	fn rpc_listen_port() -> u16 {
-		9945
-	}
+    fn rpc_listen_port() -> u16 {
+        9945
+    }
 
-	fn prometheus_listen_port() -> u16 {
-		9616
-	}
+    fn prometheus_listen_port() -> u16 {
+        9616
+    }
 }
 
 impl CliConfiguration<Self> for RelayChainCli {
-	fn shared_params(&self) -> &SharedParams {
-		self.base.base.shared_params()
-	}
+    fn shared_params(&self) -> &SharedParams {
+        self.base.base.shared_params()
+    }
 
-	fn import_params(&self) -> Option<&ImportParams> {
-		self.base.base.import_params()
-	}
+    fn import_params(&self) -> Option<&ImportParams> {
+        self.base.base.import_params()
+    }
 
-	fn network_params(&self) -> Option<&NetworkParams> {
-		self.base.base.network_params()
-	}
+    fn network_params(&self) -> Option<&NetworkParams> {
+        self.base.base.network_params()
+    }
 
-	fn keystore_params(&self) -> Option<&KeystoreParams> {
-		self.base.base.keystore_params()
-	}
+    fn keystore_params(&self) -> Option<&KeystoreParams> {
+        self.base.base.keystore_params()
+    }
 
-	fn base_path(&self) -> Result<Option<BasePath>> {
-		Ok(self
-			.shared_params()
-			.base_path()?
-			.or_else(|| self.base_path.clone().map(Into::into)))
-	}
+    fn base_path(&self) -> Result<Option<BasePath>> {
+        Ok(self
+            .shared_params()
+            .base_path()?
+            .or_else(|| self.base_path.clone().map(Into::into)))
+    }
 
-	fn rpc_addr(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
-		self.base.base.rpc_addr(default_listen_port)
-	}
+    fn rpc_addr(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
+        self.base.base.rpc_addr(default_listen_port)
+    }
 
-	fn prometheus_config(
-		&self,
-		default_listen_port: u16,
-		chain_spec: &Box<dyn ChainSpec>,
-	) -> Result<Option<PrometheusConfig>> {
-		self.base.base.prometheus_config(default_listen_port, chain_spec)
-	}
+    fn prometheus_config(
+        &self,
+        default_listen_port: u16,
+        chain_spec: &Box<dyn ChainSpec>,
+    ) -> Result<Option<PrometheusConfig>> {
+        self.base.base.prometheus_config(default_listen_port, chain_spec)
+    }
 
-	fn init<F>(
-		&self,
-		_support_url: &String,
-		_impl_version: &String,
-		_logger_hook: F,
-		_config: &sc_service::Configuration,
-	) -> Result<()>
-	where
-		F: FnOnce(&mut sc_cli::LoggerBuilder, &sc_service::Configuration),
-	{
-		unreachable!("PolkadotCli is never initialized; qed");
-	}
+    fn init<F>(
+        &self,
+        _support_url: &String,
+        _impl_version: &String,
+        _logger_hook: F,
+        _config: &sc_service::Configuration,
+    ) -> Result<()>
+    where
+        F: FnOnce(&mut sc_cli::LoggerBuilder, &sc_service::Configuration),
+    {
+        unreachable!("PolkadotCli is never initialized; qed");
+    }
 
-	fn chain_id(&self, is_dev: bool) -> Result<String> {
-		let chain_id = self.base.base.chain_id(is_dev)?;
+    fn chain_id(&self, is_dev: bool) -> Result<String> {
+        let chain_id = self.base.base.chain_id(is_dev)?;
 
-		Ok(if chain_id.is_empty() { self.chain_id.clone().unwrap_or_default() } else { chain_id })
-	}
+        Ok(if chain_id.is_empty() { self.chain_id.clone().unwrap_or_default() } else { chain_id })
+    }
 
-	fn role(&self, is_dev: bool) -> Result<sc_service::Role> {
-		self.base.base.role(is_dev)
-	}
+    fn role(&self, is_dev: bool) -> Result<sc_service::Role> {
+        self.base.base.role(is_dev)
+    }
 
-	fn transaction_pool(&self, is_dev: bool) -> Result<sc_service::config::TransactionPoolOptions> {
-		self.base.base.transaction_pool(is_dev)
-	}
+    fn transaction_pool(&self, is_dev: bool) -> Result<sc_service::config::TransactionPoolOptions> {
+        self.base.base.transaction_pool(is_dev)
+    }
 
-	fn trie_cache_maximum_size(&self) -> Result<Option<usize>> {
-		self.base.base.trie_cache_maximum_size()
-	}
+    fn trie_cache_maximum_size(&self) -> Result<Option<usize>> {
+        self.base.base.trie_cache_maximum_size()
+    }
 
-	fn rpc_methods(&self) -> Result<sc_service::config::RpcMethods> {
-		self.base.base.rpc_methods()
-	}
+    fn rpc_methods(&self) -> Result<sc_service::config::RpcMethods> {
+        self.base.base.rpc_methods()
+    }
 
-	fn rpc_max_connections(&self) -> Result<u32> {
-		self.base.base.rpc_max_connections()
-	}
+    fn rpc_max_connections(&self) -> Result<u32> {
+        self.base.base.rpc_max_connections()
+    }
 
-	fn rpc_cors(&self, is_dev: bool) -> Result<Option<Vec<String>>> {
-		self.base.base.rpc_cors(is_dev)
-	}
+    fn rpc_cors(&self, is_dev: bool) -> Result<Option<Vec<String>>> {
+        self.base.base.rpc_cors(is_dev)
+    }
 
-	fn default_heap_pages(&self) -> Result<Option<u64>> {
-		self.base.base.default_heap_pages()
-	}
+    fn default_heap_pages(&self) -> Result<Option<u64>> {
+        self.base.base.default_heap_pages()
+    }
 
-	fn force_authoring(&self) -> Result<bool> {
-		self.base.base.force_authoring()
-	}
+    fn force_authoring(&self) -> Result<bool> {
+        self.base.base.force_authoring()
+    }
 
-	fn disable_grandpa(&self) -> Result<bool> {
-		self.base.base.disable_grandpa()
-	}
+    fn disable_grandpa(&self) -> Result<bool> {
+        self.base.base.disable_grandpa()
+    }
 
-	fn max_runtime_instances(&self) -> Result<Option<usize>> {
-		self.base.base.max_runtime_instances()
-	}
+    fn max_runtime_instances(&self) -> Result<Option<usize>> {
+        self.base.base.max_runtime_instances()
+    }
 
-	fn announce_block(&self) -> Result<bool> {
-		self.base.base.announce_block()
-	}
+    fn announce_block(&self) -> Result<bool> {
+        self.base.base.announce_block()
+    }
 
-	fn telemetry_endpoints(
-		&self,
-		chain_spec: &Box<dyn ChainSpec>,
-	) -> Result<Option<sc_telemetry::TelemetryEndpoints>> {
-		self.base.base.telemetry_endpoints(chain_spec)
-	}
+    fn telemetry_endpoints(
+        &self,
+        chain_spec: &Box<dyn ChainSpec>,
+    ) -> Result<Option<sc_telemetry::TelemetryEndpoints>> {
+        self.base.base.telemetry_endpoints(chain_spec)
+    }
 
-	fn node_name(&self) -> Result<String> {
-		self.base.base.node_name()
-	}
+    fn node_name(&self) -> Result<String> {
+        self.base.base.node_name()
+    }
 }

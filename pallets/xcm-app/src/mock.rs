@@ -36,7 +36,8 @@ use orml_traits::XcmTransfer;
 use parachain_common::primitives::AssetId;
 use sp_core::H256;
 use sp_runtime::{
-    traits::{BlakeTwo256, Identity, IdentityLookup}, BuildStorage
+    traits::{BlakeTwo256, Identity, IdentityLookup},
+    BuildStorage,
 };
 use staging_xcm::latest::prelude::*;
 
@@ -47,7 +48,7 @@ type Balance = u128;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
-    pub enum Test 
+    pub enum Test
     {
         System: frame_system,
         Balances: pallet_balances,
@@ -131,8 +132,7 @@ impl xcm_app::Config for Test {
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-    system::GenesisConfig::<Test>::default()
-        .build_storage().unwrap().into()
+    system::GenesisConfig::<Test>::default().build_storage().unwrap().into()
 }
 
 pub fn test_general_key() -> [u8; 32] {
@@ -159,7 +159,8 @@ impl OutboundChannel<SubNetworkId, AccountId, ()> for TestOutboundChannel {
 pub struct TestAccountIdToMultiLocation;
 impl sp_runtime::traits::Convert<AccountId, MultiLocation> for TestAccountIdToMultiLocation {
     fn convert(account: AccountId) -> MultiLocation {
-        X1(AccountId32 { network: Some(staging_xcm::v3::NetworkId::Rococo), id: account.into() }).into()
+        X1(AccountId32 { network: Some(staging_xcm::v3::NetworkId::Rococo), id: account.into() })
+            .into()
     }
 }
 

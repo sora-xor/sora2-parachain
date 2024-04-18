@@ -48,7 +48,7 @@ impl pallet_preimage::WeightInfo for PreimageWeightInfo {
             .max_extrinsic
             .expect("Democracy pallet must have max extrinsic weight");
         if bytes > MAX_PREIMAGE_BYTES {
-            return max_weight.saturating_add(Weight::from_parts(1, 0))
+            return max_weight.saturating_add(Weight::from_parts(1, 0));
         }
         let weight = <() as pallet_preimage::WeightInfo>::note_preimage(bytes);
         let max_dispatch_weight: Weight = max_weight.saturating_sub(BlockExecutionWeight::get());
@@ -127,7 +127,7 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for CollectiveWeight
             .max_extrinsic
             .expect("Collective pallet must have max extrinsic weight");
         if bytes > MAX_PREIMAGE_BYTES {
-            return max_weight.saturating_add(Weight::from_parts(1, 0))
+            return max_weight.saturating_add(Weight::from_parts(1, 0));
         }
         let weight = <() as pallet_collective::WeightInfo>::close_early_approved(bytes, m, p);
         let max_dispatch_weight: Weight = max_weight.saturating_sub(BlockExecutionWeight::get());
@@ -144,7 +144,7 @@ impl<T: frame_system::Config> pallet_collective::WeightInfo for CollectiveWeight
             .max_extrinsic
             .expect("Collective pallet must have max extrinsic weight");
         if bytes > MAX_PREIMAGE_BYTES {
-            return max_weight.saturating_add(Weight::from_parts(1, 0))
+            return max_weight.saturating_add(Weight::from_parts(1, 0));
         }
         let weight = <() as pallet_collective::WeightInfo>::close_approved(bytes, m, p);
         let max_dispatch_weight: Weight = max_weight.saturating_sub(BlockExecutionWeight::get());
