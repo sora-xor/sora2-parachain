@@ -31,9 +31,6 @@ futures = "0.3.28"
 color-print = "0.3.4"
 
 # Sora common 
-beefy-light-client = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
-beefy-light-client-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
-beefy-light-client-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
 leaf-provider-rpc = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
 leaf-provider-runtime-api = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop" }
 bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = "develop", default-features = false }
@@ -42,12 +39,9 @@ bridge-types = { git = "https://github.com/sora-xor/sora2-common.git", branch = 
 sora2-parachain-runtime = { path = "../runtime" }
 
 # Substrate Dependencies
-beefy-gadget = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0", package = "sc-consensus-beefy" }
-beefy-gadget-rpc = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0", package = "sc-consensus-beefy-rpc" }
 frame-benchmarking = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 frame-benchmarking-cli = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 
-mmr-rpc = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 
 substrate-frame-rpc-system = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
@@ -75,7 +69,6 @@ sc-transaction-pool-api = { git = "https://github.com/paritytech/polkadot-sdk.gi
 sc-tracing = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 
 ## Substrate Primitive Dependencies
-sp-consensus-beefy = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 sp-api = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 sp-block-builder = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 sp-blockchain = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
@@ -85,7 +78,6 @@ sp-core = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "re
 sp-inherents = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 sp-keystore = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 sp-offchain = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
-sp-mmr-primitives = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 sp-session = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 sp-timestamp = { git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
