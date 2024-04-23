@@ -185,9 +185,17 @@ fn send_sibling_asset_to_sora_from_sibling() {
             ),
             WeightLimit::Unlimited
         ));
+
+        print_events::<crate::xcm_tests::para_x::Runtime>("sadasdasd");
+    });
+
+    Relay::execute_with(|| {
+        print_events::<relay::Runtime>("RELAY EVENTS");
     });
 
     SoraParachain::execute_with(|| {
+        print_events::<crate::Runtime>("SORA EVENTS");
+
         assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| r.event
             == crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(
                 ParachainAppCall::Transfer {
@@ -399,10 +407,13 @@ fn send_to_sora_no_mapping_error() {
             crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
         )));
 
+        
+
         assert!(!frame_system::Pallet::<crate::Runtime>::events()
             .iter()
             .any(|r| matches!(r.event, crate::RuntimeEvent::SubstrateBridgeOutboundChannel(_))));
 
+        
         assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
             r.event,
             crate::RuntimeEvent::PolkadotXcm(pallet_xcm::Event::AssetsTrapped{hash:_, origin:_, assets: _})

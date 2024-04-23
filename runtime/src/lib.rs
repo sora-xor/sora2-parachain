@@ -606,6 +606,7 @@ parameter_types! {
     pub const SessionLength: BlockNumber = 6 * HOURS;
     pub const MaxInvulnerables: u32 = 100;
     pub const ExecutiveBody: BodyId = BodyId::Executive;
+    pub const MinEligibleCollators: u32 = 1;
 }
 
 // We allow root only to execute privileged collator selection operations.
@@ -626,7 +627,7 @@ impl pallet_collator_selection::Config for Runtime {
     type WeightInfo = ();
 
     // IMPLEMNT!!!!!!
-    type MinEligibleCollators = ();
+    type MinEligibleCollators = MinEligibleCollators;
 }
 
 parameter_types! {
@@ -671,11 +672,6 @@ impl xcm_app_sudo_wrapper::Config for Runtime {
 parameter_types! {
     pub const SidechainRandomnessNetwork: SubNetworkId = SubNetworkId::Mainnet;
 }
-
-// impl beefy_light_client::Config for Runtime {
-//     type RuntimeEvent = RuntimeEvent;
-//     type Randomness = beefy_light_client::SidechainRandomness<Runtime, SidechainRandomnessNetwork>;
-// }
 
 parameter_types! {
     pub const BridgeMaxMessagePayloadSize: u32 = 256;
@@ -943,7 +939,7 @@ parameter_types! {
     /// 13 members initially, to be increased to 23 eventually.
     pub const ElectionsDesiredMembers: u32 = 13;
     pub const ElectionsDesiredRunnersUp: u32 = 20;
-    pub const ElectionsMaxVoters: u32 = 10000;
+    pub const ElectionsMaxVoters: u32 = 1000;
     pub const ElectionsMaxCandidates: u32 = 1000;
     pub const ElectionsModuleId: frame_support::traits::LockIdentifier = *b"phrelect";
     pub const MaxVotesPerVoter: u32 = 16;
@@ -968,7 +964,7 @@ impl pallet_elections_phragmen::Config for Runtime {
     type MaxVoters = ElectionsMaxVoters;
     type MaxCandidates = ElectionsMaxCandidates;
     type MaxVotesPerVoter = MaxVotesPerVoter;
-    type WeightInfo = ();
+    type WeightInfo = pallet_elections_phragmen::weights::SubstrateWeight<Runtime>;
 }
 
 impl pallet_democracy::Config for Runtime {
@@ -1105,11 +1101,11 @@ construct_runtime!(
 
         // Monetary stuff.
         Balances: pallet_balances = 10,
-        TransactionPayment: pallet_transaction_payment= 11,
+        TransactionPayment: pallet_transaction_payment = 11,
 
         // Collator support. The order of these 4 are important and shall not change.
         Authorship: pallet_authorship = 20,
-        CollatorSelection: pallet_collator_selection= 21,
+        CollatorSelection: pallet_collator_selection = 21,
         Session: pallet_session = 22,
         Aura: pallet_aura = 23,
         AuraExt: cumulus_pallet_aura_ext = 24,
@@ -1435,8 +1431,6 @@ impl_runtime_apis! {
         ) {
             use frame_benchmarking::{list_benchmark, Benchmarking, BenchmarkList};
             use frame_support::traits::StorageInfoTrait;
-            // use frame_system_benchmarking::Pallet as SystemBench;
-            // use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 
             let mut list = Vec::<BenchmarkList>::new();
             list_benchmark!(list, extra, xcm_app, XCMApp);
@@ -1449,34 +1443,58 @@ impl_runtime_apis! {
         fn dispatch_benchmark(
             config: frame_benchmarking::BenchmarkConfig
         ) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
-            use frame_benchmarking::{Benchmarking, BenchmarkBatch, TrackedStorageKey, add_benchmark};
+            use frame_benchmarking::{Benchmarking, BenchmarkBatch, add_benchmark, BenchmarkError};
 
-            // use frame_system_benchmarking::Pallet as SystemBench;
-            impl frame_system_benchmarking::Config for Runtime {}
+            // // use frame_system_benchmarking::Pallet as SystemBench;
+            // impl frame_system_benchmarking::Config for Runtime {}
 
-            // use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
-            impl cumulus_pallet_session_benchmarking::Config for Runtime {}
+            // // use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+            // impl cumulus_pallet_session_benchmarking::Config for Runtime {}
 
-            let whitelist: Vec<TrackedStorageKey> = vec![
-                // Block Number
-                hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac").to_vec().into(),
-                // Total Issuance
-                hex_literal::hex!("c2261276cc9d1f8598ea4b6a74b15c2f57c875e4cff74148e4628f264b974c80").to_vec().into(),
-                // Execution Phase
-                hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef7ff553b5a9862a516939d82b3d3d8661a").to_vec().into(),
-                // Event Count
-                hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef70a98fdbe9ce6c55837576c60c7af3850").to_vec().into(),
-                // System Events
-                hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7").to_vec().into(),
-            ];
+            // let whitelist: Vec<TrackedStorageKey> = vec![
+            //     // Block Number
+            //     hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef702a5c1b19ab7a04f536c519aca4983ac").to_vec().into(),
+            //     // Total Issuance
+            //     hex_literal::hex!("c2261276cc9d1f8598ea4b6a74b15c2f57c875e4cff74148e4628f264b974c80").to_vec().into(),
+            //     // Execution Phase
+            //     hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef7ff553b5a9862a516939d82b3d3d8661a").to_vec().into(),
+            //     // Event Count
+            //     hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef70a98fdbe9ce6c55837576c60c7af3850").to_vec().into(),
+            //     // System Events
+            //     hex_literal::hex!("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7").to_vec().into(),
+            // ];
 
-            let mut batches = Vec::<BenchmarkBatch>::new();
-            let params = (&config, &whitelist);
-            add_benchmark!(params, batches, xcm_app, XCMApp);
-            add_benchmark!(params, batches, pallet_xcm, PolkadotXcm);
+            // let mut batches = Vec::<BenchmarkBatch>::new();
+            // let params = (&config, &whitelist);
+            // add_benchmark!(params, batches, xcm_app, XCMApp);
+            // add_benchmark!(params, batches, pallet_xcm, PolkadotXcm);
 
-            if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
-            Ok(batches)
+            // if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
+            // Ok(batches)
+            use frame_system_benchmarking::Pallet as SystemBench;
+			impl frame_system_benchmarking::Config for Runtime {
+				fn setup_set_code_requirements(code: &sp_std::vec::Vec<u8>) -> Result<(), BenchmarkError> {
+					ParachainSystem::initialize_for_set_code_benchmark(code.len() as u32);
+					Ok(())
+				}
+
+				fn verify_set_code() {
+					System::assert_last_event(cumulus_pallet_parachain_system::Event::<Runtime>::ValidationFunctionStored.into());
+				}
+			}
+
+			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+			impl cumulus_pallet_session_benchmarking::Config for Runtime {}
+
+			use frame_support::traits::WhitelistedStorageKeys;
+			let whitelist = AllPalletsWithSystem::whitelisted_storage_keys();
+
+			let mut batches = Vec::<BenchmarkBatch>::new();
+			let params = (&config, &whitelist);
+			add_benchmarks!(params, batches);
+
+			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
+			Ok(batches)
         }
     }
 }

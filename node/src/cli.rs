@@ -62,7 +62,7 @@ pub enum Subcommand {
 
     /// Sub-commands concerned with benchmarking.
     /// The pallet benchmarking moved to the `pallet` sub-command.
-    #[cfg(feature = "runtime-benchmarks")]
+    // #[cfg(feature = "runtime-benchmarks")]
     #[command(subcommand)]
     Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 
