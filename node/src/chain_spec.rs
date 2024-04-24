@@ -28,18 +28,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// use cumulus_primitives_core::ParaId;
-// use sora2_parachain_runtime::{
-//     AccountId, AuraId, BeefyId, BeefyLightClientConfig, CouncilConfig, DemocracyConfig, Signature,
-//     TechnicalCommitteeConfig, EXISTENTIAL_DEPOSIT,
-// };
-// use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
-// use sc_service::ChainType;
-// use serde::{Deserialize, Serialize};
-// use sp_core::{sr25519, Pair, Public};
-// use sp_runtime::traits::{IdentifyAccount, Verify};
-
-use bridge_types::SubNetworkId;
 use cumulus_primitives_core::ParaId;
 use hex_literal::hex;
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
@@ -131,9 +119,7 @@ impl RelayChain {
         };
         public_keys
             .into_iter()
-            .map(|sr25519| {
-				(AccountId::from(sr25519), AuraId::from_slice(&sr25519).unwrap())
-            })
+            .map(|sr25519| (AccountId::from(sr25519), AuraId::from_slice(&sr25519).unwrap()))
             .collect()
     }
 
@@ -183,10 +169,7 @@ pub fn authority_keys_from_public_keys(
     collator_address: [u8; 32],
     sr25519_key: [u8; 32],
 ) -> (AccountId, AuraId) {
-    (
-        collator_address.into(),
-        AuraId::from_slice(&sr25519_key).unwrap(),
-    )
+    (collator_address.into(), AuraId::from_slice(&sr25519_key).unwrap())
 }
 
 /// Helper function to generate an account ID from seed

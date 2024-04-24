@@ -35,13 +35,15 @@ use frame_support::{
 };
 use frame_system::EnsureRoot;
 use sp_core::H256;
-use sp_runtime::{testing::Header, traits::IdentityLookup, AccountId32};
+use sp_runtime::{traits::IdentityLookup, AccountId32};
 use staging_xcm::latest::Weight;
-use xcm_simulator::{AggregateMessageOrigin, ProcessMessage, ProcessMessageError, UmpQueueId, WeightMeter};
+use xcm_simulator::{
+    AggregateMessageOrigin, ProcessMessage, ProcessMessageError, UmpQueueId, WeightMeter,
+};
 
 use super::RelayNetwork;
 use cumulus_primitives_core::ParaId;
-use polkadot_runtime_parachains::{configuration, origin, shared,};
+use polkadot_runtime_parachains::{configuration, origin, shared};
 use staging_xcm::latest::prelude::*;
 use staging_xcm_builder::{
     AccountId32Aliases, AllowTopLevelPaidExecutionFrom, ChildParachainAsNative,
@@ -166,7 +168,8 @@ impl pallet_xcm::Config for Runtime {
     type SendXcmOrigin = staging_xcm_builder::EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
     type XcmRouter = XcmRouter;
     // Anyone can execute XCM messages locally...
-    type ExecuteXcmOrigin = staging_xcm_builder::EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
+    type ExecuteXcmOrigin =
+        staging_xcm_builder::EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
     type XcmExecuteFilter = Everything;
     type XcmExecutor = XcmExecutor<XcmConfig>;
     type XcmTeleportFilter = Everything;
@@ -189,48 +192,47 @@ impl pallet_xcm::Config for Runtime {
 }
 
 parameter_types! {
-	/// Amount of weight that can be spent per block to service messages.
-	pub MessageQueueServiceWeight: Weight = Weight::from_parts(1_000_000_000, 1_000_000);
-	pub const MessageQueueHeapSize: u32 = 65_536;
-	pub const MessageQueueMaxStale: u32 = 16;
+    /// Amount of weight that can be spent per block to service messages.
+    pub MessageQueueServiceWeight: Weight = Weight::from_parts(1_000_000_000, 1_000_000);
+    pub const MessageQueueHeapSize: u32 = 65_536;
+    pub const MessageQueueMaxStale: u32 = 16;
 }
 
 /// Message processor to handle any messages that were enqueued into the `MessageQueue` pallet.
 pub struct MessageProcessor;
 impl ProcessMessage for MessageProcessor {
-	type Origin = AggregateMessageOrigin;
+    type Origin = AggregateMessageOrigin;
 
-	fn process_message(
-		message: &[u8],
-		origin: Self::Origin,
-		meter: &mut WeightMeter,
-		id: &mut [u8; 32],
-	) -> Result<bool, ProcessMessageError> {
-		let para = match origin {
-			AggregateMessageOrigin::Ump(UmpQueueId::Para(para)) => para,
-		};
-		staging_xcm_builder::ProcessXcmMessage::<
-			Junction,
-			staging_xcm_executor::XcmExecutor<XcmConfig>,
-			RuntimeCall,
-		>::process_message(message, Junction::Parachain(para.into()), meter, id)
-	}
+    fn process_message(
+        message: &[u8],
+        origin: Self::Origin,
+        meter: &mut WeightMeter,
+        id: &mut [u8; 32],
+    ) -> Result<bool, ProcessMessageError> {
+        let para = match origin {
+            AggregateMessageOrigin::Ump(UmpQueueId::Para(para)) => para,
+        };
+        staging_xcm_builder::ProcessXcmMessage::<
+            Junction,
+            staging_xcm_executor::XcmExecutor<XcmConfig>,
+            RuntimeCall,
+        >::process_message(message, Junction::Parachain(para.into()), meter, id)
+    }
 }
 
 impl pallet_message_queue::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Size = u32;
-	type HeapSize = MessageQueueHeapSize;
-	type MaxStale = MessageQueueMaxStale;
-	type ServiceWeight = MessageQueueServiceWeight;
-	type MessageProcessor = MessageProcessor;
-	type QueueChangeHandler = ();
-	type QueuePausedQuery = ();
-	type WeightInfo = ();
+    type RuntimeEvent = RuntimeEvent;
+    type Size = u32;
+    type HeapSize = MessageQueueHeapSize;
+    type MaxStale = MessageQueueMaxStale;
+    type ServiceWeight = MessageQueueServiceWeight;
+    type MessageProcessor = MessageProcessor;
+    type QueueChangeHandler = ();
+    type QueuePausedQuery = ();
+    type WeightInfo = ();
 }
 impl origin::Config for Runtime {}
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>;
 type Block = frame_system::mocking::MockBlock<Runtime>;
 
 construct_runtime!(

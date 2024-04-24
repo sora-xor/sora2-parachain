@@ -30,9 +30,10 @@
 
 use super::*;
 use crate::Pallet as XCMApp;
-use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
+use frame_benchmarking::{impl_benchmark_test_suite, v2::*, BenchmarkError};
 use frame_support::{pallet_prelude::Weight, traits::EnsureOrigin};
 use frame_system::RawOrigin;
+use scale_info::prelude::vec;
 use staging_xcm::{
     latest::prelude::{AssetId as XCMAssetId, *},
     opaque::latest::Junction::GeneralKey,
@@ -44,14 +45,24 @@ fn alice<T: Config>() -> T::AccountId {
     T::AccountId::decode(&mut &bytes[..]).expect("Failed to decode account ID")
 }
 
-benchmarks! {
-    register_asset {
+#[benchmarks]
+mod benchmarks {
+    use super::*;
+
+    #[benchmark]
+    fn register_asset() -> Result<(), BenchmarkError> {
         let asset_id = [1; 32].into();
         let multilocation = test_multilocation();
-    }: {
-        XCMApp::<T>::register_asset(T::CallOrigin::try_successful_origin().unwrap(), asset_id, multilocation.into(), bridge_types::types::AssetKind::Thischain, 1000)?;
-    }
-    verify {
+
+        #[extrinsic_call]
+        _(
+            T::CallOrigin::try_successful_origin().unwrap() as T::RuntimeOrigin,
+            asset_id,
+            multilocation.into(),
+            bridge_types::types::AssetKind::Thischain,
+            1000,
+        );
+
         assert_eq!(
             XCMApp::<T>::get_multilocation_from_asset_id(asset_id)
                 .expect("register_asset: multilocation is None"),
@@ -62,57 +73,111 @@ benchmarks! {
                 .expect("register_asset: asset id is None"),
             asset_id
         );
+
+        Ok(())
     }
 
-    transfer {
+    #[benchmark]
+    fn transfer() -> Result<(), BenchmarkError> {
         let asset_id = [1; 32].into();
         let multilocation = test_multilocation();
         let amount = 500;
-        XCMApp::<T>::register_asset(T::CallOrigin::try_successful_origin().unwrap(), asset_id, multilocation.into(), bridge_types::types::AssetKind::Thischain, 1000)
-            .expect("transfer: Failed register asset");
-    }: {
-        XCMApp::<T>::transfer(T::CallOrigin::try_successful_origin().unwrap(), asset_id, alice::<T>(), multilocation.into(), amount)?;
-    }
-    verify {
-        assert_event::<T>(Event::<T>::AssetTransferred(alice::<T>(), multilocation, asset_id, amount).into());
+        XCMApp::<T>::register_asset(
+            T::CallOrigin::try_successful_origin().unwrap(),
+            asset_id,
+            multilocation.into(),
+            bridge_types::types::AssetKind::Thischain,
+            1000,
+        )
+        .expect("transfer: Failed register asset");
+
+        #[extrinsic_call]
+        _(
+            T::CallOrigin::try_successful_origin().unwrap() as T::RuntimeOrigin,
+            asset_id,
+            alice::<T>(),
+            multilocation.into(),
+            amount,
+        );
+
+        assert_event::<T>(
+            Event::<T>::AssetTransferred(alice::<T>(), multilocation, asset_id, amount).into(),
+        );
+
+        Ok(())
     }
 
-    try_claim_bridge_asset {
+    #[benchmark]
+    fn try_claim_bridge_asset() -> Result<(), BenchmarkError> {
         let message_id = [0; 32].into();
         let asset_id = [1; 32].into();
         let amount = 500;
         // trap_asset:
         XCMApp::<T>::trap_asset(Some(message_id), asset_id, alice::<T>(), amount, true);
-    }: _(RawOrigin::Root, 1)
-    verify {
+
+        #[extrinsic_call]
+        _(RawOrigin::Root, 1);
+
         assert!(XCMApp::<T>::bridge_asset_trap(1).is_none());
+
+        Ok(())
     }
 
-    set_asset_minimum_amount {
+    #[benchmark]
+    fn set_asset_minimum_amount() -> Result<(), BenchmarkError> {
         let asset_id = [1; 32].into();
         let amount = 500;
         let multilocation = test_multilocation();
-        XCMApp::<T>::register_asset(T::CallOrigin::try_successful_origin().unwrap(), asset_id, multilocation.into(), bridge_types::types::AssetKind::Thischain, 1000)
-            .expect("set_asset_minimum_amount: Failed register assed");
-    }: {
-        XCMApp::<T>::set_asset_minimum_amount(T::CallOrigin::try_successful_origin().unwrap(), asset_id, amount)?;
-    }
-    verify {
-        assert_eq!(XCMApp::<T>::asset_minimum_amount(multilocation).expect("set_asset_minimum_amount: no min amount"), amount);
+        XCMApp::<T>::register_asset(
+            T::CallOrigin::try_successful_origin().unwrap(),
+            asset_id,
+            multilocation.into(),
+            bridge_types::types::AssetKind::Thischain,
+            1000,
+        )
+        .expect("set_asset_minimum_amount");
+
+        #[extrinsic_call]
+        _(T::CallOrigin::try_successful_origin().unwrap() as T::RuntimeOrigin, asset_id, amount);
+
+        assert_eq!(
+            XCMApp::<T>::asset_minimum_amount(multilocation)
+                .expect("set_asset_minimum_amount: no min amount"),
+            amount
+        );
+
+        Ok(())
     }
 
-    sudo_send_xcm {
-        let asset = MultiAsset {id: XCMAssetId::Concrete(staging_xcm::v3::MultiLocation{ parents: 1, interior: Here }), fun: staging_xcm::prelude::Fungible(100000000000000)};
-        let msg = Xcm(scale_info::prelude::vec![
+    #[benchmark]
+    fn sudo_send_xcm() -> Result<(), BenchmarkError> {
+        let asset = MultiAsset {
+            id: XCMAssetId::Concrete(staging_xcm::v3::MultiLocation { parents: 1, interior: Here }),
+            fun: staging_xcm::prelude::Fungible(100000000000000),
+        };
+        let msg = Xcm(vec![
             WithdrawAsset(asset.clone().into()),
             BuyExecution { fees: asset, weight_limit: WeightLimit::Unlimited },
-            Transact{ origin_kind: OriginKind::Native, require_weight_at_most: Weight::from_parts(4000000000, 10000), call: scale_info::prelude::vec![0; 5000].into()},
+            Transact {
+                origin_kind: OriginKind::Native,
+                require_weight_at_most: Weight::from_parts(4000000000, 10000),
+                call: vec![0; 5000].into(),
+            },
             RefundSurplus,
-            DepositAsset{ assets: MultiAssetFilter::Wild(staging_xcm::v3::WildMultiAsset::All), beneficiary: staging_xcm::v3::MultiLocation{ parents: 1, interior: Here }},
+            DepositAsset {
+                assets: MultiAssetFilter::Wild(staging_xcm::v3::WildMultiAsset::All),
+                beneficiary: staging_xcm::v3::MultiLocation { parents: 1, interior: Here },
+            },
         ]);
-        let versioned_dest: bridge_types::substrate::VersionedMultiLocation = MultiLocation::parent().into();
+        let versioned_dest: bridge_types::substrate::VersionedMultiLocation =
+            MultiLocation::parent().into();
         let versioned_msg = staging_xcm::VersionedXcm::from(msg);
-    }: _(RawOrigin::Root, Box::new(versioned_dest), Box::new(versioned_msg))
+
+        #[extrinsic_call]
+        _(RawOrigin::Root, Box::new(versioned_dest), Box::new(versioned_msg));
+
+        Ok(())
+    }
 }
 
 impl_benchmark_test_suite!(XCMApp, crate::mock::new_test_ext(), crate::mock::Test,);

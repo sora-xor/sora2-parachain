@@ -37,15 +37,15 @@ use frame_support::{pallet_prelude::*, parameter_types};
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 use sp_io::TestExternalities;
+use sp_runtime::BuildStorage;
 use sp_runtime::{
     traits::{Convert, Zero},
     AccountId32,
 };
 use staging_xcm::{latest::Weight, prelude::*};
 use staging_xcm_executor::{traits::WeightTrader, Assets};
-use xcm_simulator::{decl_test_network, decl_test_parachain, decl_test_relay_chain};
-use sp_runtime::BuildStorage;
 use xcm_simulator::TestExt;
+use xcm_simulator::{decl_test_network, decl_test_parachain, decl_test_relay_chain};
 
 pub const ALICE: AccountId32 = AccountId32::new([10u8; 32]);
 pub const BOB: AccountId32 = AccountId32::new([11u8; 32]);
@@ -104,12 +104,12 @@ decl_test_relay_chain! {
         // XcmConfig = relay::XcmConfig,
         // new_ext = relay_ext(),
         Runtime = relay::Runtime,
-		RuntimeCall = relay::RuntimeCall,
-		RuntimeEvent = relay::RuntimeEvent,
-		XcmConfig = relay::XcmConfig,
-		MessageQueue = relay::MessageQueue,
-		System = relay::System,
-		new_ext = relay_ext(),
+        RuntimeCall = relay::RuntimeCall,
+        RuntimeEvent = relay::RuntimeEvent,
+        XcmConfig = relay::XcmConfig,
+        MessageQueue = relay::MessageQueue,
+        System = relay::System,
+        new_ext = relay_ext(),
     }
 }
 
@@ -162,7 +162,12 @@ impl WeightTrader for AllTokensAreCreatedEqualToWeight {
         Self(MultiLocation::parent())
     }
 
-    fn buy_weight(&mut self, weight: Weight, payment: Assets, _context: &XcmContext,) -> Result<Assets, XcmError> {
+    fn buy_weight(
+        &mut self,
+        weight: Weight,
+        payment: Assets,
+        _context: &XcmContext,
+    ) -> Result<Assets, XcmError> {
         let asset_id = payment.fungible.iter().next().expect("Payment must be something; qed").0;
         let required =
             MultiAsset { id: asset_id.clone(), fun: Fungible(weight.ref_time() as u128) };
@@ -175,7 +180,7 @@ impl WeightTrader for AllTokensAreCreatedEqualToWeight {
         Ok(unused)
     }
 
-    fn refund_weight(&mut self, weight: Weight, _context: &XcmContext,) -> Option<MultiAsset> {
+    fn refund_weight(&mut self, weight: Weight, _context: &XcmContext) -> Option<MultiAsset> {
         if weight.is_zero() {
             None
         } else {
@@ -191,7 +196,7 @@ pub fn para_ext(para_id: u32) -> TestExternalities {
 
     // let parachain_info_config = parachain_info::GenesisConfig { parachain_id: para_id.into(), ..Default::default() };
     // <parachain_info::GenesisConfig<Runtime> as frame_support::traits::GenesisBuild<Runtime, _>>::assimilate_storage(&parachain_info_config, &mut t)
-	// 	.unwrap();
+    // 	.unwrap();
 
     orml_tokens::GenesisConfig::<Runtime> {
         balances: vec![

@@ -120,7 +120,7 @@ impl SubstrateCli for Cli {
 
 impl SubstrateCli for RelayChainCli {
     fn impl_name() -> String {
-		"SORA Parachain Collator".into()
+        "SORA Parachain Collator".into()
     }
 
     fn impl_version() -> String {

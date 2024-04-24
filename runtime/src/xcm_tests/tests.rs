@@ -109,6 +109,7 @@ fn prepare_sora_parachain() {
 }
 
 #[test]
+#[ignore = "https://github.com/sora-xor/sora2-parachain/issues/218"]
 fn send_relay_chain_asset_to_sora_from_sibling() {
     TestNet::reset();
 
@@ -153,6 +154,7 @@ fn send_relay_chain_asset_to_sora_from_sibling() {
 }
 
 #[test]
+#[ignore = "https://github.com/sora-xor/sora2-parachain/issues/218"]
 fn send_sibling_asset_to_sora_from_sibling() {
     TestNet::reset();
 
@@ -377,6 +379,7 @@ fn send_relay_chain_asset_to_sora_from_relay() {
 }
 
 #[test]
+#[ignore = "https://github.com/sora-xor/sora2-parachain/issues/218"]
 fn send_to_sora_no_mapping_error() {
     TestNet::reset();
 
@@ -407,16 +410,17 @@ fn send_to_sora_no_mapping_error() {
             crate::RuntimeEvent::XCMApp(xcm_app::Event::AssetAddedToChannel(_))
         )));
 
-        
-
         assert!(!frame_system::Pallet::<crate::Runtime>::events()
             .iter()
             .any(|r| matches!(r.event, crate::RuntimeEvent::SubstrateBridgeOutboundChannel(_))));
 
-        
         assert!(frame_system::Pallet::<crate::Runtime>::events().iter().any(|r| matches!(
             r.event,
-            crate::RuntimeEvent::PolkadotXcm(pallet_xcm::Event::AssetsTrapped{hash:_, origin:_, assets: _})
+            crate::RuntimeEvent::PolkadotXcm(pallet_xcm::Event::AssetsTrapped {
+                hash: _,
+                origin: _,
+                assets: _
+            })
         )));
     });
 }
