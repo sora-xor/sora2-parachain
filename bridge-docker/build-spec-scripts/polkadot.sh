@@ -1,7 +1,7 @@
 
 polkadot build-spec --chain rococo-local > rococo.json 
 
-for para_id in 2000 2011
+for para_id in 2000 2011 1000
 do
   # Add parachain config to chain spec
   jq \
@@ -19,7 +19,9 @@ done
 jq \
   '.genesis.runtime.runtime_genesis_config.hrmp.preopenHrmpChannels += [
     [2011, 2000, 8, 1048576],
-    [2000, 2011, 8, 1048576]
+    [2000, 2011, 8, 1048576],
+    [2011, 1000, 8, 1048576],
+    [1000, 2011, 8, 1048576]
 ]' rococo.json > rococo.json.tmp && mv rococo.json.tmp rococo.json
 
 sed -i 's/1e+18/1000000000000000000/' rococo.json

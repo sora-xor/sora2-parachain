@@ -46,6 +46,7 @@ COPY Cargo.toml /app
 COPY pallets /app/pallets
 COPY runtime /app/runtime
 COPY node /app/node
+COPY utils /app/utils
 COPY parachain-common /app/parachain-common
 COPY parachain-gen /app/parachain-gen
 RUN cargo chef prepare --recipe-path recipe.json
@@ -61,6 +62,7 @@ COPY Cargo.toml /app
 COPY pallets /app/pallets
 COPY runtime /app/runtime
 COPY node /app/node
+COPY utils /app/utils
 COPY parachain-common /app/parachain-common
 COPY parachain-gen /app/parachain-gen
 RUN cargo build --release --bin parachain-collator --features rococo

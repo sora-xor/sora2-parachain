@@ -1,4 +1,3 @@
-version: "3.5"
 name: sora2-parachain
 
 services:
@@ -123,6 +122,48 @@ services:
     networks:
       - bridgenet
 
+  assethub-alice:
+    image: parity/polkadot-parachain:1.11.0
+    container_name: bridge-assethub-alice
+    restart: always
+    user: "root"
+    ports:
+      - "9644:9644"
+      - "9654:9654"
+    environment:
+      - RUST_LOG=xcm=trace
+    command: [
+        "--pruning", "archive",
+        "--enable-offchain-indexing", "true",
+        "-d", "/data", 
+        "--alice", 
+        "--chain", "/build-spec/assethub.json",
+        "--validator",
+        "--port", "30533", 
+        "--ws-port", "9644",
+        "--rpc-port", "9654", 
+        "--unsafe-ws-external",
+        "--unsafe-rpc-external",
+        "--rpc-cors", "all",
+        "--execution", "wasm", 
+        "--wasm-execution", "compiled",
+        "--",
+        "--execution", "wasm",
+        "--wasm-execution", "compiled",
+        "--chain", "/build-spec/rococo-raw.json",
+        "--port", "30543",
+        "--ws-port", "10644",
+        "--rpc-port", "10654",
+      ]
+    depends_on:
+      build-spec-polkadot:
+        condition: service_completed_successfully
+    volumes:
+      - build-spec-data:/build-spec
+      - assethub-alice-data:/data
+    networks:
+      - bridgenet
+
   karura-alice:
     image: acala/karura-node:2.11.0
     container_name: bridge-karura-alice
@@ -194,6 +235,19 @@ services:
     networks:
       - bridgenet
 
+  build-spec-assethub:
+    image: parity/polkadot-parachain:1.11.0
+    container_name: bridge-parachain-build-spec-assethub
+    working_dir: /build-spec
+    entrypoint: sh
+    user: "root"
+    command: /build-spec-scripts/assethub.sh
+    volumes:
+      - build-spec-data:/build-spec
+      - ./build-spec-scripts:/build-spec-scripts
+    networks:
+      - bridgenet
+
   build-spec-polkadot:
     image: sora2/substrate-local-polkadot
     build:
@@ -220,6 +274,7 @@ volumes:
   relaychain-alice-data: null
   relaychain-bob-data: null
   karura-alice-data: null
+  assethub-alice-data: null
   build-spec-data: null
 
 networks:
