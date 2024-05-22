@@ -274,14 +274,6 @@ volumes:
   assethub-alice-data:
   build-spec-data:
 
-# volumes:
-#   parachain-alice-data: null
-#   relaychain-alice-data: null
-#   relaychain-bob-data: null
-#   karura-alice-data: null
-#   assethub-alice-data: null
-#   build-spec-data: null
-
 networks:
   bridgenet:
     name: bridgenet
