@@ -1,4 +1,4 @@
-name: sora2-parachain
+version: "2.4"
 
 services:
   parachain-alice:
@@ -41,8 +41,8 @@ services:
       build-spec-polkadot:
         condition: service_completed_successfully
     volumes:
-      - build-spec-data:/build-spec
-      - parachain-alice-data:/data
+      - ./build-spec-data:/build-spec
+      - ./nodes-data/parachain-alice-data:/data
     networks:
       - bridgenet
 
@@ -79,8 +79,8 @@ services:
       build-spec-polkadot:
         condition: service_completed_successfully
     volumes:
-      - build-spec-data:/build-spec
-      - relaychain-alice-data:/data
+      - ./build-spec-data:/build-spec
+      - ./nodes-data/relaychain-alice-data:/data
     networks:
       - bridgenet
 
@@ -117,8 +117,8 @@ services:
       build-spec-polkadot:
         condition: service_completed_successfully
     volumes:
-      - build-spec-data:/build-spec
-      - relaychain-bob-data:/data
+      - ./build-spec-data:/build-spec
+      - ./nodes-data/relaychain-bob-data:/data
     networks:
       - bridgenet
 
@@ -128,8 +128,8 @@ services:
     restart: always
     user: "root"
     ports:
-      - "9644:9644"
-      - "9654:9654"
+      - "9645:9644"
+      - "9655:9654"
     environment:
       - RUST_LOG=xcm=trace
     command: [
@@ -140,9 +140,7 @@ services:
         "--chain", "/build-spec/assethub.json",
         "--validator",
         "--port", "30533", 
-        "--ws-port", "9644",
         "--rpc-port", "9654", 
-        "--unsafe-ws-external",
         "--unsafe-rpc-external",
         "--rpc-cors", "all",
         "--execution", "wasm", 
@@ -152,15 +150,14 @@ services:
         "--wasm-execution", "compiled",
         "--chain", "/build-spec/rococo-raw.json",
         "--port", "30543",
-        "--ws-port", "10644",
         "--rpc-port", "10654",
       ]
     depends_on:
       build-spec-polkadot:
         condition: service_completed_successfully
     volumes:
-      - build-spec-data:/build-spec
-      - assethub-alice-data:/data
+      - ./build-spec-data:/build-spec
+      - ./nodes-data/assethub-alice-data:/data
     networks:
       - bridgenet
 
@@ -201,8 +198,8 @@ services:
       build-spec-polkadot:
         condition: service_completed_successfully
     volumes:
-      - build-spec-data:/build-spec
-      - karura-alice-data:/data
+      - ./build-spec-data:/build-spec
+      - ./nodes-data/karura-alice-data:/data
     networks:
       - bridgenet
 
@@ -217,7 +214,7 @@ services:
     user: "root"
     command: /build-spec-scripts/sora.sh
     volumes:
-      - build-spec-data:/build-spec
+      - ./build-spec-data:/build-spec
       - ./build-spec-scripts:/build-spec-scripts
     networks:
       - bridgenet
@@ -230,7 +227,7 @@ services:
     user: "root"
     command: /build-spec-scripts/karura.sh
     volumes:
-      - build-spec-data:/build-spec
+      - ./build-spec-data:/build-spec
       - ./build-spec-scripts:/build-spec-scripts
     networks:
       - bridgenet
@@ -243,7 +240,7 @@ services:
     user: "root"
     command: /build-spec-scripts/assethub.sh
     volumes:
-      - build-spec-data:/build-spec
+      - ./build-spec-data:/build-spec
       - ./build-spec-scripts:/build-spec-scripts
     networks:
       - bridgenet
@@ -264,18 +261,26 @@ services:
       build-spec-karura:
         condition: service_completed_successfully
     volumes:
-      - build-spec-data:/build-spec
+      - ./build-spec-data:/build-spec
       - ./build-spec-scripts:/build-spec-scripts
     networks:
       - bridgenet
 
 volumes:
-  parachain-alice-data: null
-  relaychain-alice-data: null
-  relaychain-bob-data: null
-  karura-alice-data: null
-  assethub-alice-data: null
-  build-spec-data: null
+  parachain-alice-data:
+  relaychain-alice-data:
+  relaychain-bob-data:
+  karura-alice-data:
+  assethub-alice-data:
+  build-spec-data:
+
+# volumes:
+#   parachain-alice-data: null
+#   relaychain-alice-data: null
+#   relaychain-bob-data: null
+#   karura-alice-data: null
+#   assethub-alice-data: null
+#   build-spec-data: null
 
 networks:
   bridgenet:
