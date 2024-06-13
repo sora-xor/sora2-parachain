@@ -1,5 +1,8 @@
 
-polkadot build-spec --chain rococo-local > rococo.json 
+# We should open hrmp for parachain 1000 manually
+# Read https://github.com/paritytech/polkadot-sdk/issues/4705
+
+polkadot build-spec --chain rococo-local --disable-default-bootnode > rococo.json 
 
 for para_id in 1000 2000 2011
 do
@@ -18,14 +21,10 @@ done
 # Open HRMP channels
 jq \
   '.genesis.runtime.runtime_genesis_config.hrmp.preopenHrmpChannels += [
-    [2011, 2000, 8, 1048576],
-    [2000, 2011, 8, 1048576],
-    [2011, 1000, 8, 1048576],
-    [1000, 2011, 8, 1048576],
-    [2000, 1000, 8, 1048576],
-    [1000, 2000, 8, 1048576]
+    [2011, 2000, 4, 524287],
+    [2000, 2011, 4, 524287]
 ]' rococo.json > rococo.json.tmp && mv rococo.json.tmp rococo.json
 
 sed -i 's/1e+18/1000000000000000000/' rococo.json
 
-polkadot build-spec --chain rococo.json --raw > rococo-raw.json
+polkadot build-spec --chain rococo.json --raw --disable-default-bootnode > rococo-raw.json

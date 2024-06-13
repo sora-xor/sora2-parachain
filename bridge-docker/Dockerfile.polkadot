@@ -1,4 +1,4 @@
-FROM parity/polkadot:v0.9.38
+FROM parity/polkadot:v0.9.41
 
 USER root
 
