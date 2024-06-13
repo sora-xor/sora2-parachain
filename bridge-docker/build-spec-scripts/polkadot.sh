@@ -25,6 +25,26 @@ jq \
     [2000, 2011, 4, 524287]
 ]' rococo.json > rococo.json.tmp && mv rococo.json.tmp rococo.json
 
+
+# Add 'Charlie' as validator
+jq '
+  .genesis.runtime.runtime_genesis_config.session.keys +=
+  [
+    [
+      "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy",
+      "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy",
+      {
+        "grandpa": "5ECTwv6cZ5nJQPk6tWfaTrEk8YH2L7X1VT4EL5Tx2ikfFwb7",
+        "babe": "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy",
+        "im_online": "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy",
+        "para_validator": "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy",
+        "para_assignment": "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy",
+        "authority_discovery": "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy",
+        "beefy": "KWCycezxoy7MWTTqA5JDKxJbqVMiNfqThKFhb5dTfsbNaGbrW"
+      }
+    ]
+  ]' rococo.json > rococo.json.tmp && mv rococo.json.tmp rococo.json
+
 sed -i 's/1e+18/1000000000000000000/' rococo.json
 
 polkadot build-spec --chain rococo.json --raw --disable-default-bootnode > rococo-raw.json

@@ -28,7 +28,7 @@ stop() {
 
 wipe() {
     docker-compose down -v
-    sudo rm -rf nodes-data
+    sudo rm -rf nodes-data build-spec-data
 }
 
 log() {
