@@ -16,5 +16,5 @@
 .DS_Store
 .idea
 run
-build-spec-data
 nodes-data
+build-spec-data
