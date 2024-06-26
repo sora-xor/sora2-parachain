@@ -110,7 +110,7 @@ pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::Account
 pub type Balance = u128;
 
 /// Index of a transaction in the chain.
-pub type Index = u32;
+pub type Nonce = u32;
 
 /// A hash of some data used by the chain.
 pub type Hash = sp_core::H256;
@@ -321,7 +321,6 @@ parameter_types! {
 }
 
 // Configure FRAME pallets to include in runtime.
-pub type Nonce = u32;
 
 impl frame_system::Config for Runtime {
     /// The identifier used to distinguish between accounts.
@@ -951,7 +950,6 @@ impl pallet_elections_phragmen::Config for Runtime {
     type Currency = Balances;
     type ChangeMembers = Council;
     type InitializeMembers = Council;
-    // type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
     type CurrencyToVote = sp_staking::currency_to_vote::U128CurrencyToVote;
     type CandidacyBond = ElectionsCandidacyBond;
     type VotingBondBase = ElectionsVotingBondBase;

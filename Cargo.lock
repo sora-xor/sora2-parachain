@@ -1040,6 +1040,7 @@ dependencies = [
  "getrandom 0.2.12",
  "hex-literal 0.4.1",
  "libsecp256k1",
+ "log",
  "orml-traits",
  "parity-bytes",
  "parity-scale-codec",

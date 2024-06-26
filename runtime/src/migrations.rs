@@ -28,12 +28,12 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#[cfg(feature = "polkadot")]
+// #[cfg(feature = "polkadot")]
 use crate::*;
-#[cfg(feature = "polkadot")]
+// #[cfg(feature = "polkadot")]
 use frame_support::{traits::OnRuntimeUpgrade, weights::Weight};
 
-#[cfg(any(feature = "rococo", feature = "alphanet", feature = "kusama"))]
+#[cfg(any(feature = "rococo", feature = "alphanet", feature = "polkadot"))]
 pub type Migrations = ();
 
 #[cfg(feature = "polkadot")]
@@ -52,6 +52,31 @@ impl OnRuntimeUpgrade for RemoveSudoKey {
         } else {
             log::error!("Sudo key not found in storage");
         }
+        RuntimeBlockWeights::get().max_block
+    }
+}
+
+
+pub struct RemooveBeefySessionKey;
+
+impl OnRuntimeUpgrade for RemooveBeefySessionKey {
+    fn on_runtime_upgrade() -> Weight {
+        // if let Some(key) =
+        //     frame_support::storage::migration::take_storage_value::<AccountId>(b"Session", b"NextKeys", &[])
+        // {
+        //     log::error!("Beefy session key removed: {:?}", key);
+        // } else {
+        //     log::error!("Beefy session key not found in storage");
+        // }
+        // <crate::Session as pallet_session::Config>::NextKeys::translate();
+
+        // let a = crate::Session::;
+        let it = frame_support::storage::migration::storage_iter::<crate::SessionKeys>(b"Session", b"NextKeys").into_iter().for_each(|(x, y)|{
+            frame_support::storage::migration::take_storage_value::<crate::SessionKeys>(b"Session", b"NextKeys", &x);
+            frame_support::storage::migration::put_storage_value::<crate::SessionKeys>(b"Session", b"NextKeys", &x,  y);
+
+        });
+        
         RuntimeBlockWeights::get().max_block
     }
 }
