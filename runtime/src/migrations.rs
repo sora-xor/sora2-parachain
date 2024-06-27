@@ -57,6 +57,13 @@ impl OnRuntimeUpgrade for RemoveSudoKey {
 }
 
 
+impl_opaque_keys! {
+    pub struct OldSessionKeys {
+        pub aura: Aura,
+        pub beefy: Aura,
+    }
+}
+
 pub struct RemooveBeefySessionKey;
 
 impl OnRuntimeUpgrade for RemooveBeefySessionKey {
@@ -71,10 +78,9 @@ impl OnRuntimeUpgrade for RemooveBeefySessionKey {
         // <crate::Session as pallet_session::Config>::NextKeys::translate();
 
         // let a = crate::Session::;
-        let it = frame_support::storage::migration::storage_iter::<crate::SessionKeys>(b"Session", b"NextKeys").into_iter().for_each(|(x, y)|{
-            frame_support::storage::migration::take_storage_value::<crate::SessionKeys>(b"Session", b"NextKeys", &x);
-            frame_support::storage::migration::put_storage_value::<crate::SessionKeys>(b"Session", b"NextKeys", &x,  y);
-
+        frame_support::storage::migration::storage_iter::<OldSessionKeys>(b"Session", b"NextKeys").into_iter().for_each(|(x, y)|{
+            frame_support::storage::migration::take_storage_value::<OldSessionKeys>(b"Session", b"NextKeys", &x);
+            frame_support::storage::migration::put_storage_value::<crate::SessionKeys>(b"Session", b"NextKeys", &x,  SessionKeys {aura: y.aura.clone()});
         });
         
         RuntimeBlockWeights::get().max_block

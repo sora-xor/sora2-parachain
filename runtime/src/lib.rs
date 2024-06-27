@@ -716,6 +716,12 @@ impl Dispatchable for DispatchableSubstrateBridgeCall {
                     error: sp_runtime::DispatchError::Other("Unavailable"),
                 })
             },
+            bridge_types::substrate::BridgeCall::FAApp(_msg) => {
+                Err(sp_runtime::DispatchErrorWithPostInfo {
+                    post_info: Default::default(),
+                    error: sp_runtime::DispatchError::Other("Unavailable"),
+                })
+            },
             bridge_types::substrate::BridgeCall::XCMApp(msg) => {
                 let call: xcm_app::Call<crate::Runtime> = msg.into();
                 let call: crate::RuntimeCall = call.into();
@@ -740,6 +746,7 @@ impl frame_support::dispatch::GetDispatchInfo for DispatchableSubstrateBridgeCal
         match &self.0 {
             bridge_types::substrate::BridgeCall::ParachainApp(_) => Default::default(),
             bridge_types::substrate::BridgeCall::SubstrateApp(_) => Default::default(),
+            bridge_types::substrate::BridgeCall::FAApp(_) => Default::default(),
             bridge_types::substrate::BridgeCall::XCMApp(msg) => {
                 let call: xcm_app::Call<crate::Runtime> = msg.clone().into();
                 call.get_dispatch_info()
@@ -762,6 +769,7 @@ impl Contains<DispatchableSubstrateBridgeCall> for SubstrateBridgeCallFilter {
         match &call.0 {
             bridge_types::substrate::BridgeCall::ParachainApp(_) => false,
             bridge_types::substrate::BridgeCall::SubstrateApp(_) => false,
+            bridge_types::substrate::BridgeCall::FAApp(_) => false,
             bridge_types::substrate::BridgeCall::XCMApp(_) => true,
             bridge_types::substrate::BridgeCall::DataSigner(_) => true,
             bridge_types::substrate::BridgeCall::MultisigVerifier(_) => true,
@@ -1375,8 +1383,8 @@ impl_runtime_apis! {
         }
     }
 
-    impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Index> for Runtime {
-        fn account_nonce(account: AccountId) -> Index {
+    impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Nonce> for Runtime {
+        fn account_nonce(account: AccountId) -> Nonce {
             System::account_nonce(account)
         }
     }
