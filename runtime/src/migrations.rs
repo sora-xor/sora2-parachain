@@ -35,7 +35,6 @@ pub type Migrations = (
     cumulus_pallet_dmp_queue::migration::Migration<Runtime>,
     cumulus_pallet_parachain_system::migration::Migration<Runtime>,
     cumulus_pallet_xcmp_queue::migration::Migration<Runtime>,
-
     RemoveBeefySessionKey,
 );
 
@@ -52,30 +51,50 @@ pub struct RemoveBeefySessionKey;
 #[cfg(any(feature = "rococo", feature = "alphanet", feature = "polkadot"))]
 impl OnRuntimeUpgrade for RemoveBeefySessionKey {
     fn on_runtime_upgrade() -> Weight {
-        frame_support::storage::migration::storage_iter::<OldSessionKeys>(b"Session", b"NextKeys").into_iter().for_each(|(hash, old_key)|{
-            let maybe_key = frame_support::storage::migration::take_storage_value::<OldSessionKeys>(b"Session", b"NextKeys", &hash);
-            if maybe_key.is_some() {
-                frame_support::storage::migration::put_storage_value::<crate::SessionKeys>(b"Session", b"NextKeys", &hash,  SessionKeys {aura: old_key.aura.clone()});
-                log::warn!("NextKeys: Session key transformed: {:?}", old_key);
-            }
-        });
+        frame_support::storage::migration::storage_iter::<OldSessionKeys>(b"Session", b"NextKeys")
+            .into_iter()
+            .for_each(|(hash, old_key)| {
+                let maybe_key = frame_support::storage::migration::take_storage_value::<
+                    OldSessionKeys,
+                >(b"Session", b"NextKeys", &hash);
+                if maybe_key.is_some() {
+                    frame_support::storage::migration::put_storage_value::<crate::SessionKeys>(
+                        b"Session",
+                        b"NextKeys",
+                        &hash,
+                        SessionKeys { aura: old_key.aura.clone() },
+                    );
+                    log::warn!("NextKeys: Session key transformed: {:?}", old_key);
+                }
+            });
 
-        match frame_support::storage::migration::take_storage_value::<Vec<(AccountId, OldSessionKeys)>>(b"Session", b"QueuedKeys", &[]) {
+        match frame_support::storage::migration::take_storage_value::<
+            Vec<(AccountId, OldSessionKeys)>,
+        >(b"Session", b"QueuedKeys", &[])
+        {
             None => {},
             Some(old_keys) => {
-                let new_keys = old_keys.iter().map(|ok| (ok.0.clone(), SessionKeys {aura: ok.1.aura.clone()})).collect::<Vec<_>>();
-                frame_support::storage::migration::put_storage_value::<Vec<(AccountId, SessionKeys)>>(b"Session", b"QueuedKeys", &[], new_keys);
+                let new_keys = old_keys
+                    .iter()
+                    .map(|ok| (ok.0.clone(), SessionKeys { aura: ok.1.aura.clone() }))
+                    .collect::<Vec<_>>();
+                frame_support::storage::migration::put_storage_value::<Vec<(AccountId, SessionKeys)>>(
+                    b"Session",
+                    b"QueuedKeys",
+                    &[],
+                    new_keys,
+                );
                 log::warn!("QueuedKeys: {:?} session keys transformed", old_keys.len());
-            }
+            },
         }
-        
+
         RuntimeBlockWeights::get().max_block
     }
 }
 
 #[cfg(feature = "kusama")]
 impl OnRuntimeUpgrade for RemoveBeefySessionKey {
-    fn on_runtime_upgrade() -> Weight {    
+    fn on_runtime_upgrade() -> Weight {
         RuntimeBlockWeights::get().max_block
     }
 }
