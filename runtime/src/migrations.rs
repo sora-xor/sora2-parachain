@@ -51,18 +51,21 @@ pub struct RemooveBeefySessionKey;
 #[cfg(any(feature = "rococo", feature = "alphanet", feature = "polkadot"))]
 impl OnRuntimeUpgrade for RemooveBeefySessionKey {
     fn on_runtime_upgrade() -> Weight {
-        frame_support::storage::migration::storage_iter::<OldSessionKeys>(b"Session", b"NextKeys").into_iter().for_each(|(x, y)|{
-            let key = frame_support::storage::migration::take_storage_value::<OldSessionKeys>(b"Session", b"NextKeys", &x);
-            frame_support::storage::migration::put_storage_value::<crate::SessionKeys>(b"Session", b"NextKeys", &x,  SessionKeys {aura: y.aura.clone()});
-
-            log::warn!("NextKeys: Session key removed: {:?}", key);
+        frame_support::storage::migration::storage_iter::<OldSessionKeys>(b"Session", b"NextKeys").into_iter().for_each(|(hash, old_key)|{
+            let maybe_key = frame_support::storage::migration::take_storage_value::<OldSessionKeys>(b"Session", b"NextKeys", &hash);
+            if maybe_key.is_some() {
+                frame_support::storage::migration::put_storage_value::<crate::SessionKeys>(b"Session", b"NextKeys", &hash,  SessionKeys {aura: old_key.aura.clone()});
+                log::warn!("NextKeys: Session key transformed: {:?}", old_key);
+            }
         });
 
-        frame_support::storage::migration::storage_iter::<OldSessionKeys>(b"Session", b"QueuedKeys").into_iter().for_each(|(x, y)|{
-            let key = frame_support::storage::migration::take_storage_value::<OldSessionKeys>(b"Session", b"QueuedKeys", &x);
-            frame_support::storage::migration::put_storage_value::<crate::SessionKeys>(b"Session", b"QueuedKeys", &x,  SessionKeys {aura: y.aura.clone()});
-
-            log::warn!("QueuedKeys: Session key removed: {:?}", key);
+        frame_support::storage::migration::storage_iter::<Vec<OldSessionKeys>>(b"Session", b"QueuedKeys").into_iter().for_each(|(hash, old_keys)|{
+            let maybe_keys = frame_support::storage::migration::take_storage_value::<Vec<OldSessionKeys>>(b"Session", b"QueuedKeys", &hash);
+            if maybe_keys.is_some() {
+                let new_keys = old_keys.iter().map(|ok| SessionKeys {aura: ok.aura.clone()}).collect::<Vec<_>>();
+                frame_support::storage::migration::put_storage_value::<Vec<SessionKeys>>(b"Session", b"QueuedKeys", &hash, new_keys);
+                log::warn!("QueuedKeys: {:?} session keys transformed", old_keys.len());
+            }        
         });
         
         RuntimeBlockWeights::get().max_block
