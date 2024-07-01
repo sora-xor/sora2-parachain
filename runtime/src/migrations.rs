@@ -36,20 +36,21 @@ pub type Migrations = (
     cumulus_pallet_parachain_system::migration::Migration<Runtime>,
     cumulus_pallet_xcmp_queue::migration::Migration<Runtime>,
 
-    RemooveBeefySessionKey,
+    RemoveBeefySessionKey,
 );
 
 impl_opaque_keys! {
     pub struct OldSessionKeys {
         pub aura: Aura,
+        // Beefy key is the same size as Aura, so we can use Aura here, we will not use it in the migration
         pub beefy: Aura,
     }
 }
 
-pub struct RemooveBeefySessionKey;
+pub struct RemoveBeefySessionKey;
 
 #[cfg(any(feature = "rococo", feature = "alphanet", feature = "polkadot"))]
-impl OnRuntimeUpgrade for RemooveBeefySessionKey {
+impl OnRuntimeUpgrade for RemoveBeefySessionKey {
     fn on_runtime_upgrade() -> Weight {
         frame_support::storage::migration::storage_iter::<OldSessionKeys>(b"Session", b"NextKeys").into_iter().for_each(|(hash, old_key)|{
             let maybe_key = frame_support::storage::migration::take_storage_value::<OldSessionKeys>(b"Session", b"NextKeys", &hash);
@@ -59,21 +60,21 @@ impl OnRuntimeUpgrade for RemooveBeefySessionKey {
             }
         });
 
-        frame_support::storage::migration::storage_iter::<Vec<(AccountId, OldSessionKeys)>>(b"Session", b"QueuedKeys").into_iter().for_each(|(hash, old_keys)|{
-            let maybe_keys = frame_support::storage::migration::take_storage_value::<Vec<(AccountId, OldSessionKeys)>>(b"Session", b"QueuedKeys", &hash);
-            if maybe_keys.is_some() {
+        match frame_support::storage::migration::take_storage_value::<Vec<(AccountId, OldSessionKeys)>>(b"Session", b"QueuedKeys", &[]) {
+            None => {},
+            Some(old_keys) => {
                 let new_keys = old_keys.iter().map(|ok| (ok.0.clone(), SessionKeys {aura: ok.1.aura.clone()})).collect::<Vec<_>>();
-                frame_support::storage::migration::put_storage_value::<Vec<(AccountId, SessionKeys)>>(b"Session", b"QueuedKeys", &hash, new_keys);
+                frame_support::storage::migration::put_storage_value::<Vec<(AccountId, SessionKeys)>>(b"Session", b"QueuedKeys", &[], new_keys);
                 log::warn!("QueuedKeys: {:?} session keys transformed", old_keys.len());
-            }        
-        });
+            }
+        }
         
         RuntimeBlockWeights::get().max_block
     }
 }
 
 #[cfg(feature = "kusama")]
-impl OnRuntimeUpgrade for RemooveBeefySessionKey {
+impl OnRuntimeUpgrade for RemoveBeefySessionKey {
     fn on_runtime_upgrade() -> Weight {    
         RuntimeBlockWeights::get().max_block
     }
