@@ -58,7 +58,7 @@ impl OnRuntimeUpgrade for RemoveBeefySessionKey {
                     OldSessionKeys,
                 >(b"Session", b"NextKeys", &hash);
                 if maybe_key.is_some() {
-                    frame_support::storage::migration::put_storage_value::<crate::SessionKeys>(
+                    frame_support::storage::migration::put_storage_value::<SessionKeys>(
                         b"Session",
                         b"NextKeys",
                         &hash,

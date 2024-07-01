@@ -457,76 +457,6 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 
 impl parachain_info::Config for Runtime {}
 
-/// Configure Merkle Mountain Range pallet.
-// #[cfg(any(feature = "rococo", feature = "alphanet"))]
-// impl pallet_mmr::Config for Runtime {
-//     const INDEXING_PREFIX: &'static [u8] = b"mmr";
-//     type Hashing = Keccak256;
-//     // type Hash = <Keccak256 as sp_runtime::traits::Hash>::Output;
-//     type OnNewRoot = pallet_beefy_mmr::DepositBeefyDigest<Runtime>;
-//     type WeightInfo = ();
-//     type LeafData = pallet_beefy_mmr::Pallet<Runtime>;
-// }
-
-// impl pallet_beefy::Config for Runtime {
-//     type BeefyId = BeefyId;
-//     type MaxAuthorities = MaxAuthorities;
-//     #[cfg(any(feature = "rococo", feature = "alphanet"))]
-//     type OnNewValidatorSet = BeefyMmr;
-//     #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-//     type OnNewValidatorSet = ();
-
-//     #[doc = r" The maximum number of nominators for each validator."]
-//     type MaxNominators = ();
-
-//     #[doc = r" The maximum number of entries to keep in the set id to session index mapping."]
-//     #[doc = r""]
-//     #[doc = r" Since the `SetIdSession` map is only used for validating equivocations this"]
-//     #[doc = r" value should relate to the bonding duration of whatever staking system is"]
-//     #[doc = r" being used (if any). If equivocation handling is not enabled then this value"]
-//     #[doc = r" can be zero."]
-//     type MaxSetIdSessionEntries = ();
-
-//     #[doc = r" Weights for this pallet."]
-//     type WeightInfo = ();
-
-//     #[doc = r" The proof of key ownership, used for validating equivocation reports"]
-//     #[doc = r" The proof must include the session index and validator count of the"]
-//     #[doc = r" session at which the equivocation occurred."]
-//     type KeyOwnerProof = sp_core::Void;
-
-//     #[doc = r" The equivocation handling subsystem."]
-//     #[doc = r""]
-//     #[doc = r" Defines methods to publish, check and process an equivocation offence."]
-//     type EquivocationReportSystem = ();
-// }
-
-// #[cfg(any(feature = "rococo", feature = "alphanet"))]
-// parameter_types! {
-//     /// Version of the produced MMR leaf.
-//     ///
-//     /// The version consists of two parts;
-//     /// - `major` (3 bits)
-//     /// - `minor` (5 bits)
-//     ///
-//     /// `major` should be updated only if decoding the previous MMR Leaf format from the payload
-//     /// is not possible (i.e. backward incompatible change).
-//     /// `minor` should be updated if fields are added to the previous MMR Leaf, which given SCALE
-//     /// encoding does not prevent old leafs from being decoded.
-//     ///
-//     /// Hence we expect `major` to be changed really rarely (think never).
-//     /// See [`MmrLeafVersion`] type documentation for more details.
-//     pub LeafVersion: MmrLeafVersion = MmrLeafVersion::new(0, 0);
-// }
-
-// #[cfg(any(feature = "rococo", feature = "alphanet"))]
-// impl pallet_beefy_mmr::Config for Runtime {
-//     type LeafVersion = LeafVersion;
-//     type BeefyAuthorityToMerkleLeaf = pallet_beefy_mmr::BeefyEcdsaToEthereum;
-//     type LeafExtra = bridge_types::types::LeafExtraData<H256, H256>;
-//     type BeefyDataProvider = LeafProvider;
-// }
-
 #[cfg(any(feature = "rococo", feature = "alphanet"))]
 impl pallet_sudo::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
@@ -1092,10 +1022,6 @@ impl pallet_utility::Config for Runtime {
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime
-    // where
-        // Block = Block,
-        // NodeBlock = opaque::Block,
-        // UncheckedExtrinsic = UncheckedExtrinsic,
     {
         // System support stuff.
         System: frame_system = 0,
@@ -1130,20 +1056,11 @@ construct_runtime!(
         Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 
         XCMApp: xcm_app::{Pallet, Call, Storage, Event<T>} = 101,
-        // BeefyLightClient: beefy_light_client = 103,
         SubstrateBridgeInboundChannel: substrate_bridge_channel::inbound::{Pallet, Call, Storage, Event<T>, ValidateUnsigned} = 104,
         SubstrateBridgeOutboundChannel: substrate_bridge_channel::outbound = 105,
         SubstrateDispatch: dispatch = 106,
         BridgeDataSigner: bridge_data_signer = 108,
         MultisigVerifier: multisig_verifier = 109,
-
-        // Beefy pallets should be placed after channels
-        // #[cfg(any(feature = "rococo", feature = "alphanet"))]
-        // Mmr: pallet_mmr = 4,
-        // Beefy: pallet_beefy = 5,
-        // #[cfg(any(feature = "rococo", feature = "alphanet"))]
-        // BeefyMmr: pallet_beefy_mmr = 6,
-
         TechnicalCommittee: pallet_collective::<Instance1> = 110,
         Council: pallet_collective::<Instance2> = 111,
         Democracy: pallet_democracy= 112,
@@ -1263,120 +1180,6 @@ impl_runtime_apis! {
         }
     }
 
-// impl sp_consensus_beefy::BeefyApi<Block, BeefyId> for Runtime {
-//         fn validator_set() -> Option<sp_consensus_beefy::ValidatorSet<BeefyId>> {
-//             #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-//             return None;
-
-//             #[cfg(any(feature = "rococo", feature = "alphanet"))]
-//             Beefy::validator_set()
-//         }
-
-//         fn beefy_genesis() -> Option<BlockNumber> {
-//             #[cfg(not(feature = "rococo"))]
-//             return None;
-
-//             #[cfg(feature = "rococo")]
-//             Beefy::genesis_block()
-// 		}
-
-//         fn submit_report_equivocation_unsigned_extrinsic(
-// 			_equivocation_proof: sp_consensus_beefy::EquivocationProof<
-// 				BlockNumber,
-// 				BeefyId,
-// 				BeefySignature,
-// 			>,
-// 			_key_owner_proof: sp_consensus_beefy::OpaqueKeyOwnershipProof,
-// 		) -> Option<()> {
-//             None
-// 		}
-
-// 		fn generate_key_ownership_proof(
-// 			_set_id: sp_consensus_beefy::ValidatorSetId,
-// 			_authority_id: BeefyId,
-// 		) -> Option<sp_consensus_beefy::OpaqueKeyOwnershipProof> {
-//             None
-// 		}
-//     }
-
-//     impl mmr::MmrApi<Block, Hash, BlockNumber> for Runtime {
-//         fn mmr_root() -> Result<Hash, mmr::Error> {
-//             #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-//             return Err(mmr::Error::PalletNotIncluded);
-
-//             #[cfg(any(feature = "rococo", feature = "alphanet"))]
-//             Ok(Mmr::mmr_root())
-//         }
-
-//         fn mmr_leaf_count() -> Result<mmr::LeafIndex, mmr::Error> {
-//             #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-//             return Err(mmr::Error::PalletNotIncluded);
-
-//             #[cfg(any(feature = "rococo", feature = "alphanet"))]
-//             Ok(Mmr::mmr_leaves())
-//         }
-
-//         fn generate_proof(
-//             _block_numbers: Vec<BlockNumber>,
-//             _best_known_block_number: Option<BlockNumber>,
-//         ) -> Result<(Vec<mmr::EncodableOpaqueLeaf>, mmr::Proof<Hash>), mmr::Error> {
-//             #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-//             return Err(mmr::Error::PalletNotIncluded);
-
-//             #[cfg(any(feature = "rococo", feature = "alphanet"))]
-//             Mmr::generate_proof(_block_numbers, _best_known_block_number).map(
-//                 |(leaves, proof)| {
-//                     (
-//                         leaves
-//                             .into_iter()
-//                             .map(|leaf| mmr::EncodableOpaqueLeaf::from_leaf(&leaf))
-//                             .collect(),
-//                         proof,
-//                     )
-//                 },
-//             )
-//         }
-
-//         fn verify_proof(_leaves: Vec<mmr::EncodableOpaqueLeaf>, _proof: mmr::Proof<Hash>)
-//             -> Result<(), mmr::Error>
-//         {
-//             #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-//             return Err(mmr::Error::PalletNotIncluded);
-
-//             #[cfg(any(feature = "rococo", feature = "alphanet"))]
-//             {
-//                 pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as mmr::LeafDataProvider>::LeafData;
-//                 let leaves = _leaves.into_iter().map(|leaf|
-//                     leaf.into_opaque_leaf()
-//                     .try_decode()
-//                     .ok_or(mmr::Error::Verify)).collect::<Result<Vec<MmrLeaf>, mmr::Error>>()?;
-//                 Mmr::verify_leaves(leaves, _proof)
-//             }
-//         }
-
-//         fn verify_proof_stateless(
-//             _root: Hash,
-//             _leaves: Vec<mmr::EncodableOpaqueLeaf>,
-//             _proof: mmr::Proof<Hash>
-//         ) -> Result<(), mmr::Error> {
-//             #[cfg(not(any(feature = "rococo", feature = "alphanet")))]
-//             return Err(mmr::Error::PalletNotIncluded);
-
-//             #[cfg(any(feature = "rococo", feature = "alphanet"))]
-//             {
-//                 let nodes = _leaves.into_iter().map(|leaf|mmr::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
-//                 pallet_mmr::verify_leaves_proof::<<Runtime as pallet_mmr::Config>::Hashing, _>(_root, nodes, _proof)
-//             }
-//         }
-//     }
-
-    // impl beefy_light_client_runtime_api::BeefyLightClientAPI<Block, beefy_light_client::BitField> for Runtime {
-    //     fn get_random_bitfield(network_id: SubNetworkId, prior: beefy_light_client::BitField, num_of_validators: u32) -> beefy_light_client::BitField {
-    //         let len = prior.len();
-    //         BeefyLightClient::create_random_bit_field(network_id, prior, num_of_validators).unwrap_or(beefy_light_client::BitField::with_capacity(len))
-    //     }
-    // }
-
     impl leaf_provider_runtime_api::LeafProviderAPI<Block> for Runtime {
         fn latest_digest() -> Option<bridge_types::types::AuxiliaryDigest> {
                 LeafProvider::latest_digest().map(|logs| bridge_types::types::AuxiliaryDigest{ logs })
@@ -1479,6 +1282,7 @@ impl_runtime_apis! {
     }
 }
 
+#[allow(dead_code)]
 struct CheckInherents;
 
 impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {
