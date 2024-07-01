@@ -28,34 +28,16 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// #[cfg(feature = "polkadot")]
 use crate::*;
-// #[cfg(feature = "polkadot")]
 use frame_support::{traits::OnRuntimeUpgrade, weights::Weight};
 
-#[cfg(any(feature = "rococo", feature = "alphanet", feature = "polkadot"))]
-pub type Migrations = ();
+pub type Migrations = (
+    cumulus_pallet_dmp_queue::migration::Migration<Runtime>,
+    cumulus_pallet_parachain_system::migration::Migration<Runtime>,
+    cumulus_pallet_xcmp_queue::migration::Migration<Runtime>,
 
-#[cfg(feature = "polkadot")]
-pub type Migrations = (RemoveSudoKey,);
-
-#[cfg(feature = "polkadot")]
-pub struct RemoveSudoKey;
-
-#[cfg(feature = "polkadot")]
-impl OnRuntimeUpgrade for RemoveSudoKey {
-    fn on_runtime_upgrade() -> Weight {
-        if let Some(key) =
-            frame_support::storage::migration::take_storage_value::<AccountId>(b"Sudo", b"Key", &[])
-        {
-            log::error!("Sudo key removed: {:?}", key);
-        } else {
-            log::error!("Sudo key not found in storage");
-        }
-        RuntimeBlockWeights::get().max_block
-    }
-}
-
+    RemooveBeefySessionKey,
+);
 
 impl_opaque_keys! {
     pub struct OldSessionKeys {
@@ -66,23 +48,30 @@ impl_opaque_keys! {
 
 pub struct RemooveBeefySessionKey;
 
+#[cfg(any(feature = "rococo", feature = "alphanet", feature = "polkadot"))]
 impl OnRuntimeUpgrade for RemooveBeefySessionKey {
     fn on_runtime_upgrade() -> Weight {
-        // if let Some(key) =
-        //     frame_support::storage::migration::take_storage_value::<AccountId>(b"Session", b"NextKeys", &[])
-        // {
-        //     log::error!("Beefy session key removed: {:?}", key);
-        // } else {
-        //     log::error!("Beefy session key not found in storage");
-        // }
-        // <crate::Session as pallet_session::Config>::NextKeys::translate();
-
-        // let a = crate::Session::;
         frame_support::storage::migration::storage_iter::<OldSessionKeys>(b"Session", b"NextKeys").into_iter().for_each(|(x, y)|{
-            frame_support::storage::migration::take_storage_value::<OldSessionKeys>(b"Session", b"NextKeys", &x);
+            let key = frame_support::storage::migration::take_storage_value::<OldSessionKeys>(b"Session", b"NextKeys", &x);
             frame_support::storage::migration::put_storage_value::<crate::SessionKeys>(b"Session", b"NextKeys", &x,  SessionKeys {aura: y.aura.clone()});
+
+            log::warn!("NextKeys: Session key removed: {:?}", key);
+        });
+
+        frame_support::storage::migration::storage_iter::<OldSessionKeys>(b"Session", b"QueuedKeys").into_iter().for_each(|(x, y)|{
+            let key = frame_support::storage::migration::take_storage_value::<OldSessionKeys>(b"Session", b"QueuedKeys", &x);
+            frame_support::storage::migration::put_storage_value::<crate::SessionKeys>(b"Session", b"QueuedKeys", &x,  SessionKeys {aura: y.aura.clone()});
+
+            log::warn!("QueuedKeys: Session key removed: {:?}", key);
         });
         
+        RuntimeBlockWeights::get().max_block
+    }
+}
+
+#[cfg(feature = "kusama")]
+impl OnRuntimeUpgrade for RemooveBeefySessionKey {
+    fn on_runtime_upgrade() -> Weight {    
         RuntimeBlockWeights::get().max_block
     }
 }
