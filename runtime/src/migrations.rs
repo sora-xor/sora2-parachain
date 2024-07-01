@@ -59,11 +59,11 @@ impl OnRuntimeUpgrade for RemooveBeefySessionKey {
             }
         });
 
-        frame_support::storage::migration::storage_iter::<Vec<OldSessionKeys>>(b"Session", b"QueuedKeys").into_iter().for_each(|(hash, old_keys)|{
-            let maybe_keys = frame_support::storage::migration::take_storage_value::<Vec<OldSessionKeys>>(b"Session", b"QueuedKeys", &hash);
+        frame_support::storage::migration::storage_iter::<Vec<(AccountId, OldSessionKeys)>>(b"Session", b"QueuedKeys").into_iter().for_each(|(hash, old_keys)|{
+            let maybe_keys = frame_support::storage::migration::take_storage_value::<Vec<(AccountId, OldSessionKeys)>>(b"Session", b"QueuedKeys", &hash);
             if maybe_keys.is_some() {
-                let new_keys = old_keys.iter().map(|ok| SessionKeys {aura: ok.aura.clone()}).collect::<Vec<_>>();
-                frame_support::storage::migration::put_storage_value::<Vec<SessionKeys>>(b"Session", b"QueuedKeys", &hash, new_keys);
+                let new_keys = old_keys.iter().map(|ok| (ok.0.clone(), SessionKeys {aura: ok.1.aura.clone()})).collect::<Vec<_>>();
+                frame_support::storage::migration::put_storage_value::<Vec<(AccountId, SessionKeys)>>(b"Session", b"QueuedKeys", &hash, new_keys);
                 log::warn!("QueuedKeys: {:?} session keys transformed", old_keys.len());
             }        
         });
