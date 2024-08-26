@@ -1,7 +1,7 @@
 @Library('jenkins-library') _
 
 def pipeline = new org.rust.AppPipeline(steps: this,
-      envImageName: 'docker.soramitsu.co.jp/sora2/env:test',
+      envImageName: 'docker.soramitsu.co.jp/sora2/env:latest',
       appImageName: 'docker.soramitsu.co.jp/sora2/parachain',
       clippyLinter: false,
       cargoClippyTag: ':parachain',
