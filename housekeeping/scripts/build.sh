@@ -11,7 +11,7 @@ binaryfilepath="housekeeping/parachain-collator"
 errorfile="benchmarking_errors.txt"
 
 test() {
-  if [[ $buildTag != null || -n $buildTag ]] && [[ ${TAG_NAME} != null || ${TAG_NAME} != '' ]]; then
+  if [[ $buildTag != null ]] && [[ ${TAG_NAME} != null && ${TAG_NAME} != '' ]]; then
     if [[ ${TAG_NAME} =~ 'benchmarking'* ]]; then
         buildfeature="runtime-benchmarks,kusama"
     elif [[ ${TAG_NAME} = 'kusama-'* ]]; then
