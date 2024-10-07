@@ -10976,6 +10976,7 @@ dependencies = [
  "pallet-collective",
  "pallet-democracy",
  "pallet-elections-phragmen",
+ "pallet-identity",
  "pallet-mmr",
  "pallet-preimage",
  "pallet-randomness-collective-flip",
