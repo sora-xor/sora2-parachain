@@ -1,4 +1,4 @@
-@Library('jenkins-library') _
+@Library('jenkins-library@feature/DOPS-3374/test_rust_plugin') _
 
 def pipeline = new org.rust.AppPipeline(steps: this,
       envImageName: 'docker.soramitsu.co.jp/sora2/env:latest',
