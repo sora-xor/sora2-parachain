@@ -21,12 +21,13 @@ Governance Parameters
 - Democracy deposit: 1 XOR (1_000_000_000_000_000_000 plancks) per runtime config.
 - Preimage deposits: base 1 planck, byte 1 planck (negligible).
 
-HRMP Fee (KSM) — paste-in from live estimator
+HRMP Fee (KSM)
 - Run:
   - `cd tools/js && node --loader ts-node/esm ./tmp/open_to_asset_hub.ts --relay-ws wss://kusama-rpc.polkadot.io --para 1000 --capacity 1000 --messageSize 1048576 --estimate`
-- Paste here:
-  - Relay HRMP fee (no tip): <PLANCKS> plancks (~<KSM> KSM)
-- Set XCM `BuyExecution.fees` to ≥2× plancks above.
+- Result at time of preparation:
+  - Relay HRMP fee (no tip): 464,995,403 plancks (~0.000464995403 KSM)
+  - Recommended BuyExecution.fees: ≥929,990,806 plancks (~0.000929990806 KSM)
+  - Re-estimate before submission; fees fluctuate.
 
 Post-merge Actions
 1) Build Wasm for Kusama and submit governance (preimage + referendum) using `scripts/governance/submit_runtime_upgrade.ts`.
@@ -37,4 +38,3 @@ Post-merge Actions
 Validation
 - Unit test added for reserve rule.
 - Rehearsal instructions via Chopsticks.
-

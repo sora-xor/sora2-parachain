@@ -58,6 +58,8 @@ async function main() {
     const ksm = Number(feePlancks) / 1e12;
     console.log(`Estimated relay fee (no tip): ${info.partialFee.toString()} plancks (~${ksm} KSM)`);
     console.log('Recommendation: set BuyExecution.fees to at least 2x this estimate to be safe.');
+    await relayApi.disconnect();
+    return;
   }
 
   // 2) Build XCM v3 Transact wrapping the relay call

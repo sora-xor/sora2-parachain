@@ -40,8 +40,8 @@
   - Submission: Use `pallet_xcm::send` from Root origin to the Relay with `HrmpInitiateOpenChannel` (and, if needed by policy, `HrmpAcceptOpenChannel`).
   - Fees on Relay (KSM): Estimate the fee for `hrmp.initOpenChannel` and set `BuyExecution.fees` in the XCM to at least 2x the estimate. Use:
     - `cd tools/js && node --loader ts-node/esm ./tmp/open_to_asset_hub.ts --relay-ws wss://kusama-rpc.polkadot.io --para 1000 --capacity 1000 --messageSize 1048576 --estimate`
-    - Paste the result here when proposing (plancks and KSM):
-      - Relay HRMP fee (no tip): <PASTE_PLANCKS> plancks (~<PASTE_KSM> KSM)
+    - Relay HRMP fee (no tip): 464995403 plancks (~0.000464995403 KSM)
+    - Set BuyExecution.fees to at least 929,990,806 plancks (~0.000929990806 KSM)
 - **Verification**: Confirm inbound/outbound channel status on both sides; ensure `XcmpQueue` shows traffic and message delivery.
 
 **Phase 6: Sovereign Account Move**

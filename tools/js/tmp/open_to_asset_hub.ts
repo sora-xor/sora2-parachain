@@ -50,12 +50,16 @@ async function main() {
   console.log('Relay hrmp call hash:', relayCall.method.hash.toHex());
 
   if (estimate) {
-    // Prefer rpc.payment.queryInfo to avoid requiring a signer address
-    const info = await relayApi.rpc.payment.queryInfo(relayCall.toHex());
+    // Use paymentInfo via a dummy signer address to accommodate WeightV2
+    const kr = new Keyring({ type: 'sr25519' });
+    const signer = kr.addFromUri('//Alice');
+    const info = await relayCall.paymentInfo(signer.address);
     const feePlancks = (info.partialFee as any).toBigInt ? (info.partialFee as any).toBigInt() : BigInt(info.partialFee.toString());
     const ksm = Number(feePlancks) / 1e12;
     console.log(`Estimated relay fee (no tip): ${info.partialFee.toString()} plancks (~${ksm} KSM)`);
     console.log('Recommendation: set BuyExecution.fees to at least 2x this estimate to be safe.');
+    await relayApi.disconnect();
+    return;
   }
 
   // 2) Build XCM v3 Transact wrapping the relay call
