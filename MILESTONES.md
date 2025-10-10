@@ -28,6 +28,8 @@
 
 - **Preimage**: Submit preimage for the new runtime Wasm.
 - **Democracy**: Open referendum to schedule the runtime upgrade; include a scheduler item if needed.
+  - Minimum deposit on SORA Kusama: 1 XOR (1_000_000_000_000_000_000 plancks), see `DemocracyMinimumDeposit` in `runtime/src/lib.rs`.
+  - Preimage deposits (pallet-preimage): base 1 and byte 1 (plancks), configured in `PreimageBaseDeposit` and `PreimageByteDeposit` (negligible).
 - **Fast-track (optional)**: Use Council/Technical Committee to expedite if time-sensitive.
 - **Rollout**: On enactment, validators/collators upgrade and begin producing with the new `spec_version`.
 
@@ -36,6 +38,7 @@
 - **Channel open (one-sided)**: From SORA Kusama (para 2011), submit a single XCM to the Relay to request HRMP open to Asset Hub (para 1000). System parachains auto-accept; a single message is sufficient according to the Polkadot docs for para-to-system channels.
   - Parameters: `max_capacity`, `max_message_size` sized per traffic expectations.
   - Submission: Use `pallet_xcm::send` from Root origin to the Relay with `HrmpInitiateOpenChannel` (and, if needed by policy, `HrmpAcceptOpenChannel`).
+  - Fees on Relay (KSM): Estimate the fee for `hrmp.initOpenChannel` and set `BuyExecution.fees` in the XCM to at least 2x the estimate. Use `scripts/hrmp/open_to_asset_hub.ts --estimate --relay-estimate-address <KSM-address>` to print the exact fee in plancks and KSM for current network conditions.
 - **Verification**: Confirm inbound/outbound channel status on both sides; ensure `XcmpQueue` shows traffic and message delivery.
 
 **Phase 6: Sovereign Account Move**
@@ -60,4 +63,3 @@
 
 - Changing the reserve to Asset Hub (DOT; adapt for KSM): https://hackmd.io/@n9QBuDYOQXG-nWCBrwx8YQ/HkYVQFS8ke
 - Opening HRMP channels to system parachains: https://docs.polkadot.com/tutorials/interoperability/xcm-channels/para-to-system/
-

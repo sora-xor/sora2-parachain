@@ -38,12 +38,24 @@ async function main() {
   const para = Number(arg('--para'));
   const capacity = Number(arg('--capacity', '1000'));
   const messageSize = Number(arg('--messageSize', '1048576'));
+  const estimate = process.argv.includes('--estimate');
+  const relayEstimateAddr = estimate ? arg('--relay-estimate-address') : undefined;
 
   // 1) Build Relay call: hrmp.initOpenChannel(dest, capacity, messageSize)
   const relayApi = await ApiPromise.create({ provider: new WsProvider(relayWs) });
   const relayCall = relayApi.tx.hrmp.hrmpInitOpenChannel(para, capacity, messageSize);
   const relayCallBytes = relayCall.method.toU8a();
   console.log('Relay hrmp call hash:', relayCall.method.hash.toHex());
+
+  if (estimate) {
+    if (!relayEstimateAddr) throw new Error('Provide --relay-estimate-address');
+    const info = await relayCall.paymentInfo(relayEstimateAddr);
+    // partialFee is in plancks; 1 KSM = 10^12 plancks
+    const feePlancks = info.partialFee.toBigInt();
+    const ksm = Number(feePlancks) / 1e12;
+    console.log(`Estimated relay fee (no tip): ${info.partialFee.toString()} plancks (~${ksm} KSM)`);
+    console.log('Recommendation: set BuyExecution.fees to at least 2x this estimate to be safe.');
+  }
 
   // 2) Build XCM v3 Transact wrapping the relay call
   // Destination: Parent (Relay)
@@ -89,4 +101,3 @@ async function main() {
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
-

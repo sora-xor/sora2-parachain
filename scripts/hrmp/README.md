@@ -48,6 +48,16 @@ Opening HRMP channel from SORA Kusama (para 2011) to Kusama Asset Hub (para 1000
   }
   main().catch(console.error);
 
+- Estimate relay KSM fees for HRMP open
+- You can estimate the exact fee required on the relay for `hrmp.initOpenChannel` and set `BuyExecution.fees` accordingly:
+
+  TS_NODE_TRANSPILE_ONLY=1 ts-node scripts/hrmp/open_to_asset_hub.ts \
+    --relay-ws wss://kusama-rpc.polkadot.io \
+    --para 1000 --capacity 1000 --messageSize 1048576 \
+    --estimate --relay-estimate-address <your-KSM-address>
+
+  The script prints the fee in plancks and KSM. Set `BuyExecution.fees` to at least 2x that value.
+
 - Alternative: use Polkadot-JS Apps
   - Go to SORA Kusama network, submit pallet_xcm -> send
   - dest: { parents: 1, interior: Here }
@@ -61,4 +71,3 @@ Verification
 Notes
 - For para-to-system channels, a single message is sufficient (system para auto-accepts)
 - Coordinate channel limits with expected traffic
-
