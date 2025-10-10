@@ -37,6 +37,7 @@ use frame_support::{assert_ok, traits::Currency};
 use orml_traits::MultiCurrency;
 use sp_runtime::{traits::AccountIdConversion, AccountId32};
 use xcm_simulator::TestExt;
+use crate::xcm_config::KsmFromAssetHub;
 
 fn para_x_account() -> AccountId32 {
     ParaId::from(1).into_account_truncating()
@@ -58,6 +59,22 @@ fn print_events<Runtime: frame_system::Config>(name: &'static str) {
     frame_system::Pallet::<Runtime>::events()
         .iter()
         .for_each(|r| println!("> {:?}", r.event));
+}
+
+#[test]
+fn ksm_from_asset_hub_reserve_rule() {
+    // Asset representing the relay native (parents=1, Here), fungible any amount
+    let ksm = MultiAsset { id: Concrete(MultiLocation::new(1, Here)), fun: Fungible(1_000) };
+    // Location is Kusama Asset Hub (parents=1, Parachain(1000))
+    let ah_loc = MultiLocation::new(1, X1(Parachain(1000)));
+    // Location is Relay (parents=1, Here)
+    let relay_loc = MultiLocation::new(1, Here);
+    // Non-fungible asset (should be rejected regardless)
+    let nft_like = MultiAsset { id: Concrete(MultiLocation::new(1, Here)), fun: NonFungible(GeneralIndex(1)) };
+
+    assert!(KsmFromAssetHub::contains(&ksm, &ah_loc));
+    assert!(!KsmFromAssetHub::contains(&ksm, &relay_loc));
+    assert!(!KsmFromAssetHub::contains(&nft_like, &ah_loc));
 }
 
 fn relay_native_asset_id() -> crate::H256 {
