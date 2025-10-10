@@ -163,7 +163,9 @@ impl xcm_executor::Config for XcmConfig {
     // How to withdraw and deposit an asset.
     type AssetTransactor = LocalAssetTransactor;
     type OriginConverter = XcmOriginToTransactDispatchOrigin;
-    type IsReserve = MultiNativeAsset<AbsoluteReserveProvider>;
+    // Reserve locations the chain trusts.
+    // Keep native reserves via MultiNativeAsset and explicitly trust KSM from Kusama Asset Hub.
+    type IsReserve = Reserves;
     type IsTeleporter = (); // Teleporting is disabled.
     type Barrier = Barrier;
     type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
@@ -195,6 +197,30 @@ pub type XcmRouter = (
     cumulus_primitives_utility::ParentAsUmp<ParachainSystem, (), ()>,
     // ..and XCMP to communicate with the sibling chains.
     XcmpQueue,
+);
+
+// Allow KSM (identified at the Relay location) when the reserve location is Kusama Asset Hub (para 1000).
+pub struct KsmFromAssetHub;
+impl xcm_builder::ContainsPair<MultiAsset, MultiLocation> for KsmFromAssetHub {
+    fn contains(asset: &MultiAsset, location: &MultiLocation) -> bool {
+        let is_ksm = matches!(
+            asset,
+            MultiAsset { id: AssetId::Concrete(MultiLocation { parents: 1, interior: Here }), fun: Fungible(_) }
+        );
+        let is_from_asset_hub = matches!(
+            location,
+            MultiLocation { parents: 1, interior: X1(Parachain(1000)) }
+        );
+        is_ksm && is_from_asset_hub
+    }
+}
+
+// Union of trusted reserve resolvers.
+pub type Reserves = (
+    // Native assets whose absolute reserve is local
+    MultiNativeAsset<AbsoluteReserveProvider>,
+    // KSM with reserve on Kusama Asset Hub
+    KsmFromAssetHub,
 );
 
 #[cfg(feature = "runtime-benchmarks")]
