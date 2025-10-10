@@ -71,3 +71,20 @@ Verification
 Notes
 - For para-to-system channels, a single message is sufficient (system para auto-accepts)
 - Coordinate channel limits with expected traffic
+
+Opening HRMP channel to Kusama Coretime (for auto-renewal)
+
+- Coretime system parachain requires an HRMP channel from your parachain to deliver renewal messages.
+- Identify the Coretime parachain ID on Kusama (consult Polkadot Dev Docs or chain state).
+- Build and submit the same XCM Transact to Parent, replacing the `para` argument with the Coretime ID.
+
+- Fee estimation (replace PARA with Coretime ID):
+
+  cd tools/js
+  node --loader ts-node/esm ./tmp/open_to_asset_hub.ts \
+    --relay-ws wss://kusama-rpc.polkadot.io \
+    --para <CORETIME_PARA_ID> --capacity 1000 --messageSize 1048576 \
+    --estimate
+
+- Set `BuyExecution.fees` in the XCM to ≥ 2× the printed plancks value to ensure execution.
+- After the channel opens, configure the automatic renewal flow per https://docs.polkadot.com/develop/parachains/deployment/coretime-renewal/

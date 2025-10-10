@@ -42,6 +42,19 @@
     - `cd tools/js && node --loader ts-node/esm ./tmp/open_to_asset_hub.ts --relay-ws wss://kusama-rpc.polkadot.io --para 1000 --capacity 1000 --messageSize 1048576 --estimate`
     - Relay HRMP fee (no tip): 464995403 plancks (~0.000464995403 KSM)
     - Set BuyExecution.fees to at least 929,990,806 plancks (~0.000929990806 KSM)
+
+**Phase 5b: HRMP to Coretime (Kusama) for Auto-Renewal**
+
+- Objective: Open an HRMP channel from SORA Kusama (para 2011) to the Kusama Coretime system parachain to enable automatic coretime renewals, per the Coretime Renewal guide.
+- Steps:
+  - Identify the Kusama Coretime parachain ID (check Polkadot Developer Docs or chain state; it is a system parachain and auto-accepts channels).
+  - Submit a single XCM to the Relay with `hrmp.initOpenChannel(<CORETIME_PARA_ID>, max_capacity, max_message_size)` wrapped in `Transact`, same as Asset Hub.
+  - Recommended parameters: `max_capacity = 1000`, `max_message_size = 1_048_576` (1 MiB), adjust per expected usage.
+  - Fees on Relay (KSM): Estimate exactly with the HRMP script (replace PARA with Coretime ID):
+    - `cd tools/js && node --loader ts-node/esm ./tmp/open_to_asset_hub.ts --relay-ws wss://kusama-rpc.polkadot.io --para <CORETIME_PARA_ID> --capacity 1000 --messageSize 1048576 --estimate`
+    - Set `BuyExecution.fees` in the XCM to at least 2× the printed plancks.
+- After channel opens, configure your renewal flow per the Coretime Renewal guide (e.g., set renewal parameters and funding on Coretime chain; ensure messages can be delivered over HRMP).
+- Reference: Coretime Renewal — https://docs.polkadot.com/develop/parachains/deployment/coretime-renewal/
 - **Verification**: Confirm inbound/outbound channel status on both sides; ensure `XcmpQueue` shows traffic and message delivery.
 
 **Phase 6: Sovereign Account Move**
