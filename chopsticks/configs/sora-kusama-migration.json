@@ -1,0 +1,21 @@
+{
+  "network": {
+    "relay": {
+      "provider": "wss://kusama-rpc.polkadot.io",
+      "forkBlock": 0
+    },
+    "assetHub": {
+      "provider": "wss://kusama-asset-hub-rpc.polkadot.io",
+      "forkBlock": 0
+    }
+  },
+  "parachain": {
+    "soraKusama": {
+      "paraId": 2011,
+      "provider": "ws://localhost:9945",
+      "forkBlock": 0
+    }
+  },
+  "notes": "Replace providers with your archive endpoints; set forkBlock to the height you want to fork."
+}
+
