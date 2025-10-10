@@ -1,0 +1,64 @@
+Opening HRMP channel from SORA Kusama (para 2011) to Kusama Asset Hub (para 1000)
+
+- Prereqs:
+  - Governance keys to dispatch Root-origin XCM on SORA Kusama
+  - A relay chain account with sufficient fees for the HRMP open handling
+
+- One-sided open (para-to-system):
+  - System parachains (Asset Hub) auto-accept. You only need to send a single XCM from SORA Kusama to the Relay requesting the HRMP open to para 1000 with desired limits.
+
+- Suggested parameters:
+  - max_capacity: 1000
+  - max_message_size: 1_048_576 (1 MiB)
+
+- Polkadot.js API snippet (TypeScript):
+
+  import { ApiPromise, WsProvider } from '@polkadot/api';
+  import { hexAddPrefix } from '@polkadot/util';
+
+  async function main() {
+    const provider = new WsProvider('<ws://your-sora-kusama-node>');
+    const api = await ApiPromise.create({ provider });
+
+    // XCM v3 message to Relay to initiate HRMP open to Asset Hub (1000)
+    const xcm = {
+      V3: [
+        { Transact: {
+            originKind: 'Native',
+            requireWeightAtMost: { refTime: 3_000_000_000, proofSize: 0 },
+            call: {
+              encoded: api.createType('Bytes',
+                // runtime call: polkadotXcm.forceHrmpOpenChannel(dest_para=1000, maxCap, maxSize)
+                // Alternatively, use hrmp.hrmpInitOpenChannel via call encoding on Relay.
+                // Provide a properly encoded call for the Relay runtime you target.
+                hexAddPrefix('0x00')
+              )
+            }
+        }}
+      ]
+    };
+
+    // Destination: Relay
+    const dest = { V3: { parents: 1, interior: 'Here' } };
+
+    // Send via pallet_xcm::send from Root
+    const tx = api.tx.polkadotXcm.send(dest as any, xcm as any);
+    // Sign with governance account via external signer
+    console.log('Submit this extrinsic from Root through governance:', tx.toHex());
+  }
+  main().catch(console.error);
+
+- Alternative: use Polkadot-JS Apps
+  - Go to SORA Kusama network, submit pallet_xcm -> send
+  - dest: { parents: 1, interior: Here }
+  - message: XCM V3 with a Transact containing the HRMP open call to para 1000
+  - Ensure fees are covered via BuyExecution if required by your origin/weights
+
+Verification
+- Check HRMP channel status between 2011 and 1000 in the relay chain UI
+- Confirm XcmpQueue events and successful lateral message delivery
+
+Notes
+- For para-to-system channels, a single message is sufficient (system para auto-accepts)
+- Coordinate channel limits with expected traffic
+
