@@ -38,7 +38,10 @@
 - **Channel open (one-sided)**: From SORA Kusama (para 2011), submit a single XCM to the Relay to request HRMP open to Asset Hub (para 1000). System parachains auto-accept; a single message is sufficient according to the Polkadot docs for para-to-system channels.
   - Parameters: `max_capacity`, `max_message_size` sized per traffic expectations.
   - Submission: Use `pallet_xcm::send` from Root origin to the Relay with `HrmpInitiateOpenChannel` (and, if needed by policy, `HrmpAcceptOpenChannel`).
-  - Fees on Relay (KSM): Estimate the fee for `hrmp.initOpenChannel` and set `BuyExecution.fees` in the XCM to at least 2x the estimate. Use `scripts/hrmp/open_to_asset_hub.ts --estimate --relay-estimate-address <KSM-address>` to print the exact fee in plancks and KSM for current network conditions.
+  - Fees on Relay (KSM): Estimate the fee for `hrmp.initOpenChannel` and set `BuyExecution.fees` in the XCM to at least 2x the estimate. Use:
+    - `cd tools/js && node --loader ts-node/esm ./tmp/open_to_asset_hub.ts --relay-ws wss://kusama-rpc.polkadot.io --para 1000 --capacity 1000 --messageSize 1048576 --estimate`
+    - Paste the result here when proposing (plancks and KSM):
+      - Relay HRMP fee (no tip): <PASTE_PLANCKS> plancks (~<PASTE_KSM> KSM)
 - **Verification**: Confirm inbound/outbound channel status on both sides; ensure `XcmpQueue` shows traffic and message delivery.
 
 **Phase 6: Sovereign Account Move**

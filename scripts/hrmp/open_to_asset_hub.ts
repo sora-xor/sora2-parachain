@@ -39,7 +39,9 @@ async function main() {
   const capacity = Number(arg('--capacity', '1000'));
   const messageSize = Number(arg('--messageSize', '1048576'));
   const estimate = process.argv.includes('--estimate');
-  const relayEstimateAddr = estimate ? arg('--relay-estimate-address') : undefined;
+  const relayEstimateAddr = process.argv.includes('--relay-estimate-address')
+    ? arg('--relay-estimate-address')
+    : undefined;
 
   // 1) Build Relay call: hrmp.initOpenChannel(dest, capacity, messageSize)
   const relayApi = await ApiPromise.create({ provider: new WsProvider(relayWs) });
@@ -48,10 +50,11 @@ async function main() {
   console.log('Relay hrmp call hash:', relayCall.method.hash.toHex());
 
   if (estimate) {
-    if (!relayEstimateAddr) throw new Error('Provide --relay-estimate-address');
-    const info = await relayCall.paymentInfo(relayEstimateAddr);
-    // partialFee is in plancks; 1 KSM = 10^12 plancks
-    const feePlancks = info.partialFee.toBigInt();
+    // Use paymentInfo via a dummy signer address to accommodate WeightV2
+    const kr = new Keyring({ type: 'sr25519' });
+    const signer = kr.addFromUri('//Alice');
+    const info = await relayCall.paymentInfo(signer.address);
+    const feePlancks = (info.partialFee as any).toBigInt ? (info.partialFee as any).toBigInt() : BigInt(info.partialFee.toString());
     const ksm = Number(feePlancks) / 1e12;
     console.log(`Estimated relay fee (no tip): ${info.partialFee.toString()} plancks (~${ksm} KSM)`);
     console.log('Recommendation: set BuyExecution.fees to at least 2x this estimate to be safe.');
