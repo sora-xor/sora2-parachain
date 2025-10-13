@@ -34,7 +34,7 @@ use super::{
 };
 use frame_support::{
     match_types, parameter_types,
-    traits::{Everything, Nothing},
+    traits::{ContainsPair, Everything, Nothing},
 };
 use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
 use orml_xcm_support::{IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset};
@@ -201,7 +201,7 @@ pub type XcmRouter = (
 
 // Allow KSM (identified at the Relay location) when the reserve location is Kusama Asset Hub (para 1000).
 pub struct KsmFromAssetHub;
-impl xcm_builder::ContainsPair<MultiAsset, MultiLocation> for KsmFromAssetHub {
+impl ContainsPair<MultiAsset, MultiLocation> for KsmFromAssetHub {
     fn contains(asset: &MultiAsset, location: &MultiLocation) -> bool {
         let is_ksm = matches!(
             asset,
