@@ -1,5 +1,4 @@
-version: "3.5"
-name: sora2-parachain
+version: "2.4"
 
 services:
   parachain-alice:
@@ -14,14 +13,15 @@ services:
       - "9844:9844"
       - "9854:9854"
     environment:
-      - RUST_LOG=xcm=trace
+      - RUST_LOG=parachain::candidate-backing=debug,parachain::collator-protocol=debug,beefy=debug,xcm=trace
     command: [
         "--pruning", "archive",
         "--enable-offchain-indexing", "true",
-        "-d", "/data", 
-        "--alice", 
-        "--chain", "/build-spec/sora.json",
+        "-d", "/data",
         "--collator",
+        "--alice", 
+        "--force-authoring",
+        "--chain", "/build-spec/sora.json",
         "--port", "30333", 
         "--ws-port", "9844",
         "--rpc-port", "9854", 
@@ -42,10 +42,58 @@ services:
       build-spec-polkadot:
         condition: service_completed_successfully
     volumes:
-      - build-spec-data:/build-spec
-      - parachain-alice-data:/data
+      - ./build-spec-data:/build-spec
+      - ./nodes-data/parachain-alice-data:/data
     networks:
       - bridgenet
+
+  parachain-bob:
+    image: sora2/substrate-local-parachain
+    container_name: bridge-parachain-bob
+    build:
+      context: ..
+      dockerfile: bridge-docker/Dockerfile.parachain
+    restart: always
+    user: "root"
+    ports:
+      - "9845:9844"
+      - "9855:9854"
+    environment:
+      - RUST_LOG=xcm=trace
+    command: [
+        "--pruning", "archive",
+        "--enable-offchain-indexing", "true",
+        "-d", "/data",
+        "--collator",
+        "--bob",
+        "--force-authoring",
+        "--chain", "/build-spec/sora.json",
+        "--port", "30333", 
+        "--ws-port", "9844",
+        "--rpc-port", "9854", 
+        "--unsafe-ws-external",
+        "--unsafe-rpc-external",
+        "--rpc-cors", "all",
+        "--execution", "wasm", 
+        "--wasm-execution", "compiled",
+        "--",
+        "--execution", "wasm",
+        "--wasm-execution", "compiled",
+        "--chain", "/build-spec/rococo-raw.json",
+        "--port", "30343",
+        "--ws-port", "10844",
+        "--rpc-port", "10854",
+      ]
+    depends_on:
+      build-spec-polkadot:
+        condition: service_completed_successfully
+    volumes:
+      - ./build-spec-data:/build-spec
+      - ./nodes-data/parachain-bob-data:/data
+    networks:
+      - bridgenet
+    security_opt: 
+      - apparmor=docker-default
 
   relaychain-alice:
     image: sora2/substrate-local-polkadot
@@ -80,10 +128,12 @@ services:
       build-spec-polkadot:
         condition: service_completed_successfully
     volumes:
-      - build-spec-data:/build-spec
-      - relaychain-alice-data:/data
+      - ./build-spec-data:/build-spec
+      - ./nodes-data/relaychain-alice-data:/data
     networks:
       - bridgenet
+    security_opt: 
+      - apparmor=docker-default
 
   relaychain-bob:
     image: sora2/substrate-local-polkadot
@@ -118,13 +168,96 @@ services:
       build-spec-polkadot:
         condition: service_completed_successfully
     volumes:
-      - build-spec-data:/build-spec
-      - relaychain-bob-data:/data
+      - ./build-spec-data:/build-spec
+      - ./nodes-data/relaychain-bob-data:/data
     networks:
       - bridgenet
+    security_opt: 
+      - apparmor=docker-default
+
+  relaychain-dave:
+    image: sora2/substrate-local-polkadot
+    container_name: bridge-relaychain-dave
+    build:
+      context: .
+      dockerfile: Dockerfile.polkadot
+    restart: always
+    user: "root"
+    ports:
+      - "9746:9746"
+      - "9756:9756"
+    environment:
+      - RUST_LOG=xcm=trace
+    command: [
+        "--pruning", "archive",
+        "--enable-offchain-indexing", "true",
+        "-d", "/data",
+        "--dave", 
+        "--chain", "/build-spec/rococo-raw.json",
+        "--validator",
+        "--port", "30434", 
+        "--ws-port", "9746",
+        "--rpc-port", "9756", 
+        "--unsafe-ws-external",
+        "--unsafe-rpc-external",
+        "--rpc-cors", "all",
+        "--execution", "wasm", 
+        "--wasm-execution", "compiled"
+      ]
+    depends_on:
+      build-spec-polkadot:
+        condition: service_completed_successfully
+    volumes:
+      - ./build-spec-data:/build-spec
+      - ./nodes-data/relaychain-dave-data:/data
+    networks:
+      - bridgenet
+    security_opt: 
+      - apparmor=docker-default
+
+  assethub-alice:
+    image: parity/polkadot-parachain:1.3.0
+    container_name: bridge-assethub-alice
+    restart: always
+    user: "root"
+    ports:
+      - "9655:9654"
+    environment:
+      - RUST_LOG=xcm=trace
+    command: [
+        "--pruning", "archive",
+        "--enable-offchain-indexing", "true",
+        "-d", "/data", 
+        "--collator",
+        "--alice", 
+        "--force-authoring",
+        "--chain", "/build-spec/assethub.json",
+        "--port", "30533", 
+        "--rpc-port", "9654",
+        "--unsafe-rpc-external",
+        "--rpc-cors", "all",
+        "--execution", "wasm", 
+        "--wasm-execution", "compiled",
+        "--",
+        "--execution", "wasm",
+        "--wasm-execution", "compiled",
+        "--chain", "/build-spec/rococo-raw.json",
+        "--port", "30543",
+        "--rpc-port", "10654",
+      ]
+    depends_on:
+      build-spec-polkadot:
+        condition: service_completed_successfully
+    volumes:
+      - ./build-spec-data:/build-spec
+      - ./nodes-data/assethub-alice-data:/data
+    networks:
+      - bridgenet
+    security_opt: 
+      - apparmor=docker-default
 
   karura-alice:
-    image: acala/karura-node:2.11.0
+    image: acala/karura-node:2.19.0
     container_name: bridge-karura-alice
     restart: always
     user: "root"
@@ -160,11 +293,14 @@ services:
       build-spec-polkadot:
         condition: service_completed_successfully
     volumes:
-      - build-spec-data:/build-spec
-      - karura-alice-data:/data
+      - ./build-spec-data:/build-spec
+      - ./nodes-data/karura-alice-data:/data
     networks:
       - bridgenet
+    security_opt: 
+      - apparmor=docker-default
 
+# Uncomment this and 'depends' sections if you need to generate a new chainspecs
   build-spec-sora:
     image: sora2/substrate-local-parachain
     container_name: bridge-parachain-build-spec-sora
@@ -176,20 +312,35 @@ services:
     user: "root"
     command: /build-spec-scripts/sora.sh
     volumes:
-      - build-spec-data:/build-spec
+      - ./build-spec-data:/build-spec
       - ./build-spec-scripts:/build-spec-scripts
     networks:
       - bridgenet
 
   build-spec-karura:
-    image: acala/karura-node:2.11.0
+    image: acala/karura-node:2.19.0
     container_name: bridge-parachain-build-spec-karura
     working_dir: /build-spec
     entrypoint: sh
     user: "root"
     command: /build-spec-scripts/karura.sh
     volumes:
-      - build-spec-data:/build-spec
+      - ./build-spec-data:/build-spec
+      - ./build-spec-scripts:/build-spec-scripts
+    networks:
+      - bridgenet
+    security_opt: 
+      - apparmor=docker-default
+
+  build-spec-assethub:
+    image: parity/polkadot-parachain:1.3.0
+    container_name: bridge-parachain-build-spec-assethub
+    working_dir: /build-spec
+    entrypoint: sh
+    user: "root"
+    command: /build-spec-scripts/assethub.sh
+    volumes:
+      - ./build-spec-data:/build-spec
       - ./build-spec-scripts:/build-spec-scripts
     networks:
       - bridgenet
@@ -210,17 +361,20 @@ services:
       build-spec-karura:
         condition: service_completed_successfully
     volumes:
-      - build-spec-data:/build-spec
+      - ./build-spec-data:/build-spec
       - ./build-spec-scripts:/build-spec-scripts
     networks:
       - bridgenet
+    security_opt:
+      - apparmor=docker-default
 
 volumes:
-  parachain-alice-data: null
-  relaychain-alice-data: null
-  relaychain-bob-data: null
-  karura-alice-data: null
-  build-spec-data: null
+  parachain-alice-data:
+  relaychain-alice-data:
+  relaychain-bob-data:
+  karura-alice-data:
+  assethub-alice-data:
+  build-spec-data:
 
 networks:
   bridgenet:
