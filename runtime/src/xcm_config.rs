@@ -205,7 +205,7 @@ impl ContainsPair<MultiAsset, MultiLocation> for KsmFromAssetHub {
     fn contains(asset: &MultiAsset, location: &MultiLocation) -> bool {
         let is_ksm = matches!(
             asset,
-            MultiAsset { id: AssetId::Concrete(MultiLocation { parents: 1, interior: Here }), fun: Fungible(_) }
+            MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: Here }), fun: Fungible(_) }
         );
         let is_from_asset_hub = matches!(
             location,
