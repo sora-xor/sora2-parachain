@@ -38,6 +38,7 @@ use orml_traits::MultiCurrency;
 use sp_runtime::{traits::AccountIdConversion, AccountId32};
 use xcm_simulator::TestExt;
 use crate::xcm_config::KsmFromAssetHub;
+use frame_support::traits::ContainsPair;
 
 fn para_x_account() -> AccountId32 {
     ParaId::from(1).into_account_truncating()
@@ -70,7 +71,7 @@ fn ksm_from_asset_hub_reserve_rule() {
     // Location is Relay (parents=1, Here)
     let relay_loc = MultiLocation::new(1, Here);
     // Non-fungible asset (should be rejected regardless)
-    let nft_like = MultiAsset { id: Concrete(MultiLocation::new(1, Here)), fun: NonFungible(GeneralIndex(1)) };
+    let nft_like = MultiAsset { id: Concrete(MultiLocation::new(1, Here)), fun: NonFungible(AssetInstance::Index(1)) };
 
     assert!(KsmFromAssetHub::contains(&ksm, &ah_loc));
     assert!(!KsmFromAssetHub::contains(&ksm, &relay_loc));
