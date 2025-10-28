@@ -18,3 +18,7 @@
 run
 nodes-data
 build-spec-data
+
+# JS vendor deps
+**/node_modules/
+tools/js/node_modules/
