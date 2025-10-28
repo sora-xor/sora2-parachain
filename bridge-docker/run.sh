@@ -2,15 +2,24 @@
 set -e
 
 docker(){
+    # Security hardening: do NOT auto-install Docker or Compose.
+    # Implicitly downloading and executing remote installers as root is a supply-chain risk.
+    # Instead, fail fast with clear guidance.
     if ! command -v docker &> /dev/null; then
-        echo "Docker isn't installed. Installing..."
-        curl -fsSL https://get.docker.com -o get-docker.sh
-        sh get-docker.sh
+        echo "Error: Docker is not installed or not on PATH." >&2
+        echo "Please install Docker from https://docs.docker.com/get-docker/ and retry." >&2
+        exit 1
     fi
     if ! command -v docker-compose &> /dev/null; then
-        echo "Docker Compose isn't installed. Installing..."
-        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose
+        # Support Compose v2 via 'docker compose'
+        if docker compose version &>/dev/null; then
+            # Define a simple shim for docker-compose -> docker compose
+            docker-compose() { docker compose "$@"; }
+        else
+            echo "Error: Docker Compose is not installed." >&2
+            echo "Install Compose v2 (preferred) or v1. See: https://docs.docker.com/compose/" >&2
+            exit 1
+        fi
     fi
 }
 
