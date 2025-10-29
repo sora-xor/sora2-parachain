@@ -199,13 +199,15 @@ pub type XcmRouter = (
     XcmpQueue,
 );
 
-// Allow KSM (identified at the Relay location) when the reserve location is Kusama Asset Hub (para 1000).
+// Allow KSM (identified by an Asset Hub path) when the reserve location is Kusama Asset Hub (para 1000).
 pub struct KsmFromAssetHub;
 impl ContainsPair<MultiAsset, MultiLocation> for KsmFromAssetHub {
     fn contains(asset: &MultiAsset, location: &MultiLocation) -> bool {
+        // After the Asset Hub migration, KSM is identified by a path under the Asset Hub parachain,
+        // e.g. parents:1, interior: X2(Parachain(1000), <asset_id_junction>). Match generically.
         let is_ksm = matches!(
             asset,
-            MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: Here }), fun: Fungible(_) }
+            MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: X2(Parachain(1000), _) }), fun: Fungible(_) }
         );
         let is_from_asset_hub = matches!(
             location,
