@@ -16,6 +16,7 @@ then builds a pallet_xcm::send extrinsic payload for SORA. You can either:
 Usage (build payload only):
   TS_NODE_TRANSPILE_ONLY=1 ts-node scripts/hrmp/open_to_asset_hub.ts \
     --relay-ws wss://kusama-rpc.polkadot.io \
+    --sora-ws wss://kusama.sora.org \
     --para 1000 --capacity 1000 --messageSize 1048576 \
     [--fee-plancks 20000000000 | --fee-multiplier 2.0] \
     [--weight-multiplier 1.2]
@@ -47,8 +48,8 @@ function arg(name: string, def?: string) {
 
 async function main() {
   const relayWs = arg('--relay-ws');
-  const soraWs = process.argv.includes('--submit') ? arg('--sora-ws') : undefined;
   const submit = process.argv.includes('--submit');
+  const soraWs = (submit || process.argv.includes('--sora-ws')) ? arg('--sora-ws') : undefined;
   const seed = submit ? arg('--seed') : undefined;
   const para = Number(arg('--para'));
   const capacity = Number(arg('--capacity', '1000'));
@@ -112,13 +113,18 @@ async function main() {
 
   // 3) Build SORA extrinsic: pallet_xcm::send(dest, message)
   if (!submit) {
-    // Build a SCALE-encoded call using a dummy API just to print extrinsic payload
-    // Users should create preimage from: polkadotXcm.send(dest, xcm)
-    const anyApi = await ApiPromise.create({ provider: new WsProvider(relayWs) });
-    const call = (anyApi as any).tx.polkadotXcm.send(dest, xcm);
+    if (!soraWs) {
+      console.error('Error: --sora-ws is required to encode the preimage with SORA metadata.');
+      console.error('Provide a SORA endpoint via --sora-ws to build a valid polkadotXcm.send call.');
+      await relayApi.disconnect();
+      process.exit(2);
+    }
+    // Build a SCALE-encoded call using SORA metadata so preimage decodes on-chain
+    const soraMetaApi = await ApiPromise.create({ provider: new WsProvider(soraWs) });
+    const call = (soraMetaApi as any).tx.polkadotXcm.send(dest, xcm);
     console.log('Use this call for a SORA democracy preimage (polkadotXcm.send):');
     console.log(call.method.toHex());
-    await anyApi.disconnect();
+    await soraMetaApi.disconnect();
     await relayApi.disconnect();
     return;
   }
@@ -141,4 +147,3 @@ async function main() {
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
-

@@ -8,10 +8,11 @@ Key points (security + compatibility):
 - Fee selection: By default the script multiplies the Relay fee estimate by `--fee-multiplier` (default `2.0`) and encodes that amount into `BuyExecution.fees`. You can override with `--fee-plancks`.
 
 Usage (build payload only):
-- Print a `polkadotXcm.send(dest, xcm)` extrinsic you can submit as a SORA democracy preimage:
+- Print a `polkadotXcm.send(dest, xcm)` extrinsic you can submit as a SORA democracy preimage (encoded with SORA metadata):
 
   TS_NODE_TRANSPILE_ONLY=1 ts-node scripts/hrmp/open_to_asset_hub.ts \
     --relay-ws wss://kusama-rpc.polkadot.io \
+    --sora-ws wss://kusama.sora.org \
     --para 1000 --capacity 1000 --messageSize 1048576 \
     [--fee-plancks 20000000000 | --fee-multiplier 2.0] \
     [--weight-multiplier 1.2]
@@ -43,4 +44,3 @@ Message template (XCM v3):
 Operational notes:
 - Ensure the SORA sovereign account on Kusama holds enough KSM to cover `BuyExecution.fees`.
 - If Relay weight or fees change due to runtime upgrades, adjust `--fee-multiplier` or pass `--fee-plancks` explicitly. The script already derives weight to avoid hard-coded caps.
-
