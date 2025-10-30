@@ -219,10 +219,21 @@ impl ContainsPair<MultiAsset, MultiLocation> for KsmFromAssetHub {
                 asset,
                 MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: X3(Parachain(1000), PalletInstance(50), GeneralIndex(0)) }), fun: Fungible(_) }
             );
-        let is_from_asset_hub = matches!(
-            location,
-            MultiLocation { parents: 1, interior: X1(Parachain(1000)) }
-        );
+        let is_from_asset_hub =
+            // Parachain-only path (some contexts may provide this)
+            matches!(
+                location,
+                MultiLocation { parents: 1, interior: X1(Parachain(1000)) }
+            ) ||
+            // Canonical Asset Hub reserve paths for KSM
+            matches!(
+                location,
+                MultiLocation { parents: 1, interior: X2(Parachain(1000), GeneralIndex(0)) }
+            ) ||
+            matches!(
+                location,
+                MultiLocation { parents: 1, interior: X3(Parachain(1000), PalletInstance(50), GeneralIndex(0)) }
+            );
         is_ksm && is_from_asset_hub
     }
 }
