@@ -64,15 +64,33 @@ async function main() {
 
 async function signAndSend(api: ApiPromise, pair: any, tx: any) {
   return new Promise<string>((resolve, reject) => {
+    let settled = false;
     tx.signAndSend(pair, (res: any) => {
       if (res.status.isInBlock) {
         console.log('In block', res.status.asInBlock.toHex());
       }
-      if (res.status.isFinalized) {
-        console.log('Finalized', res.status.asFinalized.toHex());
-        resolve(res.txHash.toHex());
+      if (res.dispatchError && !settled) {
+        let msg = res.dispatchError.toString();
+        if (res.dispatchError.isModule) {
+          try {
+            const meta = api.registry.findMetaError(res.dispatchError.asModule);
+            msg = `${meta.section}.${meta.name}: ${meta.docs.join(' ')}`;
+          } catch (_) {}
+        }
+        settled = true;
+        return reject(new Error(`DispatchError: ${msg}`));
       }
-    }).catch(reject);
+      if (res.status.isFinalized && !settled) {
+        settled = true;
+        console.log('Finalized', res.status.asFinalized.toHex());
+        return resolve(res.txHash.toHex());
+      }
+    }).catch((e: any) => {
+      if (!settled) {
+        settled = true;
+        reject(e);
+      }
+    });
   });
 }
 
@@ -84,4 +102,3 @@ function getArg(name: string, def?: string): string {
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
-
