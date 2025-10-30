@@ -203,12 +203,22 @@ pub type XcmRouter = (
 pub struct KsmFromAssetHub;
 impl ContainsPair<MultiAsset, MultiLocation> for KsmFromAssetHub {
     fn contains(asset: &MultiAsset, location: &MultiLocation) -> bool {
-        // KSM remains identified by the relay-native location; only the reserve location migrates to Asset Hub.
-        // Accept when the asset is relay-native KSM and the reserve location indicates Asset Hub (para 1000).
-        let is_ksm = matches!(
-            asset,
-            MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: Here }), fun: Fungible(_) }
-        );
+        // KSM may appear as relay-native (parents:1, Here) while reserve migrates to Asset Hub,
+        // or be encoded canonically under Asset Hub as GeneralIndex(0) (optionally with PalletInstance(50)).
+        // Accept either concrete ID, but only when the reserve location indicates Asset Hub (para 1000).
+        let is_ksm =
+            matches!(
+                asset,
+                MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: Here }), fun: Fungible(_) }
+            ) ||
+            matches!(
+                asset,
+                MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: X2(Parachain(1000), GeneralIndex(0)) }), fun: Fungible(_) }
+            ) ||
+            matches!(
+                asset,
+                MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: X3(Parachain(1000), PalletInstance(50), GeneralIndex(0)) }), fun: Fungible(_) }
+            );
         let is_from_asset_hub = matches!(
             location,
             MultiLocation { parents: 1, interior: X1(Parachain(1000)) }

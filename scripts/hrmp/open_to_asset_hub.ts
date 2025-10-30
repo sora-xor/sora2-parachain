@@ -133,13 +133,26 @@ async function main() {
   const call = soraApi.tx.polkadotXcm.send(dest, xcm);
   const pair = new Keyring({ type: 'sr25519' }).addFromUri(seed!);
   await new Promise<void>((resolve, reject) => {
+    let settled = false;
     call.signAndSend(pair, (res) => {
       if (res.status.isInBlock) console.log('In block', res.status.asInBlock.toHex());
-      if (res.status.isFinalized) {
+      if (res.dispatchError && !settled) {
+        let msg = res.dispatchError.toString();
+        try {
+          if ((res.dispatchError as any).isModule) {
+            const meta = (soraApi as any).registry.findMetaError((res.dispatchError as any).asModule);
+            msg = `${meta.section}.${meta.name}: ${meta.docs.join(' ')}`;
+          }
+        } catch {}
+        settled = true;
+        return reject(new Error(`DispatchError: ${msg}`));
+      }
+      if (res.status.isFinalized && !settled) {
+        settled = true;
         console.log('Finalized', res.status.asFinalized.toHex());
         resolve();
       }
-    }).catch(reject);
+    }).catch((e) => { if (!settled) { settled = true; reject(e); } });
   });
 
   await soraApi.disconnect();
