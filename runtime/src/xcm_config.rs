@@ -199,24 +199,16 @@ pub type XcmRouter = (
     XcmpQueue,
 );
 
-// Allow KSM (identified by an Asset Hub path) when the reserve location is Kusama Asset Hub (para 1000).
+// Allow relay-native KSM (parents:1, Here) when the reserve location is Kusama Asset Hub (para 1000).
 pub struct KsmFromAssetHub;
 impl ContainsPair<MultiAsset, MultiLocation> for KsmFromAssetHub {
     fn contains(asset: &MultiAsset, location: &MultiLocation) -> bool {
-        // After the Asset Hub migration, KSM is identified by a specific asset ID on Kusama Asset Hub.
-        // Match the exact multilocation for KSM and do NOT wildcard the asset junction to avoid
-        // trusting arbitrary Asset Hub assets.
-        let is_ksm =
-            // Common encoding: AssetHub GeneralIndex(0)
-            matches!(
-                asset,
-                MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: X2(Parachain(1000), GeneralIndex(0)) }), fun: Fungible(_) }
-            ) ||
-            // Some chains include the pallet instance explicitly (Assets pallet is typically 50)
-            matches!(
-                asset,
-                MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: X3(Parachain(1000), PalletInstance(50), GeneralIndex(0)) }), fun: Fungible(_) }
-            );
+        // KSM remains identified by the relay-native location; only the reserve location migrates to Asset Hub.
+        // Accept when the asset is relay-native KSM and the reserve location indicates Asset Hub (para 1000).
+        let is_ksm = matches!(
+            asset,
+            MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: Here }), fun: Fungible(_) }
+        );
         let is_from_asset_hub = matches!(
             location,
             MultiLocation { parents: 1, interior: X1(Parachain(1000)) }
