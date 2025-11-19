@@ -108,11 +108,11 @@
 - **Referendum**: Launch democracy proposal (minimum deposit 1 XOR) and schedule enactment. Use Council/Technical Committee fast-track if Asset Hub alignment is urgent.
 - **Communication**: Announce Asset Hub migration timeline to wallets/exchanges so DOT routes shift away from Relay sovereign accounts.
 
-**Phase 5: HRMP to Asset Hub (Polkadot)**
+**Phase 5: HRMP to Asset Hub (Polkadot) — Completed**
 
-- **Channel open**: From SORA Polkadot (para 2025), send a single XCM to the Relay requesting `hrmp.initOpenChannel(para=1000, max_capacity=<tuned>, max_message_size=1_048_576)`. System parachains auto-accept.
-- **Funding**: Use `scripts/hrmp/open_to_asset_hub.ts --relay-ws wss://rpc.polkadot.io --para 1000 ...` to build the WithdrawAsset → BuyExecution → Transact flow with DOT fees. Set `BuyExecution.fees` to ≥2× the relay estimate.
-- **Verification**: Watch `hrmpAcceptedChannel` events on both Asset Hub and SORA Polkadot; confirm `XcmpQueue` reports the channel as `Open`.
+- **Channel open**: ✔️ Verified on 2025-11-19 via `npx @polkadot/api-cli --ws wss://rpc.polkadot.io query.hrmp.hrmpChannels '[2025,1000]'`, which reports `maxCapacity=1000`, `maxMessageSize=102_400`, and `mqcHead=0x6661…b48` for the `(2025 → 1000)` channel, confirming the HRMP lane to Polkadot Asset Hub is active.
+- **Funding**: Use `scripts/hrmp/open_to_asset_hub.ts --relay-ws wss://rpc.polkadot.io --para 1000 ...` to build the WithdrawAsset → BuyExecution → Transact flow with DOT fees. Set `BuyExecution.fees` to ≥2× the relay estimate for any future channel adjustments.
+- **Monitoring**: Continue watching `hrmp.hrmpChannels([2025,1000])` and Asset Hub events to ensure throughput/limits remain aligned with demand.
 
 **Phase 6: Sovereign DOT Move**
 
