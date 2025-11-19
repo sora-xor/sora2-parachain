@@ -114,6 +114,13 @@
 - **Funding**: Use `scripts/hrmp/open_to_asset_hub.ts --relay-ws wss://rpc.polkadot.io --para 1000 ...` to build the WithdrawAsset → BuyExecution → Transact flow with DOT fees. Set `BuyExecution.fees` to ≥2× the relay estimate for any future channel adjustments.
 - **Monitoring**: Continue watching `hrmp.hrmpChannels([2025,1000])` and Asset Hub events to ensure throughput/limits remain aligned with demand.
 
+**Phase 5b: HRMP to Coretime (Polkadot) for Auto-Renewal**
+
+- **Objective**: Mirror the Kusama flow by opening a channel from SORA Polkadot (para 2025) to the Polkadot Coretime system parachain (check chain state; currently para 1001) so the automatic coretime renewal process described in [the Coretime guide](https://docs.polkadot.com/develop/parachains/deployment/coretime-renewal/) can operate over HRMP.
+- **Channel request**: Use the HRMP helper with `--para <coretime_para_id>` to send `hrmp.initOpenChannel` (capacity 1000, message size 1_048_576) from Root. System parachains auto-accept; ensure DOT fees are withdrawn via WithdrawAsset + BuyExecution.
+- **Renewal workflow**: After the channel opens, follow the Coretime renewal guide to (a) configure the renewal pallet on SORA Polkadot, (b) fund the Coretime parachain account for periodic purchases, and (c) monitor renewal status via `coretimeAssignments` RPCs.
+- **Monitoring**: Periodically query `hrmp.hrmpChannels([2025,<coretime_para_id>])` and the Coretime chain’s events to confirm execution capacity remains within headroom; schedule governance follow-ups if capacity increases are required.
+
 **Phase 6: Sovereign DOT Move**
 
 - **Withdraw & deposit**: From Root, send an XCM to the Relay withdrawing DOT from SORA’s sovereign relay account and depositing it into the Asset Hub sovereign location. Include Asset Hub `BuyExecution` and proof-size limits sized per Statemint 2.0.2 guidance.
