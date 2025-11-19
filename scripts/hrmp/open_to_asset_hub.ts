@@ -1,6 +1,6 @@
 /*
-Build an XCM (v3) to open an HRMP channel from SORA Kusama (para 2011)
-to Kusama Asset Hub (para 1000) by sending a Transact to the Relay.
+Build an XCM (v3) to open an HRMP channel from a SORA parachain (Kusama para 2011
+or Polkadot para 2025) to Asset Hub (para 1000) by sending a Transact to the Relay.
 
 Fixes per security review:
 - Add WithdrawAsset + BuyExecution before Transact so execution is funded on the Relay.
@@ -31,8 +31,9 @@ Usage (submit on SORA, if permitted):
     --seed "//Alice" --submit
 
 Notes:
-- Fees are paid with KSM withdrawn from SORA’s sovereign account on the Relay (parents:1, interior:Here).
-  Ensure that sovereign account holds enough KSM before sending.
+- Fees are paid with the relay-native asset (KSM on Kusama, DOT on Polkadot) withdrawn from
+  SORA’s sovereign account on the Relay (parents:1, interior:Here). Ensure that sovereign
+  account holds enough balance before sending.
 - Use --estimate to print fee estimates from the Relay without building a call.
 */
 
@@ -58,6 +59,8 @@ async function main() {
   const feePlancksArg = process.argv.includes('--fee-plancks') ? BigInt(arg('--fee-plancks')) : undefined;
   const feeMultiplier = Number(arg('--fee-multiplier', '2.0'));
   const weightMultiplier = Number(arg('--weight-multiplier', '1.2'));
+  const relaySymbol = arg('--relay-symbol', 'KSM');
+  const relayDecimals = Number(arg('--relay-decimals', '12'));
 
   // 1) Build Relay call: hrmp.initOpenChannel(dest, capacity, messageSize)
   const relayApi = await ApiPromise.create({ provider: new WsProvider(relayWs) });
@@ -75,8 +78,9 @@ async function main() {
   const proofSize = estWeight?.proofSize ? BigInt(estWeight.proofSize.toString()) : BigInt(0);
 
   if (estimate) {
-    const ksm = Number(rawFeePlancks) / 1e12;
-    console.log(`Estimated relay fee (no tip): ${rawFeePlancks.toString()} plancks (~${ksm} KSM)`);
+    const divisor = Number.isFinite(relayDecimals) ? Math.pow(10, relayDecimals) : 1;
+    const human = divisor > 0 ? Number(rawFeePlancks) / divisor : Number(rawFeePlancks);
+    console.log(`Estimated relay fee (no tip): ${rawFeePlancks.toString()} plancks (~${human} ${relaySymbol})`);
     console.log(`Estimated weight: refTime=${refTime.toString()}, proofSize=${proofSize.toString()}`);
     console.log(`Recommendation: set BuyExecution.fees to at least ${feeMultiplier}x this estimate and weight multiplier ~${weightMultiplier}.`);
     await relayApi.disconnect();

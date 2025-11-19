@@ -29,16 +29,20 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use super::*;
+#[cfg(feature = "polkadot")]
+use crate::xcm_config::DotFromAssetHub;
+use crate::xcm_config::KsmFromAssetHub;
 use bridge_types::{
     substrate::ParachainAppCall, traits::OutboundChannel, GenericTimepoint, SubNetworkId,
 };
 use cumulus_primitives_core::ParaId;
-use frame_support::{assert_ok, traits::Currency};
+use frame_support::{
+    assert_ok,
+    traits::{ContainsPair, Currency},
+};
 use orml_traits::MultiCurrency;
 use sp_runtime::{traits::AccountIdConversion, AccountId32};
 use xcm_simulator::TestExt;
-use crate::xcm_config::KsmFromAssetHub;
-use frame_support::traits::ContainsPair;
 
 fn para_x_account() -> AccountId32 {
     ParaId::from(1).into_account_truncating()
@@ -73,13 +77,37 @@ fn ksm_from_asset_hub_reserve_rule() {
     // Location is Relay (parents=1, Here)
     let relay_loc = MultiLocation::new(1, Here);
     // Non-fungible asset (should be rejected regardless)
-    let nft_like = MultiAsset { id: Concrete(MultiLocation::new(1, Here)), fun: NonFungible(AssetInstance::Index(1)) };
+    let nft_like = MultiAsset {
+        id: Concrete(MultiLocation::new(1, Here)),
+        fun: NonFungible(AssetInstance::Index(1)),
+    };
 
     assert!(KsmFromAssetHub::contains(&ksm, &ah_loc));
     assert!(KsmFromAssetHub::contains(&ksm, &ah_loc_x2));
     assert!(KsmFromAssetHub::contains(&ksm, &ah_loc_x3));
     assert!(!KsmFromAssetHub::contains(&ksm, &relay_loc));
     assert!(!KsmFromAssetHub::contains(&nft_like, &ah_loc));
+}
+
+#[cfg(feature = "polkadot")]
+#[test]
+fn dot_from_asset_hub_reserve_rule() {
+    // DOT assets mirror KSM reserve rules but target Polkadot Asset Hub.
+    let dot = MultiAsset { id: Concrete(MultiLocation::new(1, Here)), fun: Fungible(500) };
+    let ah_loc = MultiLocation::new(1, X1(Parachain(1000)));
+    let ah_loc_x2 = MultiLocation::new(1, X2(Parachain(1000), GeneralIndex(0)));
+    let ah_loc_x3 = MultiLocation::new(1, X3(Parachain(1000), PalletInstance(50), GeneralIndex(0)));
+    let relay_loc = MultiLocation::new(1, Here);
+    let nft_like = MultiAsset {
+        id: Concrete(MultiLocation::new(1, Here)),
+        fun: NonFungible(AssetInstance::Index(1)),
+    };
+
+    assert!(DotFromAssetHub::contains(&dot, &ah_loc));
+    assert!(DotFromAssetHub::contains(&dot, &ah_loc_x2));
+    assert!(DotFromAssetHub::contains(&dot, &ah_loc_x3));
+    assert!(!DotFromAssetHub::contains(&dot, &relay_loc));
+    assert!(!DotFromAssetHub::contains(&nft_like, &ah_loc));
 }
 
 fn relay_native_asset_id() -> crate::H256 {

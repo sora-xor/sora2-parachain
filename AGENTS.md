@@ -36,6 +36,7 @@
 
 - **Routing**: Upward messages via UMP to the relay chain; lateral via XCMP (`XcmpQueue`).
 - **Reserve handling**: The runtime trusts native assets via `IsReserve = MultiNativeAsset<AbsoluteReserveProvider>`. Adjust this when migrating KSM/DOT reserve to Asset Hub.
+- **Polkadot Asset Hub**: DOT reserve handling now targets Asset Hub (para 1000) per [runtimes v2.0.2](https://github.com/polkadot-fellows/runtimes/releases/tag/v2.0.2); the runtime’s `DotFromAssetHub` guard mirrors the Kusama logic so relay-native DOT is accepted only when the reserve location resolves to Asset Hub.
 - **HRMP**: Channels to system parachains (e.g., Asset Hub) are opened by sending an XCM to the relay chain requesting an HRMP open; system parachains auto-accept under current policies.
 
 **Developer Notes**
@@ -43,4 +44,3 @@
 - **Build**: `cargo build --release --features kusama` or `--features polkadot` to target each network.
 - **Launch locally**: See `polkadot-launch/config.json` and `bridge-docker/` for local/devnet topologies and spec generation scripts.
 - **Common paths**: Runtime (`runtime/src/*.rs`), XCM config (`runtime/src/xcm_config.rs`), chain-spec (`node/src/chain_spec.rs`), specs (`node/res/*.json`).
-
