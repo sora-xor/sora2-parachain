@@ -79,3 +79,62 @@
 
 - Changing the reserve to Asset Hub (DOT; adapt for KSM): https://hackmd.io/@n9QBuDYOQXG-nWCBrwx8YQ/HkYVQFS8ke
 - Opening HRMP channels to system parachains: https://docs.polkadot.com/tutorials/interoperability/xcm-channels/para-to-system/
+
+**SORA Polkadot Milestones**
+
+- **Objective**: Move DOT reserve handling from the Polkadot Relay Chain to Polkadot Asset Hub (Statemint) as of [runtimes v2.0.2](https://github.com/polkadot-fellows/runtimes/releases/tag/v2.0.2), open HRMP to Asset Hub, and validate staking/compatibility fixes introduced in that release.
+
+**Phase 1: Analysis & Design**
+
+- **Inventory**: Audit `runtime/src/xcm_config.rs` to ensure `DotFromAssetHub` mirrors the new `AssetHubNativeAsset` guard, `IsReserve` trusts Asset Hub, and `LocalAssetTransactor`/`SAFE_XCM_VERSION` remain aligned with Polkadot (XCM v3).
+- **Target reserve**: Use Polkadot Asset Hub (`ParaId 1000`, `statemint-2000002`) as the reserve location for DOT; stop accepting Relay-only reserves.
+- **Bridging impact**: Confirm bridge pallets (`BeefyLightClient`, `substrate_bridge_channel`, `XCMApp`) do not assume relay-resident DOT balances.
+
+**Phase 2: Runtime Change**
+
+- **Asset guard**: Include `DotFromAssetHub` in the Polkadot `Reserves` tuple so relay-native DOT is only trusted when the reserve location resolves to Asset Hub paths (`X1`, `X2`, `X3` junctions that terminate at Parachain 1000 / GeneralIndex(0)).
+- **Version bump**: Increment `spec_version` for the Polkadot build so governance can enact the upgrade and wallets pick up the DOT reserve migration.
+- **Release alignment**: Track Statemint `core_version statemint-2000002` for compatibility; ensure metadata/extrinsics remain V14 so parachain messaging to Asset Hub 2.0.2 succeeds.
+
+**Phase 3: Testing**
+
+- **Unit/XCM tests**: Extend `runtime/src/xcm_tests` with `dot_from_asset_hub_reserve_rule` covering relay-native DOT, canonical Asset Hub IDs, and reserve location guards.
+- **try-runtime**: Run `cargo try-runtime --features polkadot on-runtime-upgrade` with a recent SORA Polkadot state snapshot to verify storage invariants.
+- **Asset Hub handshake**: Dry-run DOT reserve transfers using `orml_xtokens` + XCM simulator to confirm `IsReserve` accepts Asset Hub DOT and rejects Relay-only DOT.
+
+**Phase 4: Governance & Upgrade**
+
+- **Preimage**: Submit the new Wasm that includes `DotFromAssetHub` + spec bump as a democracy preimage on SORA Polkadot.
+- **Referendum**: Launch democracy proposal (minimum deposit 1 XOR) and schedule enactment. Use Council/Technical Committee fast-track if Asset Hub alignment is urgent.
+- **Communication**: Announce Asset Hub migration timeline to wallets/exchanges so DOT routes shift away from Relay sovereign accounts.
+
+**Phase 5: HRMP to Asset Hub (Polkadot) — Completed**
+
+- **Channel open**: ✔️ Verified on 2025-11-19 via `npx @polkadot/api-cli --ws wss://rpc.polkadot.io query.hrmp.hrmpChannels '[2025,1000]'`, which reports `maxCapacity=1000`, `maxMessageSize=102_400`, and `mqcHead=0x6661…b48` for the `(2025 → 1000)` channel, confirming the HRMP lane to Polkadot Asset Hub is active.
+- **Funding**: Use `scripts/hrmp/open_to_asset_hub.ts --relay-ws wss://rpc.polkadot.io --para 1000 ...` to build the WithdrawAsset → BuyExecution → Transact flow with DOT fees. Set `BuyExecution.fees` to ≥2× the relay estimate for any future channel adjustments.
+- **Monitoring**: Continue watching `hrmp.hrmpChannels([2025,1000])` and Asset Hub events to ensure throughput/limits remain aligned with demand.
+
+**Phase 5b: HRMP to Coretime (Polkadot) for Auto-Renewal**
+
+- **Objective**: Mirror the Kusama flow by opening a channel from SORA Polkadot (para 2025) to the Polkadot Coretime system parachain (check chain state; currently para 1001) so the automatic coretime renewal process described in [the Coretime guide](https://docs.polkadot.com/develop/parachains/deployment/coretime-renewal/) can operate over HRMP.
+- **Channel request**: Use the HRMP helper with `--para <coretime_para_id>` to send `hrmp.initOpenChannel` (capacity 1000, message size 1_048_576) from Root. System parachains auto-accept; ensure DOT fees are withdrawn via WithdrawAsset + BuyExecution.
+- **Renewal workflow**: After the channel opens, follow the Coretime renewal guide to (a) configure the renewal pallet on SORA Polkadot, (b) fund the Coretime parachain account for periodic purchases, and (c) monitor renewal status via `coretimeAssignments` RPCs.
+- **Monitoring**: Periodically query `hrmp.hrmpChannels([2025,<coretime_para_id>])` and the Coretime chain’s events to confirm execution capacity remains within headroom; schedule governance follow-ups if capacity increases are required.
+
+**Phase 6: Sovereign DOT Move**
+
+- **Withdraw & deposit**: From Root, send an XCM to the Relay withdrawing DOT from SORA’s sovereign relay account and depositing it into the Asset Hub sovereign location. Include Asset Hub `BuyExecution` and proof-size limits sized per Statemint 2.0.2 guidance.
+- **Accounting**: After migration, verify the Relay sovereign account is near-zero while the Asset Hub sovereign account holds the DOT reserve used for reserve transfers.
+
+**Phase 7: Compatibility & Apps**
+
+- **Staking & deposits**: Re-test DOT staking flows that rely on Statemint 2.0.2 fixes (invulnerable deposit, XCM staking) to ensure SORA-origin messages succeed.
+- **Wallets/UI**: Update explorers and wallets to fetch DOT balances from Asset Hub rather than Relay accounts; highlight Asset Hub runtime hash `0xe2af694d7e9f890e...` for monitoring.
+- **Monitoring**: Track HRMP queues, XCM `VersionNotifiers`, and Statemint runtime upgrades so SORA Polkadot stays in sync with new releases.
+
+**Phase 8: Timeline**
+
+- **T0**: Runtime diff + try-runtime validated.
+- **T0 + 1w**: Governance submission + communications.
+- **T0 + 2w**: Runtime enactment, HRMP open, sovereign DOT move.
+- **Post**: Audit + docs update; plan for next Statemint release if required.
