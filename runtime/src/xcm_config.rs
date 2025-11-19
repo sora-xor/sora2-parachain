@@ -34,7 +34,7 @@ use super::{
 };
 use frame_support::{
     match_types, parameter_types,
-    traits::{Everything, Nothing},
+    traits::{ContainsPair, Everything, Nothing},
 };
 use orml_traits::{location::AbsoluteReserveProvider, parameter_type_with_key};
 use orml_xcm_support::{IsNativeConcrete, MultiCurrencyAdapter, MultiNativeAsset};
@@ -163,7 +163,9 @@ impl xcm_executor::Config for XcmConfig {
     // How to withdraw and deposit an asset.
     type AssetTransactor = LocalAssetTransactor;
     type OriginConverter = XcmOriginToTransactDispatchOrigin;
-    type IsReserve = MultiNativeAsset<AbsoluteReserveProvider>;
+    // Reserve locations the chain trusts.
+    // Keep native reserves via MultiNativeAsset and explicitly trust KSM from Kusama Asset Hub.
+    type IsReserve = Reserves;
     type IsTeleporter = (); // Teleporting is disabled.
     type Barrier = Barrier;
     type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
@@ -195,6 +197,53 @@ pub type XcmRouter = (
     cumulus_primitives_utility::ParentAsUmp<ParachainSystem, (), ()>,
     // ..and XCMP to communicate with the sibling chains.
     XcmpQueue,
+);
+
+// Allow relay-native KSM (parents:1, Here) when the reserve location is Kusama Asset Hub (para 1000).
+pub struct KsmFromAssetHub;
+impl ContainsPair<MultiAsset, MultiLocation> for KsmFromAssetHub {
+    fn contains(asset: &MultiAsset, location: &MultiLocation) -> bool {
+        // KSM may appear as relay-native (parents:1, Here) while reserve migrates to Asset Hub,
+        // or be encoded canonically under Asset Hub as GeneralIndex(0) (optionally with PalletInstance(50)).
+        // Accept either concrete ID, but only when the reserve location indicates Asset Hub (para 1000).
+        let is_ksm =
+            matches!(
+                asset,
+                MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: Here }), fun: Fungible(_) }
+            ) ||
+            matches!(
+                asset,
+                MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: X2(Parachain(1000), GeneralIndex(0)) }), fun: Fungible(_) }
+            ) ||
+            matches!(
+                asset,
+                MultiAsset { id: Concrete(MultiLocation { parents: 1, interior: X3(Parachain(1000), PalletInstance(50), GeneralIndex(0)) }), fun: Fungible(_) }
+            );
+        let is_from_asset_hub =
+            // Parachain-only path (some contexts may provide this)
+            matches!(
+                location,
+                MultiLocation { parents: 1, interior: X1(Parachain(1000)) }
+            ) ||
+            // Canonical Asset Hub reserve paths for KSM
+            matches!(
+                location,
+                MultiLocation { parents: 1, interior: X2(Parachain(1000), GeneralIndex(0)) }
+            ) ||
+            matches!(
+                location,
+                MultiLocation { parents: 1, interior: X3(Parachain(1000), PalletInstance(50), GeneralIndex(0)) }
+            );
+        is_ksm && is_from_asset_hub
+    }
+}
+
+// Union of trusted reserve resolvers.
+pub type Reserves = (
+    // Native assets whose absolute reserve is local
+    MultiNativeAsset<AbsoluteReserveProvider>,
+    // KSM with reserve on Kusama Asset Hub
+    KsmFromAssetHub,
 );
 
 #[cfg(feature = "runtime-benchmarks")]
